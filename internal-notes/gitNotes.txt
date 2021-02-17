@@ -2,3 +2,7 @@ GIT NOTES
 
 git clone --branch version1 https://github.com/alejandro2141/conmed.git
 
+Trae actualizaciones al directorio de trabajo
+git pull origin devel_0
+
+
