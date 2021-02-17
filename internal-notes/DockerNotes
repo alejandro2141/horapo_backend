@@ -34,7 +34,7 @@ curl -i localhost:8080
 
 Build de Imagen:
 sudo docker build -t alejandro2141/backend .
-sudo docker images
+sudo docker images -a
 sudo docker rmi 060aed823995 -f
 
 
