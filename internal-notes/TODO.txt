@@ -1,0 +1,11 @@
+
+Create Project
+
+1.- Dominar GitHub
+2.- Crear un proyecto Docker NodeJS  para el backend y subirlo al Backend Docker via GitHub
+3.- Crear una API REST Basica
+4.- Crear api rest mas compleja
+5.- 
+6.- 
+7.- 23128795
+
