@@ -3,17 +3,13 @@
 const express = require('express');
 
 // Constants
-const PORT = 8081;
+const PORT = 8080;
 const HOST = '0.0.0.0';
 
 // App
 const app = express();
-app.get('/hola', (req, res) => {
-  res.send('hola pirinola');
-});
-
-app.get('/chao', (req, res) => {
-  res.send('chao terricola');
+app.get('/', (req, res) => {
+  res.send('Hola terricola ');
 });
 
 app.listen(PORT, HOST);
