@@ -32,6 +32,20 @@ curl -i localhost:8080
 
 
 
+Build de Imagen:
+sudo docker build -t alejandro2141/backend .
+sudo docker images
+sudo docker rmi 060aed823995 -f
+
+
+
+
+Ver imagenes corriendo iniciadas
+sudo docker ps
+sudo docker kill c9ad12cbd34f
+
+
+
 
 
 
