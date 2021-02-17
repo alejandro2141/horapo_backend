@@ -26,7 +26,9 @@ $ docker exec -it <container id> /bin/bash
 $ docker ps
 
 
+Test si esta ok 
 
+curl -i localhost:8080
 
 
 
