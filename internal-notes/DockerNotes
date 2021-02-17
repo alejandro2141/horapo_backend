@@ -1,0 +1,35 @@
+
+Docker Notes 
+
+You can then run using Docker Compose:
+docker-compose up -d
+
+Para build de imagen docker
+sudo docker build -t alejandro2141/node-web-app .
+
+Muestra las imagenes existentes. 
+$ docker images
+
+Inicia una imagen 
+ sudo docker run -p 49160:8080 -d alejo/node-web-app
+
+Lista los imagenes estan corriendo
+sudo docker ps
+
+docker logs <container id>
+
+
+# Enter the container
+$ docker exec -it <container id> /bin/bash
+
+
+$ docker ps
+
+
+
+
+
+
+
+
+
