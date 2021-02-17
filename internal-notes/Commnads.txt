@@ -1,0 +1,11 @@
+
+
+Comandos Git Hub
+
+Colnar
+gh repo clone alejandro2141/conmed
+
+Trae cambios de codigo
+gh pr checkout 1
+
+
