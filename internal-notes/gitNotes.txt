@@ -7,3 +7,14 @@ git pull origin devel_0
 
 
 
+git add <filename>
+git add .
+
+Empujtar cambos a git
+git commit -m "Commit message2"
+git push origin devel_0
+
+
+Sacar del index el directorio de modulos
+git rm --cached -r node_modules/
+ 
