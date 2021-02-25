@@ -1,0 +1,98 @@
+
+restar
+sudo systemctl stop postgresql
+sudo systemctl start postgresql
+sudo systemctl restart postgresql
+systemctl status postgresql-service
+
+
+
+
+$ sudo apt update
+Once the packages list is updated. proceed and install PostgreSQL by executing the following command.
+
+$ sudo apt install postgresql postgresql-contrib
+
+Once installed, verify the PostgreSQL is running by invoking the command:
+$ sudo systemctl status postgresql
+
+To enable PostgreSQL on boot or upon a reboot, issue the command:
+$ sudo systemctl enable postgresql
+
+$ sudo pg_isready
+
+To log in, we need to switch over to the postgres user that is created by default by PostgreSQL and then access the shell. Therefore, invoke the following commands to change to ‘postgres‘ user
+
+$ sudo su - postgres
+
+pasar comandos
+$ psql
+
+
+To quit the shell simply run the command:
+\q
+
+
+Step 3: Set password for the default user
+
+sudo -u postgres psql
+
+\password postgres
+
+cambiamos a paranoid
+
+
+Step 4: Create a database in PostgreSQL
+Being a relational database and riding on SQL, creating a database is quite s straightforward task. Once logged in, create a database, using the command:
+
+postgres=# CREATE DATABASE conmeddb01;
+CREATE DATABASE
+
+postgres=# CREATE USER conmeddb_user WITH PASSWORD 'paranoid';
+CREATE ROLE
+
+psql mydb
+
+
+
+
+
+
+
+//*************************************
+const { Pool, Client } = require('pg')
+const pool = new Pool({
+  user: 'dbuser',
+  host: 'database.server.com',
+  database: 'mydb',
+  password: 'secretpassword',
+  port: 3211,
+})
+pool.query('SELECT NOW()', (err, res) => {
+  console.log(err, res)
+  pool.end()
+})
+const client = new Client({
+  user: 'dbuser',
+  host: 'database.server.com',
+  database: 'mydb',
+  password: 'secretpassword',
+  port: 3211,
+})
+client.connect()
+client.query('SELECT NOW()', (err, res) => {
+  console.log(err, res)
+  client.end()
+})
+
+
+
+
+
+
+
+
+
+
+
+
