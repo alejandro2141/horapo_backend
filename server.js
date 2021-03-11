@@ -56,7 +56,7 @@ const resultado = client.query('SELECT * FROM appointment', (err, res) => {
 app.route('/get_appointment')
 .post(function (req, res) {
  
-    console.log('JSON REQUEST BODY  : ', req.body );
+    console.log('JSON REQUEST BODY POST GET APPOINTMENT : ', req.body );
  
 // ****** Connect to postgre
 const { Pool, Client } = require('pg')
@@ -70,7 +70,7 @@ const client = new Client({
 
 client.connect()
 // ****** Run query to bring appointment
-const resultado = client.query('SELECT * FROM appointment', (err, result) => {
+const resultado = client.query('SELECT * FROM appointment2', (err, result) => {
 
   //console.log(err, 'JSON RESPONSE'+JSON.stringify(result))
   res.status(200).send(JSON.stringify(result))
@@ -91,7 +91,58 @@ const resultado = client.query('SELECT * FROM appointment', (err, result) => {
  
  
 
+//********************************************* 
+// PUBLIC POST TAKE APPOINTMENT
+//********************************************* 
+ 
+app.route('/bkn_take_appointment')
+.post(function (req, res) {
+ 
+    console.log('JSON REQUEST BODY - BKN TAKE APPOINTMENT : ', req.body );
+ 
+// ****** Connect to postgre
+const { Pool, Client } = require('pg')
+const client = new Client({
+  user: 'conmeddb_user',
+  host: '127.0.0.1',
+  database: 'conmeddb01',
+  password: 'paranoid',
+  port: 5432,
+})
 
+client.connect()
+// ****** Run query to bring appointment
+//const resultado = client.query('INSERT INTO "appointment_taken" (								 patient_doc_id, patient_name ) VALUES (  "139093712', 'juan morales' ) ', (err, result) => {
+
+console.log ("paciente nombreobtenido del post="+req.body.patient_name); 
+//const resultado = client.query(' INSERT INTO "public"."appointment_taken" ("patient_name","patient_doc_id","patient_email","patient_phone","patient_insurance","app_id","appointment_profesional_id","appointment_specialty","appointment_date","appointment_time","appointment_profesional_name") VALUES ("nuevonombre","","","","",NULL,NULL,"",NULL,"","")  ') , (err, result) => {  
+const query_insert = "INSERT INTO appointment_taken (patient_name, patient_doc_id , patient_email , patient_phone , patient_insurance, app_id   ) VALUES ('"+req.body.patient_name+"','"+req.body.patient_doc_id+"' ,'"+req.body.patient_email+"' ,'"+req.body.patient_phone+"','"+req.body.patient_insurance+"' ,'"+req.body.appointment_id+"' )" ;
+
+const resultado = client.query(query_insert, (err, result) => {
+
+  //console.log(err, 'JSON RESPONSE'+JSON.stringify(result))
+     var json_response_ok = { 
+			    result_status : 'inserted', 
+			    result_code: '200',
+			    	  };
+  
+    res.status(200).send(JSON.stringify(json_response_ok));
+    console.log("JSON RESPONSE BODY : "+JSON.stringify(json_response_ok));
+    console.log ("ERROR LOG : "+err);
+
+  client.end()
+
+})
+
+  //console.log(JSON.stringify(JSON.stringify(req))) ;
+  
+  
+  
+ //res.send("saludos terricolas");
+  //res.status(200).json(resultado.rows) ;
+  // res.send(JSON.stringify(result));
+})
+ 
 
 
 

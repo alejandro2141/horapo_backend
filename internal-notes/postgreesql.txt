@@ -67,7 +67,7 @@ const pool = new Pool({
   database: 'mydb',
   password: 'secretpassword',
   port: 3211,
-})
+}):
 pool.query('SELECT NOW()', (err, res) => {
   console.log(err, res)
   pool.end()
