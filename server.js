@@ -144,6 +144,42 @@ const resultado = client.query(query_insert, (err, result) => {
 })
  
 
+//********************************************* 
+// PUBLIC POST Login
+//********************************************* 
+ 
+app.route('/loginAssistant')
+.post(function (req, res) {
+ 
+    console.log('POST LOGIN - JSON REQUEST : ', req.body );
+ 
+// ****** Connect to postgre
+const { Pool, Client } = require('pg')
+const client = new Client({
+  user: 'conmeddb_user',
+  host: '127.0.0.1',
+  database: 'conmeddb01',
+  password: 'paranoid',
+  port: 5432,
+})
+
+client.connect()
+// ****** Run query to bring appointment
+const sql  = "SELECT * FROM users WHERE emails='"+req.body.form_user +"'";
+console.log("SQL"+sql);
+/*const resultado = client.query('SELECT * FROM appointment2', (err, result) => {
+
+//  console.log(err, 'JSON RESPONSE'+JSON.stringify(result))
+  res.status(200).send(JSON.stringify(result))
+  console.log("POST LOGIN - JSON RESPONSE : "+JSON.stringify(result ));
+
+  client.end()
+
+})
+*/
+
+})
+ 
 
 
 
