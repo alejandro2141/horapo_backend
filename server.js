@@ -70,11 +70,13 @@ const client = new Client({
 
 client.connect()
 // ****** Run query to bring appointment
-const resultado = client.query('SELECT * FROM appointment2', (err, result) => {
+const sql_query="SELECT * FROM appointment2" ;
+console.log (sql_query);
+const resultado = client.query(sql_query, (err, result) => {
 
-  //console.log(err, 'JSON RESPONSE'+JSON.stringify(result))
+  console.log("JSON GET_APPOINTMENT RESPONSE BODY ROWS : "+JSON.stringify(result ));
   res.status(200).send(JSON.stringify(result))
-    console.log("JSON RESPONSE BODY : "+JSON.stringify(result ));
+    
 
   client.end()
 
@@ -147,7 +149,6 @@ const resultado = client.query(query_insert, (err, result) => {
 //********************************************* 
 // PUBLIC POST Login
 //********************************************* 
- 
 app.route('/loginAssistant')
 .post(function (req, res) {
  
@@ -165,21 +166,106 @@ const client = new Client({
 
 client.connect()
 // ****** Run query to bring appointment
-const sql  = "SELECT * FROM users WHERE emails='"+req.body.form_user +"'";
-console.log("SQL"+sql);
-/*const resultado = client.query('SELECT * FROM appointment2', (err, result) => {
+const sql  = "SELECT * FROM users WHERE email='"+req.body.form_email+"'  AND password='"+req.body.form_pass+"'" ;
+console.log('SQL  = '+sql ) ;
+var json_response = { result_status : 'noset', result_code: 'noset', token: 'noset', user_id: 'noset', };
+const resultado = client.query(sql, (err, result) => {
 
-//  console.log(err, 'JSON RESPONSE'+JSON.stringify(result))
-  res.status(200).send(JSON.stringify(result))
-  console.log("POST LOGIN - JSON RESPONSE : "+JSON.stringify(result ));
-
+  if (err) {
+      throw error ;
+      console.log(' ERROR QUERY  = '+sql ) ;
+    }
+    
+  if (result.rowCount == 1 )
+  {
+  console.log ("LOGIN MATCH!!");
+  json_response = { login_result : 'Login Success', result_code: '200', token: '11234', user_id: '1'  };
+  }
+  else
+  {
+  console.log ("LOGIN NO MATCH!!");
+  json_response = { login_result : 'Login Failed', result_code: '700', token: '11234',  user_id: '0' };
+  }
+  
+  res.status(200).send(JSON.stringify(json_response));
+  console.log('JSON RESPONSE  = '+JSON.stringify(json_response) ) ;
   client.end()
-
 })
-*/
+
 
 })
  
+
+//********************************************* 
+// PUBLIC POST ASSISTANT GET AGENDA
+//********************************************* 
+app.route('/assistant_get_agendas')
+.post(function (req, res) {
+ 
+    console.log('POST GET AGENDA - JSON REQUEST : ', req.body );
+ 
+// ****** Connect to postgre
+const { Pool, Client } = require('pg')
+const client = new Client({
+  user: 'conmeddb_user',
+  host: '127.0.0.1',
+  database: 'conmeddb01',
+  password: 'paranoid',
+  port: 5432,
+})
+
+client.connect()
+// ****** Run query to bring appointment
+const sql  = "SELECT * FROM agendas WHERE a_id='"+req.body.assistant_id+"' " ;
+console.log('SQL GET AGENDA = '+sql ) ;
+const resultado = client.query(sql, (err, result) => {
+
+  if (err) {
+      console.log(' ERROR QUERY = '+sql ) ;
+    }
+
+  console.log('JSON RESPONSE GET AGENDA  = '+result ) ;
+  res.status(200).send(JSON.stringify(result) );
+  client.end()
+})
+
+})
+
+
+//********************************************* 
+// PUBLIC POST BACKEND ASSISTANT GET AGENDA
+//********************************************* 
+app.route('/backend_assistant_get_agenda')
+.post(function (req, res) {
+ 
+    console.log('INPUT POST : GET AGENDA APPOINTMENTS : JSON REQUEST : ', req.body );
+ 
+// ****** Connect to postgre
+const { Pool, Client } = require('pg')
+const client = new Client({
+  user: 'conmeddb_user',
+  host: '127.0.0.1',
+  database: 'conmeddb01',
+  password: 'paranoid',
+  port: 5432,
+})
+
+client.connect()
+// ****** Run query to bring appointment
+const sql  = "SELECT * FROM appointments WHERE ag_id='"+req.body.ag_id+"' " ;
+console.log('SQL GET AGENDA = '+sql ) ;
+const resultado = client.query(sql, (err, result) => {
+
+  if (err) {
+      console.log(' ERROR QUERY = '+sql ) ;
+    }
+
+  console.log('JSON RESPONSE GET AGENDA  APPOINTMENTS  = '+JSON.stringify(result) ) ;
+  res.status(200).send(JSON.stringify(result) );
+  client.end()
+})
+
+})
 
 
 
