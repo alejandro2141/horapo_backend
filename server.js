@@ -235,7 +235,7 @@ const resultado = client.query(sql, (err, result) => {
 //********************************************* 
 // PUBLIC POST BACKEND ASSISTANT GET AGENDA
 //********************************************* 
-app.route('/backend_assistant_get_agenda')
+app.route('/bakend_get_appointment_list')
 .post(function (req, res) {
  
     console.log('INPUT POST : GET AGENDA APPOINTMENTS : JSON REQUEST : ', req.body );
@@ -252,7 +252,7 @@ const client = new Client({
 
 client.connect()
 // ****** Run query to bring appointment
-const sql  = "SELECT * FROM appointments WHERE ag_id='"+req.body.ag_id+"' " ;
+const sql  = "SELECT * FROM appointment2 where agenda_id='"+req.body.ag_id+"'" ;
 console.log('SQL GET AGENDA = '+sql ) ;
 const resultado = client.query(sql, (err, result) => {
 
