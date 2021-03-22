@@ -307,6 +307,46 @@ const resultado = client.query(sql, (err, result) => {
 })
 
 
+//********************************************* 
+// Get APpointment details
+//********************************************* 
+app.route('/get_appointment_details')
+.post(function (req, res) {
+ 
+    console.log('Get Appointmetn Details  REQUEST : ', req.body );
+ 
+// ****** Connect to postgre
+const { Pool, Client } = require('pg')
+const client = new Client({
+  user: 'conmeddb_user',
+  host: '127.0.0.1',
+  database: 'conmeddb01',
+  password: 'paranoid',
+  port: 5432,
+})
+
+client.connect()
+// ****** Run query to bring appointment
+const sql  = "SELECT * FROM appointment2 where id='"+req.body.appointment_id+"' " ;
+console.log('SQL GET Apointment : '+sql ) ;
+const resultado = client.query(sql, (err, result) => {
+
+  if (err) {
+      console.log(' ERROR QUERY = '+sql ) ;
+    }
+
+  console.log('GET Appointment Details   = '+JSON.stringify(result.rows) ) ;
+  //res.status(200).send(JSON.stringify(result) );
+  res.status(200).json(result.rows)
+  
+  client.end()
+})
+
+})
+
+
+
+
 
 
 
