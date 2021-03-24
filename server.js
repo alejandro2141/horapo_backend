@@ -346,6 +346,75 @@ const resultado = client.query(sql, (err, result) => {
 
 
 
+//********************************************* 
+// Get Centers professional Day 
+//********************************************* 
+app.route('/get_centers_professional_day')
+.post(function (req, res) {
+ 
+    console.log('get_centers_professional_day REQUEST : ', req.body );
+ 
+// ****** Connect to postgre
+const { Pool, Client } = require('pg')
+const client = new Client({
+  user: 'conmeddb_user',
+  host: '127.0.0.1',
+  database: 'conmeddb01',
+  password: 'paranoid',
+  port: 5432,
+})
+
+client.connect()
+// ****** Run query to bring appointment
+const sql  = "SELECT * FROM appointment2 where agenda_id='"+req.body.agenda_id+"' " ;
+console.log('SQL get_centers_professional_day : '+sql ) ;
+const resultado = client.query(sql, (err, result) => {
+
+  if (err) {
+      console.log(' ERROR QUERY = '+sql ) ;
+      console.log(' ERR = '+err ) ;
+    }
+
+  console.log('GET get_centers_professional_day '+JSON.stringify(result) ) ;
+  //res.status(200).send(JSON.stringify(result) );
+  
+  //FOREACH result rows to build a new json summary of centers
+  var json_response = [];
+  var temp_center_id = null ; 
+  result.rows.forEach(function (app) {
+  
+	  console.log("center id ="+app.center_id);
+	  console.log("center name ="+app.center_name);
+	  
+	  if (app.center_id != temp_center_id)
+	  {
+	  //var obj={ center_name : app.center_name } ;
+	  json_response.push( { center : app.center, date : app.date , time : app.time, specialty : app.specialty, address :  app.address  } ) ;
+   	//	json_response.push( app.center_id) ;
+	  }
+	  else
+	  {
+	  temp_center_id = app.center_id ;
+	  }
+
+
+	  
+	});
+  // END FOREACH
+  console.log('Resultado nuevo JSON :'+JSON.stringify(json_response) ) ;
+  
+    res.status(200).json(json_response)
+  
+  
+  
+  client.end()
+})
+
+})
+
+
+
+
 
 
 
