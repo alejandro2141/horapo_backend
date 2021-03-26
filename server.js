@@ -232,6 +232,43 @@ const resultado = client.query(sql, (err, result) => {
 
 
 //********************************************* 
+// PUBLIC POST ASSISTANT GET AGENDA
+//********************************************* 
+app.route('/assistant_get_agenda_by_id')
+.post(function (req, res) {
+ 
+    console.log('Assistant_get_agenda by id : ', req.body );
+ 
+// ****** Connect to postgre
+const { Pool, Client } = require('pg')
+const client = new Client({
+  user: 'conmeddb_user',
+  host: '127.0.0.1',
+  database: 'conmeddb01',
+  password: 'paranoid',
+  port: 5432,
+})
+
+client.connect()
+// ****** Run query to bring appointment
+const sql  = "SELECT * FROM agendas WHERE id='"+req.body.agenda_id+"' " ;
+console.log('SQL GET AGENDA = '+sql ) ;
+const resultado = client.query(sql, (err, result) => {
+
+  if (err) {
+      console.log(' ERROR QUERY = '+sql ) ;
+    }
+
+  console.log('JSON RESPONSE GET AGENDA  = '+result ) ;
+  res.status(200).send(JSON.stringify(result) );
+  client.end()
+})
+
+})
+
+
+
+//********************************************* 
 // PUBLIC POST GET APPOINTMENT AVAILABLE LIST
 //********************************************* 
 app.route('/bakend_get_appointment_available_list')
@@ -414,6 +451,54 @@ const resultado = client.query(sql, (err, result) => {
 
 
 
+
+//********************************************* 
+// PUBLIC POST add_hour_agenda
+//********************************************* 
+app.route('/add_hour_agenda')
+.post(function (req, res) {
+ 
+    console.log('add_hour_agenda - JSON REQUEST : ', req.body );
+ 
+// ****** Connect to postgre
+const { Pool, Client } = require('pg')
+const client = new Client({
+  user: 'conmeddb_user',
+  host: '127.0.0.1',
+  database: 'conmeddb01',
+  password: 'paranoid',
+  port: 5432,
+})
+
+client.connect()
+
+// CICLE TO CREATE APPOINTMENTS
+
+const sql  = "INSERT INTO appointment2 ( professional_id, center , professional_name, date, time, address, specialty, is_public, center_id , agenda_id ) VALUES (  '"+req.body.form_center+"') " ;
+console.log('SQL  = '+sql ) ;
+
+// ***** End Cycle to create appointments ****
+
+var json_response = { result_status : 'noset', result_code: 'noset', token: 'noset', user_id: 'noset', };
+const resultado = client.query(sql, (err, result) => {
+
+  if (err) {
+     // throw err ;
+      console.log(' ERROR QUERY  = '+sql ) ;
+      console.log(err ) ;
+      
+    }
+    
+
+  
+  res.status(200).send(JSON.stringify(json_response));
+  console.log('JSON RESPONSE  = '+JSON.stringify(json_response) ) ;
+  client.end()
+})
+
+
+})
+ 
 
 
 
