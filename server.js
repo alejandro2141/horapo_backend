@@ -194,6 +194,59 @@ const resultado = client.query(sql, (err, result) => {
 
 })
  
+ //*********************************************************
+ //*************** LOGIN PROFESSIONAL ***************************
+ //************************************************************
+ 
+app.route('/professionalLogin')
+.post(function (req, res) {
+ 
+    console.log('professionalLogin - JSON REQUEST : ', req.body );
+ 
+// ****** Connect to postgre
+const { Pool, Client } = require('pg')
+const client = new Client({
+  user: 'conmeddb_user',
+  host: '127.0.0.1',
+  database: 'conmeddb01',
+  password: 'paranoid',
+  port: 5432,
+})
+
+client.connect()
+// ****** Run query to bring appointment
+const sql  = "SELECT * FROM users WHERE email='"+req.body.form_email+"'  AND password='"+req.body.form_pass+"' AND user_type='3'" ;
+console.log('SQL  = '+sql ) ;
+var json_response = { result_status : 'noset', result_code: 'noset', token: 'noset', user_id: 'noset', };
+const resultado = client.query(sql, (err, result) => {
+
+  if (err) {
+      throw error ;
+      console.log(' ERROR QUERY  = '+sql ) ;
+    }
+    
+  if (result.rowCount == 1 )
+  {
+  console.log ("LOGIN MATCH!!");
+  json_response = { login_result : 'Login Success', result_code: '200', token: '11234', user_id: +result.rows[0].user_id  };
+  }
+  else
+  {
+  console.log ("LOGIN NO MATCH!!");
+  json_response = { login_result : 'Login Failed', result_code: '700', token: '11234',  user_id: '0' };
+  }
+  
+  res.status(200).send(JSON.stringify(json_response));
+  console.log('JSON RESPONSE  = '+JSON.stringify(json_response) ) ;
+  client.end()
+})
+
+
+})
+ 
+ 
+ 
+ 
 
 //********************************************* 
 // PUBLIC POST ASSISTANT GET AGENDA
@@ -229,6 +282,42 @@ const resultado = client.query(sql, (err, result) => {
 })
 
 })
+
+//********************************************* 
+// PUBLIC POST PROFESSIONAL GET AGENDA
+//********************************************* 
+app.route('/professional_get_agendas')
+.post(function (req, res) {
+ 
+    console.log('professional_get_agendas : ', req.body );
+ 
+// ****** Connect to postgre
+const { Pool, Client } = require('pg')
+const client = new Client({
+  user: 'conmeddb_user',
+  host: '127.0.0.1',
+  database: 'conmeddb01',
+  password: 'paranoid',
+  port: 5432,
+})
+
+client.connect()
+// ****** Run query to bring appointment
+const sql  = "SELECT * FROM agendas WHERE professional_id='"+req.body.professional_id+"' " ;
+console.log('professional_get_agendas : SQL GET AGENDA = '+sql ) ;
+const resultado = client.query(sql, (err, result) => {
+
+  if (err) {
+      console.log(' ERROR QUERY = '+sql ) ;
+    }
+
+  console.log('professional_get_agendas : JSON RESPONSE GET AGENDA  = '+result ) ;
+  res.status(200).send(JSON.stringify(result) );
+  client.end()
+})
+
+})
+
 
 
 //********************************************* 
@@ -470,13 +559,16 @@ const client = new Client({
   port: 5432,
 })
 
-client.connect()
+let agenda = null;
+let agenda_name = 'No Name';
+var agenda_result = null;
 
+client.connect() ;
 // CICLE TO CREATE APPOINTMENTS
 
-const sql  = "INSERT INTO appointment2 ( professional_id, center , professional_name, date, time, address, specialty, is_public, center_id , agenda_id ) VALUES (  '"+req.body.form_center+"') " ;
-console.log('SQL  = '+sql ) ;
+const sql  = "INSERT INTO appointment2 ( professional_id, center , professional_name, date ,time , address, specialty , is_public , center_id , agenda_id, reserve_available ) VALUES ( '"+req.body.form_agenda_professional_id+"', '"+req.body.form_center+"', '"+req.body.form_agenda_professional_name+"' , '"+req.body.form_date+"' , '"+req.body.form_time+"' , '"+req.body.form_agenda_address+"' , '"+req.body.form_specialty+"' , '"+req.body.form_public+"' , '"+req.body.form_agenda_center_id+"' , '"+req.body.form_agenda_id+"', '1' ) " ;
 
+console.log('SQL INSERT APPOINTMENT  = '+sql ) ;
 // ***** End Cycle to create appointments ****
 
 var json_response = { result_status : 'noset', result_code: 'noset', token: 'noset', user_id: 'noset', };
@@ -486,20 +578,82 @@ const resultado = client.query(sql, (err, result) => {
      // throw err ;
       console.log(' ERROR QUERY  = '+sql ) ;
       console.log(err ) ;
-      
     }
-    
-
-  
   res.status(200).send(JSON.stringify(json_response));
-  console.log('JSON RESPONSE  = '+JSON.stringify(json_response) ) ;
-  client.end()
+  console.log('Success Insert = '+JSON.stringify(json_response) ) ;
+ // client.end()
 })
 
 
 })
  
 
+//********************************************* 
+// PUBLIC POST professional_create_agenda
+//********************************************* 
+app.route('/professional_create_agenda')
+.post(function (req, res) {
+
+    console.log('professional_create_agenda - JSON REQUEST : ', req.body );
+ 
+// ****** Connect to postgre
+const { Pool, Client } = require('pg')
+const client = new Client({
+  user: 'conmeddb_user',
+  host: '127.0.0.1',
+  database: 'conmeddb01',
+  password: 'paranoid',
+  port: 5432,
+})
+
+client.connect() ;
+// GET PROFESSIONAL DATA
+//var professional=null;
+
+const sql  = "Select * FROM users WHERE id="+req.body.professional_id ;
+console.log("select : "+sql);
+
+const resultado = client.query(sql, (err, result) => {
+
+  if (err) {
+     // throw err ;
+      console.log(' ERROR QUERY  = '+sql ) ;
+      console.log(err ) ;
+    }
+    else {
+  res.status(200).send(JSON.stringify(result.rows[0]));
+  professional=JSON.stringify(result.rows[0]) ;
+  console.log('Professional 1 ID = '+professional )  ;
+  	
+  	}
+   console.log('Professional 2 ID = '+professional )  ;
+  client.end()
+  
+})
+
+console.log('Professional 3 ID = '+professional )  ;
+/*
+const sql  = "INSERT INTO agendas ( professsional_name , ) VALUES ( '"+req.body.form_agenda_professional_name+"',  '1' ) " ;
+
+console.log('SQL INSERT APPOINTMENT  = '+sql ) ;
+// ***** End Cycle to create appointments ****
+
+var json_response = { result_status : 'noset', result_code: 'noset', token: 'noset', user_id: 'noset', };
+const resultado = client.query(sql, (err, result) => {
+
+  if (err) {
+     // throw err ;
+      console.log(' ERROR QUERY  = '+sql ) ;
+      console.log(err ) ;
+    }
+  res.status(200).send(JSON.stringify(json_response));
+  console.log('Success Insert = '+JSON.stringify(json_response) ) ;
+  client.end()
+})
+*/
+
+})
+ 
 
 
 
