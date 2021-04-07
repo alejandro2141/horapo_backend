@@ -691,15 +691,12 @@ const resultado = client.query(sql, (err, result) => {
 
 })
  
-
 //********************************************* 
 // PUBLIC POST create_center
 //********************************************* 
 app.route('/professional_create_center')
 .post(function (req, res) {
-	
     console.log('professional_create_center CENTER CREATION INPUT:', req.body );
- 
 // ****** Connect to postgre
 const { Pool, Client } = require('pg')
 const client = new Client({
@@ -709,18 +706,14 @@ const client = new Client({
   password: 'paranoid',
   port: 5432,
 })
-
 client.connect() ;
 // GET PROFESSIONAL DATA
-
 var sql  = null;
 var json_response = { result_status : 1 };
 //var res = null; 	
 // CHECK INPUT PARAMETERS TO IDENTIFY IF  REQUEST IS TO CREATE CENTER
 // CREATE DIRECTLY AGENDA 
-
 //sql  = "INSERT INTO centers ( name ,  address , phone1, phone2 ) VALUES (  '"+req.body.center_name+"', '"+req.body.center_address+"' , '"+req.body.center_phone+"', '"+req.body.center_phone2+"' ) RETURNING id " ;
-
 sql = " WITH ids AS (  INSERT INTO centers ( name ,  address , phone1, phone2 ) VALUES (  '"+req.body.center_name+"' , '"+req.body.center_address+"', '"+req.body.center_phone+"' ,'undefined' ) RETURNING id as center_id ) INSERT INTO center_professional (professional_id, center_id) VALUES ('"+req.body.professional_id+"', (SELECT center_id from ids) ) RETURNING * ;  ";
 
 console.log('create_center SQL:'+sql ) ;
@@ -732,9 +725,10 @@ console.log('create_center SQL:'+sql ) ;
 	    }
 	    else
 	    {
-	  json_response = { result_status : 0   };
-	  res.status(200).send(JSON.stringify(json_response));
-	  console.log('professional_create_center  SUCCESS CENTER INSERT :'+JSON.stringify(json_response) ) ; 
+	 // json_response = { result_status : 0  , center_id : result.data.center_id  };
+	  res.status(200).send(JSON.stringify(result));
+	  console.log('professional_create_center  SUCCESS CENTER INSERT ' ) ; 
+    console.log('professional_create_center  OUTPUT  :'+JSON.stringify(result) ) ; 
 	   }
 	   
 	  client.end()
@@ -928,13 +922,13 @@ console.log('get_calendar  SQL:'+sql ) ;
 	})
 
 })
- 
 
+//********************************************* 
+// PUBLIC POST get AGENDA
+//********************************************* 
 app.route('/get_agenda')
 .post(function (req, res) {
-	
     console.log('get_agenda INPUT:', req.body );
- 
 // ****** Connect to postgre
 const { Pool, Client } = require('pg')
 const client = new Client({
