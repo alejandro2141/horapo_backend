@@ -503,7 +503,7 @@ const resultado = client.query(sql, (err, result) => {
 //********************************************* 
 // PUBLIC POST GET APPOINTMENT AVAILABLE LIST of AGENDA
 //********************************************* 
-app.route('/get_appointment_list_from_agenda')
+app.route('/get_appointments_from_agenda')
 .post(function (req, res) {
  
     console.log('INPUT POST : GET AGENDA APPOINTMENTS : JSON REQUEST : ', req.body );
@@ -520,7 +520,7 @@ const client = new Client({
 
 client.connect()
 // ****** Run query to bring appointment
-const sql  = "SELECT * FROM appointment2 where agenda_id='"+req.body.agenda_id+"' " ;
+const sql  = "SELECT * FROM appointments where agenda_id='"+req.body.agenda_id+"' " ;
 console.log('SQL GET AGENDA = '+sql ) ;
 const resultado = client.query(sql, (err, result) => {
 
@@ -839,10 +839,10 @@ console.log('create_center SQL:'+sql ) ;
 //********************************************* 
 // PUBLIC POST get Professioal Data by  agenda id
 //********************************************* 
-app.route('/get_professional_data_by_agenda_id')
+app.route('/get_professional_from_agenda')
 .post(function (req, res) {
 	
-    console.log('get_professional_data_by_agenda_id  INPUT:', req.body );
+    console.log('get_professional_from_agenda  INPUT:', req.body );
  
 // ****** Connect to postgre
 const { Pool, Client } = require('pg')
@@ -855,12 +855,6 @@ const client = new Client({
 })
 
 client.connect() ;
-// GET PROFESSIONAL DATA
-//var res = null; 	
-// CHECK INPUT PARAMETERS TO IDENTIFY IF  REQUEST IS TO CREATE CENTER
-// CREATE DIRECTLY AGENDA 
-
-//sql  = "INSERT INTO centers ( name ,  address , phone1, phone2 ) VALUES (  '"+req.body.center_name+"', '"+req.body.center_address+"' , '"+req.body.center_phone+"', '"+req.body.center_phone2+"' ) RETURNING id " ;
 
 const sql = "select * from professionals where id IN  (SELECT professional_id FROM agendas * where id='"+req.body.agenda_id+"' )";
 
