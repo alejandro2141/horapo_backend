@@ -10,7 +10,6 @@ const HOST = '0.0.0.0';
 // App
 const app = express();
 
-
 // APP SET CORS to allow Al Origins
 app.use((req, res, next) => {
     res.header('Access-Control-Allow-Origin', '*');
@@ -20,83 +19,14 @@ app.use((req, res, next) => {
     next();
 });
 
-
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(bodyParser.json());
 
 
-//APP Functions
-
-  
-//********************************************* 
-// PUBLIC GET APPOINTMENT BKP
-//********************************************* 
- /*
-app.route('/public_appointment')
-.get(function (req, res) {
- 
-client.connect() ;
-
-const resultado = client.query('SELECT * FROM appointment', (err, res) => {
-  console.log(err, res)
-  client.end()
-})
-  
- res.send("saludos terricolas");
-  //res.status(200).json(res.rows)
-  // res.send(res);
-   
- })
-*/
-
-//********************************************* 
-// PUBLIC POST APPOINTMENT BKP
-//********************************************* 
- /*
-app.route('/get_appointment')
-.post(function (req, res) {
- 
-    console.log('JSON REQUEST BODY POST GET APPOINTMENT : ', req.body );
- 
-// ****** Connect to postgre
-const { Pool, Client } = require('pg')
-const client = new Client({
-  user: 'conmeddb_user',
-  host: '127.0.0.1',
-  database: 'conmeddb01',
-  password: 'paranoid',
-  port: 5432,
-})
-
-client.connect()
-// ****** Run query to bring appointment
-const sql_query="SELECT * FROM appointment2" ;
-console.log (sql_query);
-const resultado = client.query(sql_query, (err, result) => {
-
-  console.log("JSON GET_APPOINTMENT RESPONSE BODY ROWS : "+JSON.stringify(result ));
-  res.status(200).send(JSON.stringify(result))
-    
-
-  client.end()
-
-})
-
-  //console.log(JSON.stringify(JSON.stringify(req))) ;
-  
-  
-  
- //res.send("saludos terricolas");
-  //res.status(200).json(resultado.rows) ;
-  // res.send(JSON.stringify(result));
-})
- */
- 
 
 //********************************************* 
 // PUBLIC POST TAKE APPOINTMENT
 //********************************************* 
- 
 app.route('/bkn_take_appointment')
 .post(function (req, res) {
  
@@ -306,7 +236,7 @@ const resultado = client.query(sql, (err, result) => {
       console.log('professional_get_agendas ERR:'+err ) ;
     }
 
-  console.log('professional_get_agendas : JSON RESPONSE GET AGENDA  = '+result ) ;
+  console.log('professional_get_agendas : JSON RESPONSE GET AGENDA  = '+JSON.stringify(result) ) ;
   res.status(200).send(JSON.stringify(result) );
   client.end()
 })
@@ -423,8 +353,6 @@ const resultado = client.query(sql, (err, result) => {
 })
 
 
-
-
 //********************************************* 
 // PUBLIC POST ASSISTANT GET AGENDA
 //********************************************* 
@@ -459,8 +387,6 @@ const resultado = client.query(sql, (err, result) => {
 })
 
 })
-
-
 
 //********************************************* 
 // PUBLIC POST GET APPOINTMENT AVAILABLE LIST
@@ -498,7 +424,6 @@ const resultado = client.query(sql, (err, result) => {
 })
 
 })
-
 
 //********************************************* 
 // PUBLIC POST GET APPOINTMENT AVAILABLE LIST of AGENDA
@@ -575,15 +500,12 @@ const resultado = client.query(sql, (err, result) => {
 
 })
 
-
-
 //********************************************* 
 // Get Centers professional Day 
 //********************************************* 
 app.route('/get_centers_professional_day')
 .post(function (req, res) {
- 
-    console.log('get_centers_professional_day REQUEST : ', req.body );
+  console.log('get_centers_professional_day REQUEST : ', req.body );
  
 // ****** Connect to postgre
 const { Pool, Client } = require('pg')
@@ -670,21 +592,18 @@ var agenda_result = null;
 client.connect() ;
 // CICLE TO CREATE APPOINTMENTS
 
-const sql  = "INSERT INTO appointment2 ( professional_id, center , professional_name, date ,time , address, specialty , is_public , center_id , agenda_id, reserve_available ) VALUES ( '"+req.body.form_agenda_professional_id+"', '"+req.body.form_center+"', '"+req.body.form_agenda_professional_name+"' , '"+req.body.form_date+"' , '"+req.body.form_time+"' , '"+req.body.form_agenda_address+"' , '"+req.body.form_specialty+"' , '"+req.body.form_public+"' , '"+req.body.form_agenda_center_id+"' , '"+req.body.form_agenda_id+"', '1' ) " ;
+const sql  = "INSERT INTO appointments  (  date ,start_time , end_time ,duration , specialty , is_public , agenda_id, reserve_available ) VALUES (  '"+req.body.form_date+"' , '"+req.body.form_start_time+"' , '"+req.body.form_end_time+"' ,'"+req.body.form_appointment_duration+"' , '"+req.body.form_specialty+"' , '"+req.body.form_public+"' , '"+req.body.form_agenda_id+"', '1' ) returning * " ;
 
 console.log('SQL INSERT APPOINTMENT  = '+sql ) ;
 // ***** End Cycle to create appointments ****
-
-var json_response = { result_status : 'noset', result_code: 'noset', token: 'noset', user_id: 'noset', };
 const resultado = client.query(sql, (err, result) => {
-
   if (err) {
      // throw err ;
       console.log(' ERROR QUERY  = '+sql ) ;
       console.log(err ) ;
     }
-  res.status(200).send(JSON.stringify(json_response));
-  console.log('Success Insert = '+JSON.stringify(json_response) ) ;
+  res.status(200).send(JSON.stringify(result));
+  console.log('Success Insert = '+JSON.stringify(result) ) ;
  // client.end()
 })
 
