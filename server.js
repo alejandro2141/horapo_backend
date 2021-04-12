@@ -22,8 +22,6 @@ app.use((req, res, next) => {
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(bodyParser.json());
 
-
-
 //********************************************* 
 // PUBLIC POST TAKE APPOINTMENT
 //********************************************* 
@@ -464,6 +462,45 @@ const resultado = client.query(sql, (err, result) => {
 
 
 //********************************************* 
+// PUBLIC POST GET APPOINTMENT AVAILABLE LIST of AGENDA
+//********************************************* 
+app.route('/get_appointments_from_agenda_day')
+.post(function (req, res) {
+ 
+    console.log('INPUT POST : GET AGENDA APPOINTMENTS : JSON REQUEST : ', req.body );
+ 
+// ****** Connect to postgre
+const { Pool, Client } = require('pg')
+const client = new Client({
+  user: 'conmeddb_user',
+  host: '127.0.0.1',
+  database: 'conmeddb01',
+  password: 'paranoid',
+  port: 5432,
+})
+
+client.connect()
+// ****** Run query to bring appointment
+const sql  = "SELECT * FROM appointments where agenda_id='"+req.body.agenda_id+"' AND date='"+req.body.date+"' ORDER BY start_time " ;
+console.log('SQL GET AGENDA = '+sql ) ;
+const resultado = client.query(sql, (err, result) => {
+
+  if (err) {
+      console.log(' ERROR QUERY = '+sql ) ;
+    }
+      
+    
+
+  console.log('JSON RESPONSE GET AGENDA  APPOINTMENTS  = '+JSON.stringify(result) ) ;
+  res.status(200).send(JSON.stringify(result) );
+  client.end()
+})
+
+})
+
+
+
+//********************************************* 
 // Get APpointment details
 //********************************************* 
 app.route('/get_appointment_details')
@@ -588,18 +625,52 @@ const client = new Client({
 let agenda = null;
 let agenda_name = 'No Name';
 var agenda_result = null;
-
 client.connect() ;
+
 // CICLE TO CREATE APPOINTMENTS
+let startTime=  new Date(req.body.form_date);
+startTime.setHours( Math.trunc( req.body.form_start_time/60   )  );
+startTime.setMinutes(  req.body.form_start_time % 60  );
+console.log("StartTime:"+startTime);
 
-const sql  = "INSERT INTO appointments  (  date ,start_time , end_time ,duration , specialty , is_public , agenda_id, reserve_available ) VALUES (  '"+req.body.form_date+"' , '"+req.body.form_start_time+"' , '"+req.body.form_end_time+"' ,'"+req.body.form_appointment_duration+"' , '"+req.body.form_specialty+"' , '"+req.body.form_public+"' , '"+req.body.form_agenda_id+"', '1' ) returning * " ;
+let endTime =  new Date(req.body.form_date);
+endTime.setHours( Math.trunc( req.body.form_end_time/60   )  );
+endTime.setMinutes(  req.body.form_end_time % 60  );
+console.log("endTime:"+endTime);
 
-console.log('SQL INSERT APPOINTMENT  = '+sql ) ;
-// ***** End Cycle to create appointments ****
-const resultado = client.query(sql, (err, result) => {
+console.log("BLOQUE start ---->:"+startTime);
+console.log("BLOQUE end   ---->:"+endTime);
+
+let time_block = req.body.form_end_time - req.body.form_start_time ;
+let cycles = Math.trunc( time_block / req.body.form_appointment_duration  )  ;
+console.log("TIME BLOCK :"+req.body.form_appointment_duration );
+console.log("cyces     :"+cycles);
+
+var i;
+var SQL_VALUES="INSERT INTO appointments  (  date ,start_time , end_time ,duration , specialty , is_public , agenda_id, reserve_available ) VALUES ";
+
+for (  i = 0 ; i < cycles ; i++ ) 
+{	console.log("cycle---->:"+i);
+	
+	endTime.setTime(startTime.getTime() + ( 1000 * 60 * req.body.form_appointment_duration  ));
+	if (i != 0)
+	{
+		SQL_VALUES +="  , " ;
+	}
+	//Build SQL 
+	//SQL_VALUES +=" ( '"+req.body.form_date+"'  , '"+startTime.getTime+"'  , '"+endTime.getTime+"'  , '"+req.body.form_appointment_duration+"'  , '"+req.body.form_specialty+"' ,  '"+req.body.form_public+"' , '"+req.body.form_agenda_id+"' , 1 ) " ;
+	SQL_VALUES +=" ( '"+req.body.form_date+"'  , '"+startTime.getHours()+":"+startTime.getMinutes()+":00' , '"+endTime.getHours()+":"+endTime.getMinutes()+":00' , '"+req.body.form_appointment_duration+"'  , '"+req.body.form_specialty+"'  ,  '"+req.body.form_public+"' , '"+req.body.form_agenda_id+"' , 'true'  )  " ;
+	console.log("Hora start ---->:"+startTime);
+	console.log("Hora fin   ---->:"+endTime);
+	
+	startTime.setTime(endTime.getTime()); 
+}
+console.log("SQL VALUES:"+SQL_VALUES);
+
+const resultado = client.query(SQL_VALUES, (err, result) => {
   if (err) {
      // throw err ;
-      console.log(' ERROR QUERY  = '+sql ) ;
+      console.log(' ERROR QUERY  = '+SQL_VALUES ) ;
       console.log(err ) ;
     }
   res.status(200).send(JSON.stringify(result));
@@ -654,8 +725,6 @@ console.log('create_center SQL:'+sql ) ;
 	})
 
 })
-
-
 
 
 //********************************************* 
@@ -875,6 +944,88 @@ console.log('get_calendar  SQL:'+sql ) ;
 })
  
 
+//********************************************* 
+// PUBLIC POST get AGENDA
+//********************************************* 
+app.route('/get_appointment')
+.post(function (req, res) {
+    console.log('get_appointment INPUT:', req.body );
+// ****** Connect to postgre
+const { Pool, Client } = require('pg')
+const client = new Client({
+  user: 'conmeddb_user',
+  host: '127.0.0.1',
+  database: 'conmeddb01',
+  password: 'paranoid',
+  port: 5432,
+})
+
+client.connect() ;
+
+const sql = "SELECT * FROM public.appointments where id='"+req.body.appointment_id+"' ";
+
+console.log('get_appointments  SQL:'+sql ) ;
+	client.query(sql, (err, result) => {
+	  if (err) {
+	     // throw err ;
+	      console.log('get_appointments  ERROR  CENTER CREATION QUERY:'+sql ) ;
+	      console.log(err ) ;
+	    }
+	    else
+	    {
+	  res.status(200).send(JSON.stringify(result));
+	  console.log('get_appointments  OUTPUT  :'+JSON.stringify(result) ) ; 
+	   }
+	   
+	  client.end()
+	})
+
+})
+ 
+
+//********************************************* 
+// PUBLIC POST SAVE APPOINTMENT
+//********************************************* 
+app.route('/save_appointment')
+.post(function (req, res) {
+    console.log('save_appointment INPUT : ', req.body );
+// ****** Connect to postgre
+const { Pool, Client } = require('pg')
+const client = new Client({
+  user: 'conmeddb_user',
+  host: '127.0.0.1',
+  database: 'conmeddb01',
+  password: 'paranoid',
+  port: 5432,
+})
+client.connect()
+const query_update = "UPDATE appointments SET reserve_patient_name = '"+req.body.patient_name+"' ,  reserve_patient_doc_id = '"+req.body.patient_doc_id+"' , reserve_patient_email = '"+req.body.patient_email+"' , reserve_patient_phone ='"+req.body.patient_phone+"' , reserve_patient_insurance='"+req.body.patient_insurance+"' , reserve_available='FALSE'    WHERE id = '"+req.body.appointment_id+"' RETURNING * " ;
+
+console.log(query_update);
+const resultado = client.query(query_update, (err, result) => {
+
+     console.log('RESULTADO '+JSON.stringify(resultado))
+     var json_response_ok = { 
+			    result_status : 'inserted', 
+			    result_code: '200',
+			    	  };
+  
+    res.status(200).send(JSON.stringify(json_response_ok));
+    console.log("JSON RESPONSE BODY : "+JSON.stringify(json_response_ok));
+    console.log ("ERROR LOG : "+err);
+
+  client.end()
+
+})
+
+  //console.log(JSON.stringify(JSON.stringify(req))) ;
+  
+  
+  
+ //res.send("saludos terricolas");
+  //res.status(200).json(resultado.rows) ;
+  // res.send(JSON.stringify(result));
+})
 
 
 
