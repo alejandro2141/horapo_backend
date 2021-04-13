@@ -870,6 +870,80 @@ console.log('get_professional_data_by_agenda_id  SQL:'+sql ) ;
 //********************************************* 
 app.route('/get_calendar')
 .post(function (req, res) {
+	console.log('get_calendar INPUT:', req.body );
+ 
+ const json_response = { 
+"version": "Chilean Calendar v1.0",
+"years" : [ 
+        {"year_number" : "2021", months : [
+					{"name" : "Enero", "number" : "1" , days : [ 
+							 {day_number: "1", "special_comment" : "Holyday New Year" } ,
+							 {day_number: "2", "special_comment" : "" } ,
+							 {day_number: "3", "special_comment" : "" } ,
+							 {day_number: "4", "special_comment" : "" } ,
+							 {day_number: "5", "special_comment" : "" } ,
+							 {day_number: "6", "special_comment" : "" } ,
+							 {day_number: "7", "special_comment" : "" } ,
+							 {day_number: "8", "special_comment" : "" } ,
+							 {day_number: "9", "special_comment" : "" } 
+                                                                ] 
+					}, 
+					{"name" : "Febrero", "number" : "1" , days : [ 
+							{day_number: "1", "special_comment" : "Holyday New Year" } ,
+							{day_number: "2", "special_comment" : "Holyday New Year" } ,
+							{day_number: "3", "special_comment" : "Holyday New Year" } 
+                                                                 ] 
+					}, 
+					{"name" : "Marzo", "number" : "1" , days : [ 
+							{day_number: "1", "special_comment" : "Holyday New Year" } ,
+							{day_number: "2", "special_comment" : "Holyday New Year" } ,
+							{day_number: "3", "special_comment" : "Holyday New Year" } 
+                                                                 ] 
+					} 
+                                           ]        
+       
+		},  
+		
+		{"year_number" : "2022", months : [  
+					{"name" : "Enero", "number" : "1" , days : [ 
+							 {day_number: "1", "special_comment" : "Holyday New Year" } ,
+							 {day_number: "2", "special_comment" : "" } ,
+							 {day_number: "3", "special_comment" : "" } ,
+							 {day_number: "4", "special_comment" : "" } ,
+							 {day_number: "5", "special_comment" : "" } ,
+							 {day_number: "6", "special_comment" : "" } ,
+							 {day_number: "7", "special_comment" : "" } ,
+							 {day_number: "8", "special_comment" : "" } ,
+							 {day_number: "9", "special_comment" : "" } ,
+							 
+                                                                ] 
+					}, 
+					{"name" : "Febrero", "number" : "1" , days : [ 
+							{day_number: "1", "special_comment" : "Holyday New Year" } ,
+							{day_number: "2", "special_comment" : "Holyday New Year" } ,
+							{day_number: "3", "special_comment" : "Holyday New Year" } 
+                                                                 ] 
+					}, 
+					{"name" : "Marzo", "number" : "1" , days : [ 
+							{day_number: "1", "special_comment" : "Holyday New Year" } ,
+							{day_number: "2", "special_comment" : "Holyday New Year" } ,
+							{day_number: "3", "special_comment" : "Holyday New Year" } 
+                                                                 ] 
+					} 
+                                           ]        
+       
+		},  
+		
+		]
+  
+} ;
+	res.status(200).send(json_response);
+})
+
+
+/*
+app.route('/get_calendar')
+.post(function (req, res) {
 	
     console.log('get_calendar INPUT:', req.body );
  
@@ -904,6 +978,9 @@ console.log('get_calendar  SQL:'+sql ) ;
 	})
 
 })
+
+
+*/
 
 //********************************************* 
 // PUBLIC POST get AGENDA
