@@ -41,8 +41,6 @@ const client = new Client({
 })
 
 client.connect()
-// ****** Run query to bring appointment
-
 
 const query_update = "UPDATE appointment2 SET reserve_patient_name = '"+req.body.patient_name+"' ,  reserve_patient_doc_id = '"+req.body.patient_doc_id+"' , reserve_patient_email = '"+req.body.patient_email+"' , reserve_patient_phone ='"+req.body.patient_phone+"' , reserve_patient_insurance='"+req.body.patient_insurance+"' , reserve_available='FALSE'    WHERE id = '"+req.body.appointment_id+"' RETURNING * " ;
 
@@ -63,13 +61,6 @@ const resultado = client.query(query_update, (err, result) => {
 
 })
 
-  //console.log(JSON.stringify(JSON.stringify(req))) ;
-  
-  
-  
- //res.send("saludos terricolas");
-  //res.status(200).json(resultado.rows) ;
-  // res.send(JSON.stringify(result));
 })
  
 
@@ -462,7 +453,7 @@ const resultado = client.query(sql, (err, result) => {
 
 
 //********************************************* 
-// PUBLIC POST GET APPOINTMENT AVAILABLE LIST of AGENDA
+// PUBLIC POST GET APPOINTMENT AVAILABLE LIST of AGENDA DAY
 //********************************************* 
 app.route('/get_appointments_from_agenda_day')
 .post(function (req, res) {
@@ -497,6 +488,55 @@ const resultado = client.query(sql, (err, result) => {
 })
 
 })
+
+
+//********************************************* 
+// PUBLIC POST GET APPOINTMENT AVAILABLE LIST of AGENDA DAY
+//********************************************* 
+app.route('/professional_get_appointments_of_day')
+.post(function (req, res) {
+ 
+    console.log('professional_get_appointments_of_day  : INPUT : ', req.body );
+ 
+// ****** Connect to postgre
+const { Pool, Client } = require('pg')
+const client = new Client({
+  user: 'conmeddb_user',
+  host: '127.0.0.1',
+  database: 'conmeddb01',
+  password: 'paranoid',
+  port: 5432,
+})
+
+
+client.connect()
+// ****** Run query to bring appointment
+//"SELECT  j.id as agenda_id ,  j.name as agenda_name, centers.address as center_address, centers.name as center_name   FROM (SELECT * FROM public.agendas where professional_id='"+req.body.professional_id+"') J  LEFT JOIN  centers ON j.center_id = centers.id " ;
+//const sql  = "SELECT * FROM appointments where date='"+req.body.date+"'  AND agenda_id  IN (SELECT id FROM agendas where professional_id='"+req.body.professional_id+"') " ;
+const sql =" SELECT * FROM ( SELECT *  FROM  (SELECT id as  app_id, date as app_date,  start_time as app_start_time, specialty as app_specialty, is_public as app_is_public,   agenda_id as app_agenda_id, reserve_patient_name as app_reserve_patient_name,  reserve_patient_doc_id as app_reserve_patient_doc_id,  reserve_patient_age as app_reserve_patient_age ,   reserve_available as app_reserve_available ,    reserve_patient_email as app_reserve_patient_email ,   reserve_patient_phone as app_reserve_patient_phone , reserve_patient_insurance as app_reserve_patient_insurance ,  end_time as app_end_time ,  duration as app_duration  FROM appointments WHERE agenda_id IN (SELECT id FROM agendas WHERE professional_id='"+req.body.professional_id+"' ) AND date ='"+req.body.date+"' ) J  LEFT JOIN agendas ON J.app_agenda_id = agendas.id ) K  LEFT JOIN centers ON  K.center_id = centers.id " ;
+
+
+console.log('professional_get_appointments_of_day SQL:'+sql ) ;
+const resultado = client.query(sql, (err, result) => {
+
+  if (err) {
+      console.log(' ERROR QUERY = '+sql ) ;
+    }
+      
+    
+
+  console.log('JSON RESPONSE GET AGENDA  APPOINTMENTS  = '+JSON.stringify(result) ) ;
+  res.status(200).send(JSON.stringify(result) );
+  client.end()
+})
+
+
+})
+
+
+
+
+
 
 
 
@@ -876,7 +916,10 @@ app.route('/get_calendar')
 "version": "Chilean Calendar v1.0",
 "years" : [ 
         {"year_number" : "2021", months : [
-					{"name" : "Enero", "number" : "1" , days : [ 
+					{"name" : "abril", "month_number" : "4" , days : [ 
+					
+						    {day_number: "", " " : " " } ,
+						    {day_number: "", " " : " " } ,
 							 {day_number: "1", "special_comment" : "Holyday New Year" } ,
 							 {day_number: "2", "special_comment" : "" } ,
 							 {day_number: "3", "special_comment" : "" } ,
@@ -885,16 +928,29 @@ app.route('/get_calendar')
 							 {day_number: "6", "special_comment" : "" } ,
 							 {day_number: "7", "special_comment" : "" } ,
 							 {day_number: "8", "special_comment" : "" } ,
-							 {day_number: "9", "special_comment" : "" } 
+							 {day_number: "9", "special_comment" : "" } ,
+							{day_number: "10", "special_comment" : "" } ,
+							{day_number: "11", "special_comment" : "" } ,
+							{day_number: "12", "special_comment" : "" } ,
+							{day_number: "13", "special_comment" : "" } ,
+							{day_number: "14", "special_comment" : "" } ,
+							{day_number: "15", "special_comment" : "" } ,
+							{day_number: "16", "special_comment" : "" } ,
+							{day_number: "17", "special_comment" : "" } ,
+							{day_number: "18", "special_comment" : "" } ,
+							{day_number: "19", "special_comment" : "" } ,
+
+
+
                                                                 ] 
 					}, 
-					{"name" : "Febrero", "number" : "1" , days : [ 
+					{"name" : "Junio", "month_number" : "6" , days : [ 
 							{day_number: "1", "special_comment" : "Holyday New Year" } ,
 							{day_number: "2", "special_comment" : "Holyday New Year" } ,
 							{day_number: "3", "special_comment" : "Holyday New Year" } 
                                                                  ] 
 					}, 
-					{"name" : "Marzo", "number" : "1" , days : [ 
+					{"name" : "Julio", "month_number" : "7" , days : [ 
 							{day_number: "1", "special_comment" : "Holyday New Year" } ,
 							{day_number: "2", "special_comment" : "Holyday New Year" } ,
 							{day_number: "3", "special_comment" : "Holyday New Year" } 
@@ -905,7 +961,9 @@ app.route('/get_calendar')
 		},  
 		
 		{"year_number" : "2022", months : [  
-					{"name" : "Enero", "number" : "1" , days : [ 
+					{"name" : "Enero", "month_number" : "1" , days : [ 
+						    {day_number: " ", "special_comment" : "Holyday New Year" } ,
+						    {day_number: " ", "special_comment" : "Holyday New Year" } ,
 							 {day_number: "1", "special_comment" : "Holyday New Year" } ,
 							 {day_number: "2", "special_comment" : "" } ,
 							 {day_number: "3", "special_comment" : "" } ,
@@ -918,13 +976,13 @@ app.route('/get_calendar')
 							 
                                                                 ] 
 					}, 
-					{"name" : "Febrero", "number" : "1" , days : [ 
+					{"name" : "Febrero", "month_number" : "2" , days : [ 
 							{day_number: "1", "special_comment" : "Holyday New Year" } ,
 							{day_number: "2", "special_comment" : "Holyday New Year" } ,
 							{day_number: "3", "special_comment" : "Holyday New Year" } 
                                                                  ] 
 					}, 
-					{"name" : "Marzo", "number" : "1" , days : [ 
+					{"name" : "Marzo", "month_number" : "3" , days : [ 
 							{day_number: "1", "special_comment" : "Holyday New Year" } ,
 							{day_number: "2", "special_comment" : "Holyday New Year" } ,
 							{day_number: "3", "special_comment" : "Holyday New Year" } 
@@ -1022,7 +1080,7 @@ console.log('get_calendar  SQL:'+sql ) ;
  
 
 //********************************************* 
-// PUBLIC POST get AGENDA
+// PUBLIC POST get Appointments
 //********************************************* 
 app.route('/get_appointment')
 .post(function (req, res) {
