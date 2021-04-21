@@ -22,6 +22,367 @@ app.use((req, res, next) => {
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(bodyParser.json());
 
+
+
+
+//*********************************************************
+ //*************** LOGIN PROFESSIONAL ***************************
+ //************************************************************
+ 
+app.route('/professional_login')
+.post(function (req, res) {
+
+console.log('professionalLogin INPUT:', req.body );
+ 
+// ****** Connect to postgre
+const { Pool, Client } = require('pg')
+const client = new Client({
+  user: 'conmeddb_user',
+  host: '127.0.0.1',
+  database: 'conmeddb02',
+  password: 'paranoid',
+  port: 5432,
+})
+
+client.connect()
+// ****** Run query to bring appointment
+//const sql  = "SELECT * FROM professional WHERE email='"+req.body.form_email+"'  AND pass='"+req.body.form_pass+"'";
+
+const sql  = "SELECT * FROM (SELECT * FROM (SELECT * FROM professional WHERE email = '"+req.body.form_email+"')P LEFT JOIN account ON P.id = account.user_id) J WHERE j.pass = '"+req.body.form_pass+"' " ;
+
+console.log('professionalLogin SQL:'+sql ) ;
+var json_response = {  professional_id: null , result_code : 33 };
+const resultado = client.query(sql, (err, result) => {
+
+  if (err) {
+      throw error ;
+  console.log('professionalLogin ERROR QUERY  = '+sql ) ;
+    }
+    
+  if(result.rowCount == 1 )
+  {
+  console.log ("professionalLogin LOGIN MATCH!!");
+  json_response = { professional_id: result.rows[0].id , 
+					result_code: 0 ,
+					professional_name: result.rows[0].name ,
+					token_session : 'aj32'
+					};
+  }
+  else
+  {
+  console.log ("professionalLogin LOGIN NO MATCH!!");
+  }
+  
+  res.status(200).send(JSON.stringify(json_response));
+  console.log('professionalLogin OUTPUT:'+JSON.stringify(json_response) ) ;
+  client.end()
+})
+
+
+})
+ 
+//********************************************* 
+// PUBLIC POST PROFESSIONAL GET AGENDA
+//********************************************* 
+app.route('/professional_get_agendas')
+.post(function (req, res) {
+ 
+    console.log('professional_get_agendas INPUT :', req.body );
+ 
+// ****** Connect to postgre
+const { Pool, Client } = require('pg')
+const client = new Client({
+  user: 'conmeddb_user',
+  host: '127.0.0.1',
+  database: 'conmeddb02',
+  password: 'paranoid',
+  port: 5432,
+})
+
+client.connect()
+
+// ****** Run query to bring appointment
+const sql  = "SELECT  j.id as agenda_id ,  j.name as agenda_name, centers.address as center_address, centers.name as center_name   FROM (SELECT * FROM public.agendas where professional_id='"+req.body.professional_id+"') J  LEFT JOIN  centers ON j.center_id = centers.id " ;
+console.log('professional_get_agendas : SQL GET AGENDA = '+sql ) ;
+const resultado = client.query(sql, (err, result) => {
+
+  if (err) {
+      console.log('professional_get_agendas ERR:'+err ) ;
+    }
+
+  console.log('professional_get_agendas : JSON RESPONSE GET AGENDA  = '+JSON.stringify(result) ) ;
+  res.status(200).send(JSON.stringify(result) );
+  client.end()
+})
+
+})
+
+//********************************************* 
+// PUBLIC POST create_center
+//********************************************* 
+app.route('/professional_create_center')
+.post(function (req, res) {
+    console.log('professional_create_center INPUT:', req.body );
+// ****** Connect to postgre
+const { Pool, Client } = require('pg')
+const client = new Client({
+  user: 'conmeddb_user',
+  host: '127.0.0.1',
+  database: 'conmeddb02',
+  password: 'paranoid',
+  port: 5432,
+})
+client.connect() ;
+// GET PROFESSIONAL DATA
+var sql  = null;
+var json_response = { result_status : 1 };
+//var res = null; 	
+// CHECK INPUT PARAMETERS TO IDENTIFY IF  REQUEST IS TO CREATE CENTER
+// CREATE DIRECTLY AGENDA 
+//const sql  = "INSERT INTO centers ( name ,  address , phone1, phone2 ) VALUES (  '"+req.body.center_name+"', '"+req.body.center_address+"' , '"+req.body.center_phone1+"', '"+req.body.center_phone2+"' ) RETURNING id " ;
+sql = " WITH ids AS (  INSERT INTO center ( name ,  address , phone1, phone2 ) VALUES (  '"+req.body.center_name+"' , '"+req.body.center_address+"', '"+req.body.center_phone1+"' ,'"+req.body.center_phone2+"' ) RETURNING id as center_id ) INSERT INTO center_professional (professional_id, center_id) VALUES ('"+req.body.professional_id+"', (SELECT center_id from ids) ) RETURNING * ;  ";
+
+console.log('create_center SQL:'+sql ) ;
+	client.query(sql, (err, result) => {
+	  if (err) {
+	     // throw err ;
+	      console.log('professional_create_center ERROR  CENTER CREATION QUERY:'+sql ) ;
+	      console.log(err ) ;
+	    }
+	    else
+	    {
+	 // json_response = { result_status : 0  , center_id : result.data.center_id  };
+	  res.status(200).send(JSON.stringify(result));
+	  console.log('professional_create_center  SUCCESS CENTER INSERT ' ) ; 
+    console.log('professional_create_center  OUTPUT  :'+JSON.stringify(result) ) ; 
+	   }
+	   
+	  client.end()
+	})
+
+})
+
+//********************************************* 
+// PROFESSIONAL GET CENTERS
+//********************************************* 
+app.route('/professional_get_centers')
+.post(function (req, res) {
+ 
+    console.log('professional_get_centers :', req.body );
+ 
+// ****** Connect to postgre
+const { Pool, Client } = require('pg')
+const client = new Client({
+  user: 'conmeddb_user',
+  host: '127.0.0.1',
+  database: 'conmeddb02',
+  password: 'paranoid',
+  port: 5432,
+})
+
+client.connect()
+// ****** Run query to bring appointment
+const sql  = "SELECT * FROM center WHERE id IN  (SELECT center_id FROM center_professional where professional_id='"+req.body.professional_id+"' ) " ;
+console.log('professional_get_centers: SQL GET AGENDA = '+sql ) ;
+const resultado = client.query(sql, (err, result) => {
+
+  if (err) {
+      console.log('professional_get_centers ERR:'+err ) ;
+    }
+
+  console.log('professional_get_centers : '+JSON.stringify(result) ) ;
+  res.status(200).send(JSON.stringify(result) );
+  client.end()
+})
+
+})
+
+//********************************************* 
+// PROFESSIONAL GET ASSISTANTS
+//********************************************* 
+app.route('/professional_get_assistants')
+.post(function (req, res) {
+ 
+    console.log('professional_get_assistants:', req.body );
+ 
+// ****** Connect to postgre
+const { Pool, Client } = require('pg')
+const client = new Client({
+  user: 'conmeddb_user',
+  host: '127.0.0.1',
+  database: 'conmeddb02',
+  password: 'paranoid',
+  port: 5432,
+})
+
+client.connect()
+// ****** Run query to bring appointment
+const sql  = "SELECT * FROM assistant WHERE id IN  (SELECT assistant_id FROM assistant_professional where professional_id='"+req.body.professional_id+"' ) " ;
+console.log('professional_get_assistants: SQL GET AGENDA = '+sql ) ;
+const resultado = client.query(sql, (err, result) => {
+
+  if (err) {
+      console.log('professional_get_assistants ERR:'+err ) ;
+    }
+
+  console.log('professional_get_assistants : '+JSON.stringify(result) ) ;
+  res.status(200).send(JSON.stringify(result) );
+  client.end()
+})
+
+})
+
+//********************************************* 
+// GET ASSISTANTS
+//********************************************* 
+app.route('/get_assistants')
+.post(function (req, res) {
+ 
+    console.log('get_assistants:', req.body );
+ 
+// ****** Connect to postgre
+const { Pool, Client } = require('pg')
+const client = new Client({
+  user: 'conmeddb_user',
+  host: '127.0.0.1',
+  database: 'conmeddb02',
+  password: 'paranoid',
+  port: 5432,
+})
+
+client.connect()
+// ****** Run query to bring appointment
+const sql  = "SELECT * FROM assistant" ;
+console.log('professional_get_assistants: SQL GET AGENDA = '+sql ) ;
+const resultado = client.query(sql, (err, result) => {
+
+  if (err) {
+      console.log('professional_get_assistants ERR:'+err ) ;
+    }
+
+  console.log('professional_get_assistants : '+JSON.stringify(result) ) ;
+  res.status(200).send(JSON.stringify(result) );
+  client.end()
+})
+
+})
+
+//********************************************* 
+// PUBLIC POST professional_create_agenda
+//********************************************* 
+app.route('/professional_create_agenda')
+.post(function (req, res) {
+
+    console.log('professional_create_agenda INPUT:', req.body );
+ 
+// ****** Connect to postgre
+const { Pool, Client } = require('pg')
+const client = new Client({
+  user: 'conmeddb_user',
+  host: '127.0.0.1',
+  database: 'conmeddb02',
+  password: 'paranoid',
+  port: 5432,
+})
+
+client.connect() ;
+// GET PROFESSIONAL DATA
+
+var sql  = null;
+var json_response = { result_status : 1 };
+//var res = null; 	
+// CHECK INPUT PARAMETERS TO IDENTIFY IF  REQUEST IS TO CREATE CENTER
+// CREATE DIRECTLY AGENDA 
+
+console.log("CREACION DIRECTA AGENDA");
+sql  = "INSERT INTO agenda ( professional_id ,   center_id, name ) VALUES (  '"+req.body.professional_id+"', '"+req.body.center_id+"' , '"+req.body.agenda_name+"' ) RETURNING id " ;
+
+	client.query(sql, (err, result) => {
+	  if (err) {
+	     // throw err ;
+	      console.log('professional_create_agenda ERROR QUERY:'+sql ) ;
+	      console.log(err ) ;
+	    }
+	    else
+	    {
+	  json_response = { result_status : 0 , id: result.rows[0].id  };
+	  res.status(200).send(JSON.stringify(json_response));
+	  console.log('professional_create_agenda  SUCCESS INSERT :'+JSON.stringify(json_response) ) ; 
+	   }
+	   
+	  client.end()
+	})
+
+})
+ 
+//********************************************* 
+// PUBLIC POST professional_create_agenda
+//********************************************* 
+app.route('/professional_get_agendas')
+.post(function (req, res) {
+    console.log('professional_get_agenda INPUT:', req.body ); 
+// ****** Connect to postgre
+const { Pool, Client } = require('pg')
+const client = new Client({
+  user: 'conmeddb_user',
+  host: '127.0.0.1',
+  database: 'conmeddb02',
+  password: 'paranoid',
+  port: 5432,
+})
+
+client.connect() ;
+// GET PROFESSIONAL DATA
+
+var sql  = null;
+var json_response = { result_status : 1 };
+
+console.log("CREACION DIRECTA AGENDA");
+sql  = "INSERT INTO agenda ( professional_id ,   center_id, name ) VALUES (  '"+req.body.professional_id+"', '"+req.body.center_id+"' , '"+req.body.agenda_name+"' ) RETURNING id " ;
+
+	client.query(sql, (err, result) => {
+	  if (err) {
+	     // throw err ;
+	      console.log('professional_create_agenda ERROR QUERY:'+sql ) ;
+	      console.log(err ) ;
+	    }
+	    else
+	    {
+	  json_response = { result_status : 0 , id: result.rows[0].id  };
+	  res.status(200).send(JSON.stringify(json_response));
+	  console.log('professional_create_agenda  SUCCESS INSERT :'+JSON.stringify(json_response) ) ; 
+	   }
+	   
+	  client.end()
+	})
+
+})
+ 
+
+
+ /*
+  xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
+  xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
+  xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
+  xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
+  xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
+  xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
+  xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
+ */
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+
 //********************************************* 
 // PUBLIC POST TAKE APPOINTMENT
 //********************************************* 
@@ -113,56 +474,7 @@ const resultado = client.query(sql, (err, result) => {
 
 })
  
- //*********************************************************
- //*************** LOGIN PROFESSIONAL ***************************
- //************************************************************
- 
-app.route('/professionalLogin')
-.post(function (req, res) {
-
-console.log('professionalLogin INPUT:', req.body );
- 
-// ****** Connect to postgre
-const { Pool, Client } = require('pg')
-const client = new Client({
-  user: 'conmeddb_user',
-  host: '127.0.0.1',
-  database: 'conmeddb01',
-  password: 'paranoid',
-  port: 5432,
-})
-
-client.connect()
-// ****** Run query to bring appointment
-const sql  = "SELECT * FROM professionals WHERE email='"+req.body.form_email+"'  AND pass='"+req.body.form_pass+"'";
-console.log('professionalLogin SQL:'+sql ) ;
-var json_response = {  professional_id: null , result_code : 33 };
-const resultado = client.query(sql, (err, result) => {
-
-  if (err) {
-      throw error ;
-  console.log('professionalLogin ERROR QUERY  = '+sql ) ;
-    }
-    
-  if(result.rowCount == 1 )
-  {
-  console.log ("professionalLogin LOGIN MATCH!!");
-  json_response = { professional_id: +result.rows[0].id , result_code: 0  };
-  }
-  else
-  {
-  console.log ("professionalLogin LOGIN NO MATCH!!");
-  }
-  
-  res.status(200).send(JSON.stringify(json_response));
-  console.log('professionalLogin OUTPUT:'+JSON.stringify(json_response) ) ;
-  client.end()
-})
-
-
-})
- 
-//********************************************* 
+ //********************************************* 
 // PUBLIC POST ASSISTANT GET AGENDA
 //********************************************* 
 app.route('/assistant_get_agendas')
@@ -191,41 +503,6 @@ const resultado = client.query(sql, (err, result) => {
     }
 
   console.log('JSON RESPONSE GET AGENDA  = '+result ) ;
-  res.status(200).send(JSON.stringify(result) );
-  client.end()
-})
-
-})
-
-//********************************************* 
-// PUBLIC POST PROFESSIONAL GET AGENDA
-//********************************************* 
-app.route('/professional_get_agendas')
-.post(function (req, res) {
- 
-    console.log('professional_get_agendas :', req.body );
- 
-// ****** Connect to postgre
-const { Pool, Client } = require('pg')
-const client = new Client({
-  user: 'conmeddb_user',
-  host: '127.0.0.1',
-  database: 'conmeddb01',
-  password: 'paranoid',
-  port: 5432,
-})
-
-client.connect()
-// ****** Run query to bring appointment
-const sql  = "SELECT  j.id as agenda_id ,  j.name as agenda_name, centers.address as center_address, centers.name as center_name   FROM (SELECT * FROM public.agendas where professional_id='"+req.body.professional_id+"') J  LEFT JOIN  centers ON j.center_id = centers.id " ;
-console.log('professional_get_agendas : SQL GET AGENDA = '+sql ) ;
-const resultado = client.query(sql, (err, result) => {
-
-  if (err) {
-      console.log('professional_get_agendas ERR:'+err ) ;
-    }
-
-  console.log('professional_get_agendas : JSON RESPONSE GET AGENDA  = '+JSON.stringify(result) ) ;
   res.status(200).send(JSON.stringify(result) );
   client.end()
 })
@@ -269,14 +546,14 @@ const resultado = client.query(sql, (err, result) => {
 })
 
 
-
 //********************************************* 
-// PROFESSIONAL GET CENTERS
+// PUBLIC POST professional_create_agenda
 //********************************************* 
-app.route('/professional_get_centers')
+/*
+app.route('/professional_create_agenda')
 .post(function (req, res) {
- 
-    console.log('professional_get_centers :', req.body );
+
+    console.log('professional_create_agenda INPUT:', req.body );
  
 // ****** Connect to postgre
 const { Pool, Client } = require('pg')
@@ -288,27 +565,42 @@ const client = new Client({
   port: 5432,
 })
 
-client.connect()
-// ****** Run query to bring appointment
-const sql  = "SELECT * FROM centers WHERE id IN  (SELECT center_id FROM center_professional where professional_id='"+req.body.professional_id+"' ) " ;
-console.log('professional_get_centers: SQL GET AGENDA = '+sql ) ;
-const resultado = client.query(sql, (err, result) => {
+client.connect() ;
+// GET PROFESSIONAL DATA
 
-  if (err) {
-      console.log('professional_get_centers ERR:'+err ) ;
-    }
+var sql  = null;
+var json_response = { result_status : 1 };
+//var res = null; 	
+// CHECK INPUT PARAMETERS TO IDENTIFY IF  REQUEST IS TO CREATE CENTER
+// CREATE DIRECTLY AGENDA 
 
-  console.log('professional_get_centers : '+JSON.stringify(result) ) ;
-  res.status(200).send(JSON.stringify(result) );
-  client.end()
+console.log("CREACION DIRECTA AGENDA");
+sql  = "INSERT INTO agendas ( professional_id ,   center_id, name ) VALUES (  '"+req.body.professional_id+"', '"+req.body.center_id+"' , '"+req.body.agenda_name+"' ) RETURNING id " ;
+
+	client.query(sql, (err, result) => {
+	  if (err) {
+	     // throw err ;
+	      console.log('professional_create_agenda ERROR QUERY:'+sql ) ;
+	      console.log(err ) ;
+	    }
+	    else
+	    {
+	  json_response = { result_status : 0 , id: result.rows[0].id  };
+	  res.status(200).send(JSON.stringify(json_response));
+	  console.log('professional_create_agenda  SUCCESS INSERT :'+JSON.stringify(json_response) ) ; 
+	   }
+	   
+	  client.end()
+	})
+
 })
-
-})
-
+ 
+*/
 
 //********************************************* 
 // PROFESSIONAL GET ASSISTANTS
 //********************************************* 
+/*
 app.route('/professional_get_assistants')
 .post(function (req, res) {
  
@@ -341,7 +633,7 @@ const resultado = client.query(sql, (err, result) => {
 
 })
 
-
+*/
 //********************************************* 
 // PUBLIC POST ASSISTANT GET AGENDA
 //********************************************* 
@@ -770,6 +1062,7 @@ console.log('create_center SQL:'+sql ) ;
 //********************************************* 
 // PUBLIC POST professional_create_agenda
 //********************************************* 
+/*
 app.route('/professional_create_agenda')
 .post(function (req, res) {
 
@@ -815,7 +1108,7 @@ sql  = "INSERT INTO agendas ( professional_id ,   center_id, name ) VALUES (  '"
 
 })
  
-
+*/
 //********************************************* 
 // PUBLIC POST create_center
 //********************************************* 
