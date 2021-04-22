@@ -86,8 +86,7 @@ const resultado = client.query(sql, (err, result) => {
 //********************************************* 
 app.route('/professional_get_agendas')
 .post(function (req, res) {
- 
-    console.log('professional_get_agendas INPUT :', req.body );
+     console.log('professional_get_agendas INPUT :', req.body );
  
 // ****** Connect to postgre
 const { Pool, Client } = require('pg')
@@ -100,9 +99,11 @@ const client = new Client({
 })
 
 client.connect()
-
 // ****** Run query to bring appointment
-const sql  = "SELECT  j.id as agenda_id ,  j.name as agenda_name, centers.address as center_address, centers.name as center_name   FROM (SELECT * FROM public.agendas where professional_id='"+req.body.professional_id+"') J  LEFT JOIN  centers ON j.center_id = centers.id " ;
+//const sql  = "SELECT  j.id as agenda_id ,  j.name as agenda_name, center.address as center_address, centers.name as center_name   FROM (SELECT * FROM public.agendas where professional_id='"+req.body.professional_id+"') J  LEFT JOIN  centers ON j.center_id = centers.id " ;
+//const sql  = "SELECT  j.id as agenda_id ,  j.name as agenda_name, center.address as center_address, center.name as center_name   FROM (SELECT * FROM public.agenda where professional_id='"+req.body.professional_id+"' ) J  LEFT JOIN  center ON j.center_id = center.id " ;
+const sql ="SELECT *, name as assitant_name  FROM  (SELECT * FROM (SELECT   j.id as agenda_id ,  j.name as agenda_name, center.address as center_address, center.name as center_name  FROM  (SELECT * FROM public.agenda where professional_id='"+req.body.professional_id+"' )J  LEFT JOIN  center ON j.center_id = center.id) K LEFT JOIN agenda_assistant ON K.agenda_id = agenda_assistant.agenda_id )L  LEFT JOIN assistant ON  L.assistant_id = assistant_id ";
+
 console.log('professional_get_agendas : SQL GET AGENDA = '+sql ) ;
 const resultado = client.query(sql, (err, result) => {
 
@@ -272,9 +273,7 @@ const resultado = client.query(sql, (err, result) => {
 //********************************************* 
 app.route('/professional_create_agenda')
 .post(function (req, res) {
-
-    console.log('professional_create_agenda INPUT:', req.body );
- 
+    console.log('professional_create_agenda INPUT:', req.body ); 
 // ****** Connect to postgre
 const { Pool, Client } = require('pg')
 const client = new Client({
@@ -284,18 +283,15 @@ const client = new Client({
   password: 'paranoid',
   port: 5432,
 })
-
 client.connect() ;
 // GET PROFESSIONAL DATA
 
-var sql  = null;
+//var sql  = null;
 var json_response = { result_status : 1 };
-//var res = null; 	
-// CHECK INPUT PARAMETERS TO IDENTIFY IF  REQUEST IS TO CREATE CENTER
-// CREATE DIRECTLY AGENDA 
 
 console.log("CREACION DIRECTA AGENDA");
-sql  = "INSERT INTO agenda ( professional_id ,   center_id, name ) VALUES (  '"+req.body.professional_id+"', '"+req.body.center_id+"' , '"+req.body.agenda_name+"' ) RETURNING id " ;
+//sql  = "INSERT INTO agenda ( professional_id ,   center_id, name ) VALUES (  '"+req.body.professional_id+"', '"+req.body.center_id+"' , '"+req.body.agenda_name+"' ) RETURNING id " ;
+var sql  = "WITH age AS ( INSERT INTO agenda ( professional_id ,   center_id, name ) VALUES (  '"+req.body.professional_id+"' , '"+req.body.center_id+"' , '"+req.body.agenda_name+"' ) RETURNING id  ) INSERT INTO agenda_assistant  (assistant_id, agenda_id) VALUES ('"+req.body.assistant_id+"', (select id from age)  )  ";
 
 	client.query(sql, (err, result) => {
 	  if (err) {
@@ -305,7 +301,7 @@ sql  = "INSERT INTO agenda ( professional_id ,   center_id, name ) VALUES (  '"+
 	    }
 	    else
 	    {
-	  json_response = { result_status : 0 , id: result.rows[0].id  };
+	  json_response = { result_status : 0   };
 	  res.status(200).send(JSON.stringify(json_response));
 	  console.log('professional_create_agenda  SUCCESS INSERT :'+JSON.stringify(json_response) ) ; 
 	   }
@@ -314,10 +310,47 @@ sql  = "INSERT INTO agenda ( professional_id ,   center_id, name ) VALUES (  '"+
 	})
 
 })
+
+
+//********************************************* 
+// PUBLIC POST PROFESSIONAL del AGENDA
+//********************************************* 
+app.route('/delete_agenda')
+.post(function (req, res) {
+     console.log('delete_agendas :', req.body );
+ // ****** Connect to postgre
+const { Pool, Client } = require('pg')
+const client = new Client({
+  user: 'conmeddb_user',
+  host: '127.0.0.1',
+  database: 'conmeddb02',
+  password: 'paranoid',
+  port: 5432,
+})
+
+client.connect()
+// ****** Run query to bring appointment
+const sql  = "DELETE FROM agenda WHERE id='"+req.body.agenda_id+"'  " ;
+console.log('delete_agendas : SQL GET AGENDA = '+sql ) ;
+const resultado = client.query(sql, (err, result) => {
+
+  if (err) {
+      console.log('professional_delete_agendas ERR:'+err ) ;
+    }
+
+  console.log('professional_delete_agendas : JSON RESPONSE DELTE AGENDA  = '+result ) ;
+  res.status(200).send(JSON.stringify(result) );
+  client.end()
+})
+
+})
+
+
  
 //********************************************* 
 // PUBLIC POST professional_create_agenda
 //********************************************* 
+/*
 app.route('/professional_get_agendas')
 .post(function (req, res) {
     console.log('professional_get_agenda INPUT:', req.body ); 
@@ -358,7 +391,7 @@ sql  = "INSERT INTO agenda ( professional_id ,   center_id, name ) VALUES (  '"+
 
 })
  
-
+*/
 
  /*
   xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
@@ -513,6 +546,7 @@ const resultado = client.query(sql, (err, result) => {
 //********************************************* 
 // PUBLIC POST PROFESSIONAL del AGENDA
 //********************************************* 
+/*
 app.route('/professional_delete_agenda')
 .post(function (req, res) {
  
@@ -545,7 +579,7 @@ const resultado = client.query(sql, (err, result) => {
 
 })
 
-
+*/
 //********************************************* 
 // PUBLIC POST professional_create_agenda
 //********************************************* 
