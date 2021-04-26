@@ -29,6 +29,48 @@ app.use(bodyParser.json());
  //*************** LOGIN PROFESSIONAL ***************************
  //************************************************************
  
+//********************************************* 
+// PUBLIC POST GET APPOINTMENT AVAILABLE LIST of AGENDA DAY
+//********************************************* 
+app.route('/professional_get_appointments_of_day')
+.post(function (req, res) {
+ 
+    console.log('professional_get_appointments_of_day  : INPUT : ', req.body );
+ 
+// ****** Connect to postgre
+const { Pool, Client } = require('pg')
+const client = new Client({
+  user: 'conmeddb_user',
+  host: '127.0.0.1',
+  database: 'conmeddb02',
+  password: 'paranoid',
+  port: 5432,
+})
+
+
+client.connect()
+// ****** Run query to bring appointment
+//"SELECT  j.id as agenda_id ,  j.name as agenda_name, centers.address as center_address, centers.name as center_name   FROM (SELECT * FROM public.agendas where professional_id='"+req.body.professional_id+"') J  LEFT JOIN  centers ON j.center_id = centers.id " ;
+//const sql  = "SELECT * FROM appointments where date='"+req.body.date+"'  AND agenda_id  IN (SELECT id FROM agendas where professional_id='"+req.body.professional_id+"') " ;
+const sql =" SELECT * FROM ( SELECT *  FROM  (SELECT id as  app_id, date as app_date,  start_time as app_start_time, specialty as app_specialty, is_public as app_is_public,   agenda_id as app_agenda_id, reserve_patient_name as app_reserve_patient_name,  reserve_patient_doc_id as app_reserve_patient_doc_id,  reserve_patient_age as app_reserve_patient_age ,   reserve_available as app_reserve_available ,    reserve_patient_email as app_reserve_patient_email ,   reserve_patient_phone as app_reserve_patient_phone , reserve_patient_insurance as app_reserve_patient_insurance ,  end_time as app_end_time ,  duration as app_duration, blocked as app_blocked , reserve_status as app_reserve_status  FROM appointments WHERE agenda_id IN (SELECT id FROM agendas WHERE professional_id='"+req.body.professional_id+"' ) AND date ='"+req.body.date+"' ) J  LEFT JOIN agendas ON J.app_agenda_id = agendas.id ) K  LEFT JOIN centers ON  K.center_id = centers.id " ;
+
+console.log('professional_get_appointments_of_day SQL:'+sql ) ;
+const resultado = client.query(sql, (err, result) => {
+
+  if (err) {
+      console.log(' ERROR QUERY = '+sql ) ;
+    }
+      
+    
+
+  console.log('JSON RESPONSE GET AGENDA  APPOINTMENTS  = '+JSON.stringify(result) ) ;
+  res.status(200).send(JSON.stringify(result) );
+  client.end()
+})
+
+
+})
+ 
 app.route('/professional_login')
 .post(function (req, res) {
 
@@ -184,7 +226,7 @@ const client = new Client({
 client.connect()
 // ****** Run query to bring appointment
 const sql  = "SELECT * FROM center WHERE id IN  (SELECT center_id FROM center_professional where professional_id='"+req.body.professional_id+"' ) " ;
-console.log('professional_get_centers: SQL GET AGENDA = '+sql ) ;
+console.log('professional_get_centers: SQL :'+sql ) ;
 const resultado = client.query(sql, (err, result) => {
 
   if (err) {
@@ -315,9 +357,9 @@ var sql  = "WITH age AS ( INSERT INTO agenda ( professional_id ,   center_id, na
 //********************************************* 
 // PUBLIC POST PROFESSIONAL del AGENDA
 //********************************************* 
-app.route('/delete_agenda')
+app.route('/delete_center')
 .post(function (req, res) {
-     console.log('delete_agendas :', req.body );
+     console.log('delete_center :', req.body );
  // ****** Connect to postgre
 const { Pool, Client } = require('pg')
 const client = new Client({
@@ -330,15 +372,15 @@ const client = new Client({
 
 client.connect()
 // ****** Run query to bring appointment
-const sql  = "DELETE FROM agenda WHERE id='"+req.body.agenda_id+"'  " ;
-console.log('delete_agendas : SQL GET AGENDA = '+sql ) ;
+const sql  = "DELETE FROM center WHERE id='"+req.body.center_id+"'  " ;
+console.log('delete_center : SQL :'+sql ) ;
 const resultado = client.query(sql, (err, result) => {
 
   if (err) {
-      console.log('professional_delete_agendas ERR:'+err ) ;
+      console.log('delete_center ERR:'+err ) ;
     }
 
-  console.log('professional_delete_agendas : JSON RESPONSE DELTE AGENDA  = '+result ) ;
+  console.log('delete_center : JSON RESPONSE DELTE AGENDA  = '+result ) ;
   res.status(200).send(JSON.stringify(result) );
   client.end()
 })
