@@ -126,7 +126,7 @@ const client = new Client({
 client.connect()
 // ****** Run query to bring appointment
 //const sql ="SELECT * FROM ( SELECT address as center_address, name as center_name, app_id,date, start_time, end_time, duration, specialty, center_id, available_public_search, confirmation_status, blocked, professional_id   FROM   (SELECT  id as app_id, date , start_time, end_time, duration, specialty, center_id, available_public_search, confirmation_status, blocked, professional_id   FROM appointment WHERE professional_id='"+req.body.professional_id+"' and Date >= '"+req.body.date+"' )   J LEFT JOIN center ON center.id=j.center_id  )K LEFT JOIN specialty ON specialty.id=K.specialty   " ;
-const sql ="SELECT * FROM ( SELECT  app_status, patient_name, patient_email, patient_phone1, patient_phone2, patient_insurance ,  patient_doc_id , name as specialty_name, center_address, center_name, app_id,date, start_time, end_time, duration, specialty, center_id, available_public_search, confirmation_status, app_blocked, professional_id, app_available   FROM (  SELECT app_status, patient_name, patient_email, patient_phone1, patient_phone2, patient_insurance ,  patient_doc_id , address as center_address, name as center_name, app_id,date, start_time, end_time, duration, specialty, center_id, available_public_search, confirmation_status, app_blocked, professional_id ,app_available  FROM  (SELECT app_status, patient_name, patient_email, patient_phone1, patient_phone2, patient_insurance ,  patient_doc_id ,id as app_id, date , start_time, end_time, duration, specialty, center_id, available_public_search, confirmation_status, app_blocked, professional_id , app_available  FROM appointment WHERE professional_id='"+req.body.professional_id+"' and Date = '"+req.body.date+"' ORDER BY start_time DESC ) J LEFT JOIN center ON center.id=j.center_id  )K LEFT JOIN specialty ON specialty.id=K.specialty ) L LEFT JOIN professional ON professional.id = L.professional_id " ;
+const sql ="SELECT * FROM ( SELECT  app_status, patient_name, patient_email, patient_phone1, patient_phone2, patient_insurance ,  patient_doc_id , name as specialty_name, center_address, center_name, app_id,date, start_time, end_time, duration, specialty, center_id, available_public_search, confirmation_status, app_blocked, professional_id, app_available   FROM (  SELECT app_status, patient_name, patient_email, patient_phone1, patient_phone2, patient_insurance ,  patient_doc_id , address as center_address, name as center_name, app_id,date, start_time, end_time, duration, specialty, center_id, available_public_search, confirmation_status, app_blocked, professional_id ,app_available  FROM  (SELECT app_status, patient_name, patient_email, patient_phone1, patient_phone2, patient_insurance ,  patient_doc_id ,id as app_id, date , start_time, end_time, duration, specialty, center_id, available_public_search, confirmation_status, app_blocked, professional_id , app_available  FROM appointment WHERE professional_id='"+req.body.professional_id+"' and Date = '"+req.body.date+"' ORDER BY start_time ASC ) J LEFT JOIN center ON center.id=j.center_id  )K LEFT JOIN specialty ON specialty.id=K.specialty ) L LEFT JOIN professional ON professional.id = L.professional_id " ;
 
 console.log('professional_get_appointments_day SQL:'+sql ) ;
 const resultado = client.query(sql, (err, result) => {
@@ -505,10 +505,6 @@ const resultado = client.query(sql, (err, result) => {
 
 })
 
-
-
-
-
 //********************************************* 
 // PUBLIC POST PROFESSIONAL del AGENDA
 //********************************************* 
@@ -541,7 +537,6 @@ const resultado = client.query(sql, (err, result) => {
 })
 
 })
-
 
 //********************************************* 
 // GET Specialties
@@ -578,7 +573,6 @@ const resultado = client.query(sql, (err, result) => {
 
 })
 
- 
  //********************************************* 
 // Profesional CREATE Appointments
 //********************************************* 
@@ -659,7 +653,198 @@ const resultado = client.query(SQL_VALUES, (err, result) => {
 
 
 })
+  
+ //********************************************* 
+// PUBLIC POST get Professioal GET CALENDAR
+//********************************************* 
+app.route('/get_calendar')
+.post(function (req, res) {
+	console.log('get_calendar INPUT:', req.body );
  
+ const json_response = { 
+"version": "Chilean Calendar v1.0",
+"years" : [ 
+        {"year_number" : "2021", months : [
+					{"name" : "Abril", "month_number" : "4" , days : [ 
+						    {day_number: "", " " : " " } ,
+						    {day_number: "", " " : " " } ,
+							{day_number: "1", "special_comment" : "Holyday New Year" } ,
+							{day_number: "2", "special_comment" : "" } ,
+							{day_number: "3", "special_comment" : "" } ,
+							{day_number: "4", "special_comment" : "" } ,
+							{day_number: "5", "special_comment" : "" } ,
+							{day_number: "6", "special_comment" : "" } ,
+							{day_number: "7", "special_comment" : "" } ,
+							{day_number: "8", "special_comment" : "" } ,
+							{day_number: "9", "special_comment" : "" } ,
+							{day_number: "10", "special_comment" : "" } ,
+							{day_number: "11", "special_comment" : "" } ,
+							{day_number: "12", "special_comment" : "" } ,
+							{day_number: "13", "special_comment" : "" } ,
+							{day_number: "14", "special_comment" : "" } ,
+							{day_number: "15", "special_comment" : "" } ,
+							{day_number: "16", "special_comment" : "" } ,
+							{day_number: "17", "special_comment" : "" } ,
+							{day_number: "18", "special_comment" : "" } ,
+							{day_number: "19", "special_comment" : "" } ,
+							{day_number: "20", "special_comment" : "" } ,
+							{day_number: "21", "special_comment" : "" } ,
+							{day_number: "22", "special_comment" : "" } ,
+							{day_number: "23", "special_comment" : "" } ,
+							{day_number: "24", "special_comment" : "" } ,
+							{day_number: "25", "special_comment" : "" } ,
+							{day_number: "26", "special_comment" : "" } ,
+							{day_number: "27", "special_comment" : "" } ,
+							{day_number: "28", "special_comment" : "" } ,
+							{day_number: "29", "special_comment" : "" } ,
+							{day_number: "30", "special_comment" : "" } ,
+							{day_number: " ", " " : "" } ,
+							{day_number: " ", " " : "" } ,
+							{day_number: " ", " " : "" } ,
+							 ] 
+					}, 
+					{"name" : "Mayo", "month_number" : "5" , days : [ 
+						    {day_number: "", "special_comment" : " " } ,
+							{day_number: "", "special_comment" : " " } ,
+							{day_number: "", "special_comment" : " " } ,
+							{day_number: "", "special_comment" : " " } ,
+							{day_number: "", "special_comment" : " " } ,
+							{day_number: "1", "special_comment" : "" } ,
+							{day_number: "2", "special_comment" : "" } ,
+							{day_number: "3", "special_comment" : "" } ,
+							{day_number: "4", "special_comment" : "" } ,
+							{day_number: "5", "special_comment" : "" } ,
+							{day_number: "6", "special_comment" : "" } ,
+							{day_number: "7", "special_comment" : "" } ,
+							{day_number: "8", "special_comment" : "" } ,
+							{day_number: "9", "special_comment" : "" } ,
+							{day_number: "10", "special_comment" : "" } ,
+							{day_number: "11", "special_comment" : "" } ,
+							{day_number: "12", "special_comment" : "" } ,
+							{day_number: "13", "special_comment" : "" } ,
+							{day_number: "14", "special_comment" : "" } ,
+							{day_number: "15", "special_comment" : "" } ,
+							{day_number: "16", "special_comment" : "" } ,
+							{day_number: "17", "special_comment" : "" } ,
+							{day_number: "18", "special_comment" : "" } ,
+							{day_number: "19", "special_comment" : "" } ,
+							{day_number: "20", "special_comment" : "" } ,
+							{day_number: "21", "special_comment" : "" } ,
+							{day_number: "22", "special_comment" : "" } ,
+							{day_number: "23", "special_comment" : "" } ,
+							{day_number: "24", "special_comment" : "" } ,
+							{day_number: "25", "special_comment" : "" } ,
+							{day_number: "26", "special_comment" : "" } ,
+							{day_number: "27", "special_comment" : "" } ,
+							{day_number: "28", "special_comment" : "" } ,
+							{day_number: "29", "special_comment" : "" } ,
+							{day_number: "30", "special_comment" : "" } ,
+							{day_number: "31", "special_comment" : "" } ,
+							{day_number: "",   "special_comment" : " " } ,
+							{day_number: "",   "special_comment" : " " } ,
+							{day_number: "",   "special_comment" : " " } ,
+							{day_number: "",   "special_comment" : " " } ,
+							{day_number: "",   "special_comment" : " " } ,
+							{day_number: "",   "special_comment" : " " } 
+													
+							 ] 
+					}, 			
+					{"name" : "Junio", "month_number" : "6" , days : [ 
+						    {day_number: "", "special_comment" : " " } ,
+							{day_number: "1", "special_comment" : "" } ,
+							{day_number: "2", "special_comment" : "" } ,
+							{day_number: "3", "special_comment" : "" } ,
+							{day_number: "4", "special_comment" : "" } ,
+							{day_number: "5", "special_comment" : "" } ,
+							{day_number: "6", "special_comment" : "" } ,
+							{day_number: "7", "special_comment" : "" } ,
+							{day_number: "8", "special_comment" : "" } ,
+							{day_number: "9", "special_comment" : "" } ,
+							{day_number: "10", "special_comment" : "" } ,
+							{day_number: "11", "special_comment" : "" } ,
+							{day_number: "12", "special_comment" : "" } ,
+							{day_number: "13", "special_comment" : "" } ,
+							{day_number: "14", "special_comment" : "" } ,
+							{day_number: "15", "special_comment" : "" } ,
+							{day_number: "16", "special_comment" : "" } ,
+							{day_number: "17", "special_comment" : "" } ,
+							{day_number: "18", "special_comment" : "" } ,
+							{day_number: "19", "special_comment" : "" } ,
+							{day_number: "20", "special_comment" : "" } ,
+							{day_number: "21", "special_comment" : "" } ,
+							{day_number: "22", "special_comment" : "" } ,
+							{day_number: "23", "special_comment" : "" } ,
+							{day_number: "24", "special_comment" : "" } ,
+							{day_number: "25", "special_comment" : "" } ,
+							{day_number: "26", "special_comment" : "" } ,
+							{day_number: "27", "special_comment" : "" } ,
+							{day_number: "28", "special_comment" : "" } ,
+							{day_number: "29", "special_comment" : "" } ,
+							{day_number: "30", "special_comment" : "" } ,
+							{day_number: "31", "special_comment" : "" } ,
+							{day_number: "",   "special_comment" : " " } ,
+							{day_number: "",   "special_comment" : " " } ,
+							{day_number: "",   "special_comment" : " " } 
+							
+							 ] 
+					},
+					
+					 
+					 
+                                           ]        
+       
+		},  
+		
+		{"year_number" : "2022", months : [  
+					{"name" : "Enero", "month_number" : "1" , days : [ 
+						    {day_number: "", "special_comment" : " " } ,
+							{day_number: "1", "special_comment" : "" } ,
+							{day_number: "2", "special_comment" : "" } ,
+							{day_number: "3", "special_comment" : "" } ,
+							{day_number: "4", "special_comment" : "" } ,
+							{day_number: "5", "special_comment" : "" } ,
+							{day_number: "6", "special_comment" : "" } ,
+							{day_number: "7", "special_comment" : "" } ,
+							{day_number: "8", "special_comment" : "" } ,
+							{day_number: "9", "special_comment" : "" } ,
+							{day_number: "10", "special_comment" : "" } ,
+							{day_number: "11", "special_comment" : "" } ,
+							{day_number: "12", "special_comment" : "" } ,
+							{day_number: "13", "special_comment" : "" } ,
+							{day_number: "14", "special_comment" : "" } ,
+							{day_number: "15", "special_comment" : "" } ,
+							{day_number: "16", "special_comment" : "" } ,
+							{day_number: "17", "special_comment" : "" } ,
+							{day_number: "18", "special_comment" : "" } ,
+							{day_number: "19", "special_comment" : "" } ,
+							{day_number: "20", "special_comment" : "" } ,
+							{day_number: "21", "special_comment" : "" } ,
+							{day_number: "22", "special_comment" : "" } ,
+							{day_number: "23", "special_comment" : "" } ,
+							{day_number: "24", "special_comment" : "" } ,
+							{day_number: "25", "special_comment" : "" } ,
+							{day_number: "26", "special_comment" : "" } ,
+							{day_number: "27", "special_comment" : "" } ,
+							{day_number: "28", "special_comment" : "" } ,
+							{day_number: "29", "special_comment" : "" } ,
+							{day_number: "30", "special_comment" : "" } ,
+							{day_number: "31", "special_comment" : "" } ,
+							{day_number: "",   "special_comment" : " " } ,
+							{day_number: "",   "special_comment" : " " } ,
+							{day_number: "",   "special_comment" : " " } 
+							 
+                                                                ] 
+					}, 
+					]        
+        },  
+		
+		]
+  
+} ;
+	res.status(200).send(json_response);
+})
+
+
   
  /*
   xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
