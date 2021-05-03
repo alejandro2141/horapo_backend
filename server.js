@@ -23,6 +23,97 @@ app.use(bodyParser.urlencoded({ extended: true }));
 app.use(bodyParser.json());
 
 
+
+//********************************************* 
+// PROFESSIONAL GET ASSISTANTS professional_get_month_calendar
+//********************************************* 
+app.route('/professional_get_month_calendar')
+.post(function (req, res) {
+console.log('professional_get_month_calendar INPUT:', req.body );
+
+const year_month_extract = req.body.requiredDay.substring(0, 7) ;
+var json_response = { error : 'No Set'} ;
+
+console.log("MONTH EXTRACT ="+year_month_extract );
+switch ( year_month_extract ) {
+  case '2021-05':
+	console.log("professional_get_month_calendar  2021-05");
+	json_response = { month_name : 'Mayo' , year : '2021' ,  weeks : [  
+								{
+								week_number: 12, 
+								days : [  { day : '28' , month : '04' , year : '2021'  , comment:'Cumpleaños'  },  
+										  { day : '29' , month : '04' , year : '2021'  , comment:'Cumpleaños'  },
+  										  { day : '30' , month : '04' , year : '2021'  , comment:'Cumpleaños'  },
+  										  { day : '1'  , month : '05' , year : '2021'  , comment:'Cumpleaños'  },
+  										  { day : '2'  , month : '05' , year : '2021'  , comment:'Cumpleaños'  },
+  										  { day : '3'  , month : '05' , year : '2021'  , comment:'Cumpleaños'  },
+										  { day : '4'  , month : '05' , year : '2021'  , comment:'Cumpleaños'  }
+										]
+								},
+								{
+								week_number: 13, 
+								days : [ { day : '5' , month : '05' , year : '2021'  , comment:'Cumpleaños'  },  
+										  { day : '6' , month : '05' , year : '2021'  , comment:'Cumpleaños'  },
+  										  { day : '7' , month : '05' , year : '2021'  , comment:'Cumpleaños'  },
+  										  { day : '8' , month : '05' , year : '2021'  , comment:'Cumpleaños'  },
+  										  { day : '9' , month : '05' , year : '2021'  , comment:'Cumpleaños'  },
+  										  { day : '10' , month : '05' , year : '2021'  , comment:'Cumpleaños'  },
+										  { day : '11' , month : '05' , year : '2021'  , comment:'Cumpleaños'  },
+										]
+								},
+								{
+								week_number: 14, 
+								days : [ { day : '12' , month : '05' , year : '2021'  , comment:'Cumpleaños'  },  
+										  { day : '13' , month : '05' , year : '2021'  , comment:'Cumpleaños'  },
+  										  { day : '14' , month : '05' , year : '2021'  , comment:'Cumpleaños'  },
+  										  { day : '15' , month : '05' , year : '2021'  , comment:'Cumpleaños'  },
+  										  { day : '16' , month : '05' , year : '2021'  , comment:'Cumpleaños'  },
+  										  { day : '17' , month : '05' , year : '2021'  , comment:'Cumpleaños'  },
+										  { day : '18' , month : '05' , year : '2021'  , comment:'Cumpleaños'  },
+										]
+								},
+								{
+								week_number: 15, 
+								days : [ { day : '19' , month : '05' , year : '2021'  , comment:'Cumpleaños'  },  
+										  { day : '20' , month : '05' , year : '2021'  , comment:'Cumpleaños'  },
+  										  { day : '21' , month : '05' , year : '2021'  , comment:'Cumpleaños'  },
+  										  { day : '22' , month : '05' , year : '2021'  , comment:'Cumpleaños'  },
+  										  { day : '23' , month : '05' , year : '2021'  , comment:'Cumpleaños'  },
+  										  { day : '24' , month : '05' , year : '2021'  , comment:'Cumpleaños'  },
+										  { day : '25' , month : '05' , year : '2021'  , comment:'Cumpleaños'  },
+										]
+								},
+								{
+								week_number: 16, 
+								days : [ { day : '26' , month : '05' , year : '2021'  , comment:'Cumpleaños'  },  
+										  { day : '27' , month : '05' , year : '2021'  , comment:'Cumpleaños'  },
+  										  { day : '28' , month : '05' , year : '2021'  , comment:'Cumpleaños'  },
+  										  { day : '29' , month : '05' , year : '2021'  , comment:'Cumpleaños'  },
+  										  { day : '30' , month : '05' , year : '2021'  , comment:'Cumpleaños'  },
+  										  { day : '1' , month : '06' , year : '2021'  , comment:'Cumpleaños'  },
+										  { day : '2' , month : '06' , year : '2021'  , comment:'Cumpleaños'  },
+										]
+								},
+							]				
+						};
+		
+	break;
+  case '2021-06':
+    console.log("professional_get_month_calendar  2021-06");
+    break;
+  default:
+	
+   break;
+}//END SWITCH
+
+	console.log(' professional_get_month_calendar RESPONSE  :', JSON.stringify(json_response) );
+	res.status(200).send(json_response);
+})
+
+
+
+
+
 //********************************************* 
 // PROFESSIONAL GET ASSISTANTS
 //********************************************* 
