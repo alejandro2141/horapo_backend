@@ -24,6 +24,47 @@ app.use(bodyParser.json());
 
 
 
+
+//********************************************* 
+// PROFESSIONAL COPY CALENDAR DAY
+//********************************************* 
+app.route('/professional_copy_calendar_day')
+.post(function (req, res) {
+ 
+    console.log('professional_copy_calendar_day :', req.body );
+ 
+// ****** Connect to postgre
+const { Pool, Client } = require('pg')
+const client = new Client({
+  user: 'conmeddb_user',
+  host: '127.0.0.1',
+  database: 'conmeddb02',
+  password: 'paranoid',
+  port: 5432,
+})
+
+client.connect()
+// ****** Run query to bring appointment
+//const sql  = "SELECT * FROM center WHERE id IN  (SELECT center_id FROM center_professional where professional_id='"+req.body.professional_id+"' ) " ;
+const sql = "INSERT INTO appointment (  date ,start_time, end_time, duration, specialty, center_id, available_public_search, confirmation_status, professional_id, app_available, app_status,app_blocked) SELECT   DATE '"+req.body.destination+"' as date,  start_time, end_time, duration, specialty, center_id, available_public_search, confirmation_status, professional_id, app_available, app_status,app_blocked FROM appointment where professional_id='"+req.body.professional_id+"' and date='"+req.body.origin+"'  ";
+
+console.log('professional_copy_calendar_day: SQL :'+sql ) ;
+const resultado = client.query(sql, (err, result) => {
+
+  if (err) {
+      console.log('professional_copy_calendar_day ERR:'+err ) ;
+    }
+
+  console.log('professional_copy_calendar_day : '+JSON.stringify(result) ) ;
+  res.status(200).send(JSON.stringify(result) );
+  client.end()
+})
+
+})
+
+
+
+
 //********************************************* 
 // PROFESSIONAL GET ASSISTANTS professional_get_month_calendar
 //********************************************* 
@@ -109,8 +150,6 @@ switch ( year_month_extract ) {
 	console.log(' professional_get_month_calendar RESPONSE  :', JSON.stringify(json_response) );
 	res.status(200).send(json_response);
 })
-
-
 
 
 
