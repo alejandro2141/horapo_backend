@@ -85,19 +85,19 @@ switch ( year_month_extract ) {
 								days : [  { day : '28' , month : '04' , year : '2021'  , comment:'Cumpleaños'  },  
 										  { day : '29' , month : '04' , year : '2021'  , comment:'Cumpleaños'  },
   										  { day : '30' , month : '04' , year : '2021'  , comment:'Cumpleaños'  },
-  										  { day : '1'  , month : '05' , year : '2021'  , comment:'Cumpleaños'  },
-  										  { day : '2'  , month : '05' , year : '2021'  , comment:'Cumpleaños'  },
-  										  { day : '3'  , month : '05' , year : '2021'  , comment:'Cumpleaños'  },
-										  { day : '4'  , month : '05' , year : '2021'  , comment:'Cumpleaños'  }
+  										  { day : '01'  , month : '05' , year : '2021'  , comment:'Cumpleaños'  },
+  										  { day : '02'  , month : '05' , year : '2021'  , comment:'Cumpleaños'  },
+  										  { day : '03'  , month : '05' , year : '2021'  , comment:'Cumpleaños'  },
+										  { day : '04'  , month : '05' , year : '2021'  , comment:'Cumpleaños'  }
 										]
 								},
 								{
 								week_number: 13, 
-								days : [ { day : '5' , month : '05' , year : '2021'  , comment:'Cumpleaños'  },  
-										  { day : '6' , month : '05' , year : '2021'  , comment:'Cumpleaños'  },
-  										  { day : '7' , month : '05' , year : '2021'  , comment:'Cumpleaños'  },
-  										  { day : '8' , month : '05' , year : '2021'  , comment:'Cumpleaños'  },
-  										  { day : '9' , month : '05' , year : '2021'  , comment:'Cumpleaños'  },
+								days : [ { day : '05' , month : '05' , year : '2021'  , comment:'Cumpleaños'  },  
+										  { day : '06' , month : '05' , year : '2021'  , comment:'Cumpleaños'  },
+  										  { day : '07' , month : '05' , year : '2021'  , comment:'Cumpleaños'  },
+  										  { day : '08' , month : '05' , year : '2021'  , comment:'Cumpleaños'  },
+  										  { day : '09' , month : '05' , year : '2021'  , comment:'Cumpleaños'  },
   										  { day : '10' , month : '05' , year : '2021'  , comment:'Cumpleaños'  },
 										  { day : '11' , month : '05' , year : '2021'  , comment:'Cumpleaños'  },
 										]
@@ -131,8 +131,8 @@ switch ( year_month_extract ) {
   										  { day : '28' , month : '05' , year : '2021'  , comment:'Cumpleaños'  },
   										  { day : '29' , month : '05' , year : '2021'  , comment:'Cumpleaños'  },
   										  { day : '30' , month : '05' , year : '2021'  , comment:'Cumpleaños'  },
-  										  { day : '1' , month : '06' , year : '2021'  , comment:'Cumpleaños'  },
-										  { day : '2' , month : '06' , year : '2021'  , comment:'Cumpleaños'  },
+  										  { day : '01' , month : '06' , year : '2021'  , comment:'Cumpleaños'  },
+										  { day : '02' , month : '06' , year : '2021'  , comment:'Cumpleaños'  },
 										]
 								},
 							]				
@@ -369,24 +369,26 @@ client.connect()
 // ****** Run query to bring appointment
 //const sql  = "SELECT * FROM professional WHERE email='"+req.body.form_email+"'  AND pass='"+req.body.form_pass+"'";
 
-const sql  = "SELECT * FROM (SELECT * FROM (SELECT * FROM professional WHERE email = '"+req.body.form_email+"')P LEFT JOIN account ON P.id = account.user_id) J WHERE j.pass = '"+req.body.form_pass+"' " ;
+//const sql  = "SELECT * FROM (SELECT * FROM (SELECT * FROM professional WHERE email = '"+req.body.form_email+"')P LEFT JOIN account ON P.id = account.user_id) J WHERE j.pass = '"+req.body.form_pass+"' " ;
+//const sql = "INSERT INTO session (name, user_id,last_login , last_activity_time , user_type) RETURNING * SELECT   name, user_id , now() as last_login ,now() as last_activity_time, 1 as user_type  FROM (SELECT * FROM (SELECT * FROM professional WHERE email ='"+req.body.form_email+"' )P LEFT JOIN account ON P.id = account.user_id) J WHERE j.pass = '"+req.body.form_pass+"' RETURNING id" ;
+const sql = "INSERT INTO session (name, user_id,last_login , last_activity_time , user_type  ) SELECT   name, user_id , now() as last_login ,now() as last_activity_time, 1 as user_type  FROM (SELECT * FROM (SELECT * FROM professional WHERE email ='"+req.body.form_email+"' )P LEFT JOIN account ON P.id = account.user_id) J WHERE j.pass = '"+req.body.form_pass+"'   RETURNING * ";
 
 console.log('professionalLogin SQL:'+sql ) ;
 var json_response = {  professional_id: null , result_code : 33 };
 const resultado = client.query(sql, (err, result) => {
-
+	
+	console.log("professionalLogin Result : "+JSON.stringify(result));
   if (err) {
-      throw error ;
-  console.log('professionalLogin ERROR QUERY  = '+sql ) ;
+      console.log('professionalLogin ERROR QUERY  = '+sql ) ;
     }
     
   if(result.rowCount == 1 )
   {
   console.log ("professionalLogin LOGIN MATCH!!");
-  json_response = { professional_id: result.rows[0].id , 
+  json_response = { professional_id: result.rows[0].user_id , 
 					result_code: 0 ,
 					professional_name: result.rows[0].name ,
-					token_session : 'aj32'
+					token : result.rows[0].id,
 					};
   }
   else
@@ -401,6 +403,48 @@ const resultado = client.query(sql, (err, result) => {
 
 
 })
+ 
+ 
+ 
+ //*********************************************************
+ //*********GET SESSION  ***********************************
+ //*********************************************************
+app.route('/get_session')
+.post(function (req, res) {
+
+console.log('get_session INPUT:', req.body );
+ 
+// ****** Connect to postgre
+const { Pool, Client } = require('pg')
+const client = new Client({
+  user: 'conmeddb_user',
+  host: '127.0.0.1',
+  database: 'conmeddb02',
+  password: 'paranoid',
+  port: 5432,
+})
+
+client.connect()
+// ****** Run query to bring appointment
+//const sql = "INSERT INTO session (name, user_id,last_login , last_activity_time , user_type) RETURNING * SELECT   name, user_id , now() as last_login ,now() as last_activity_time, 1 as user_type  FROM (SELECT * FROM (SELECT * FROM professional WHERE email ='"+req.body.form_email+"' )P LEFT JOIN account ON P.id = account.user_id) J WHERE j.pass = '"+req.body.form_pass+"' RETURNING id" ;
+const sql = "SELECT * FROM session WHERE id = '"+req.body.token+"' ";
+console.log('get_session  SQL:'+sql ) ;
+const resultado = client.query(sql, (err, result) => {
+
+  if (err) {
+      console.log('get_session ERR:'+err ) ;
+    }
+
+  console.log('get_session : '+JSON.stringify(result) ) ;
+  res.status(200).send(JSON.stringify(result) );
+  client.end()
+})
+
+})
+
+
+
+ 
  
 //********************************************* 
 // PUBLIC POST create_center
