@@ -63,8 +63,6 @@ const resultado = client.query(sql, (err, result) => {
 })
 
 
-
-
 //********************************************* 
 // PROFESSIONAL GET ASSISTANTS professional_get_month_calendar
 //********************************************* 
@@ -141,6 +139,66 @@ switch ( year_month_extract ) {
 	break;
   case '2021-06':
     console.log("professional_get_month_calendar  2021-06");
+	json_response = { month_name : 'Junio' , year : '2021' ,  weeks : [  
+								{
+								week_number: 12, 
+								days : [  { day : '30' , month : '05' , year : '2021'  , comment:''  },  
+										  { day : '31' , month : '05' , year : '2021'  , comment:''  },
+  										  { day : '01' , month : '06' , year : '2021'  , comment:''  },
+  										  { day : '02'  , month : '06' , year : '2021'  , comment:''  },
+  										  { day : '03'  , month : '06' , year : '2021'  , comment:''  },
+  										  { day : '04'  , month : '06' , year : '2021'  , comment:''  },
+										  { day : '05'  , month : '06' , year : '2021'  , comment:''  }
+										]
+								},
+								{
+								week_number: 13, 
+								days : [ { day : '06' , month : '06' , year : '2021'  , comment:''  },  
+										  { day : '07' , month : '06' , year : '2021'  , comment:''  },
+  										  { day : '08' , month : '06' , year : '2021'  , comment:''  },
+  										  { day : '09' , month : '06' , year : '2021'  , comment:''  },
+  										  { day : '10' , month : '06' , year : '2021'  , comment:''  },
+  										  { day : '11' , month : '06' , year : '2021'  , comment:''  },
+										  { day : '12' , month : '06' , year : '2021'  , comment:''  },
+										]
+								},
+								{
+								week_number: 14, 
+								days : [ { day : '13' , month : '06' , year : '2021'  , comment:''  },  
+										  { day : '14' , month : '06' , year : '2021'  , comment:''  },
+  										  { day : '15' , month : '06' , year : '2021'  , comment:''  },
+  										  { day : '16' , month : '06' , year : '2021'  , comment:''  },
+  										  { day : '17' , month : '06' , year : '2021'  , comment:''  },
+  										  { day : '18' , month : '06' , year : '2021'  , comment:''  },
+										  { day : '19' , month : '06' , year : '2021'  , comment:''  },
+										]
+								},
+								{
+								week_number: 15, 
+								days : [ { day : '20' , month : '06' , year : '2021'  , comment:''  },  
+										  { day : '21' , month : '06' , year : '2021'  , comment:''  },
+  										  { day : '22' , month : '06' , year : '2021'  , comment:''  },
+  										  { day : '23' , month : '06' , year : '2021'  , comment:''  },
+  										  { day : '24' , month : '06' , year : '2021'  , comment:''  },
+  										  { day : '25' , month : '06' , year : '2021'  , comment:''  },
+										  { day : '26' , month : '06' , year : '2021'  , comment:''  },
+										]
+								},
+								{
+								week_number: 16, 
+								days : [ { day : '27' , month : '06' , year : '2021'  , comment:''  },  
+										  { day : '28' , month : '06' , year : '2021'  , comment:''  },
+  										  { day : '29' , month : '06' , year : '2021'  , comment:''  },
+  										  { day : '30' , month : '06' , year : '2021'  , comment:''  },
+  										  { day : '01' , month : '07' , year : '2021'  , comment:''  },
+  										  { day : '02' , month : '07' , year : '2021'  , comment:''  },
+										  { day : '03' , month : '07' , year : '2021'  , comment:''  },
+										]
+								},
+							]				
+						};
+
+
     break;
   default:
 	
@@ -150,8 +208,6 @@ switch ( year_month_extract ) {
 	console.log(' professional_get_month_calendar RESPONSE  :', JSON.stringify(json_response) );
 	res.status(200).send(json_response);
 })
-
-
 
 //********************************************* 
 // PROFESSIONAL GET ASSISTANTS
@@ -174,7 +230,8 @@ const client = new Client({
 client.connect()
 // ****** Run query to bring appointment
 //const sql  = "SELECT * FROM center WHERE id IN  (SELECT center_id FROM center_professional where professional_id='"+req.body.professional_id+"' ) " ;
-const sql  = "SELECT * FROM assistant WHERE id in( SELECT assistant_id FROM assistant_professional where professional_id='"+req.body.professional_id+"' ORDER BY id ASC   ) " ;
+const sql  = "SELECT * FROM assistant WHERE id in( SELECT assistant_id FROM assistant_professional where professional_id='"+req.body.professional_id+"') AND assistant_deleted!='true' ORDER BY id DESC    " ;
+
 
 console.log('professional_get_assistants: SQL :'+sql ) ;
 const resultado = client.query(sql, (err, result) => {
@@ -403,9 +460,7 @@ const resultado = client.query(sql, (err, result) => {
 
 
 })
- 
- 
- 
+  
  //*********************************************************
  //*********GET SESSION  ***********************************
  //*********************************************************
@@ -441,10 +496,6 @@ const resultado = client.query(sql, (err, result) => {
 })
 
 })
-
-
-
- 
  
 //********************************************* 
 // PUBLIC POST create_center
@@ -511,7 +562,7 @@ const client = new Client({
 
 client.connect()
 // ****** Run query to bring appointment
-const sql  = "SELECT * FROM center WHERE id IN  (SELECT center_id FROM center_professional where professional_id='"+req.body.professional_id+"' ) " ;
+const sql  = "SELECT * FROM center WHERE id IN  (SELECT center_id FROM center_professional where professional_id='"+req.body.professional_id+"' ) AND center_deleted!='true'  ORDER BY id DESC  " ;
 console.log('professional_get_centers: SQL :'+sql ) ;
 const resultado = client.query(sql, (err, result) => {
 
@@ -527,8 +578,45 @@ const resultado = client.query(sql, (err, result) => {
 })
 
 //********************************************* 
+// PROFESSIONAL delete Center
+//********************************************* 
+app.route('/professional_delete_center')
+.post(function (req, res) {
+     console.log('delete_center :', req.body );
+ // ****** Connect to postgre
+const { Pool, Client } = require('pg')
+const client = new Client({
+  user: 'conmeddb_user',
+  host: '127.0.0.1',
+  database: 'conmeddb02',
+  password: 'paranoid',
+  port: 5432,
+})
+
+client.connect()
+// ****** Run query to bring appointment
+//const sql  = "DELETE FROM center WHERE id='"+req.body.center_id+"'  " ;
+//const sql = "UPDATE assistant  SET assistant_deleted = 'true' , assistant_active = 'false' WHERE id = '"+req.body.assistant_id+"' RETURNING * " ;
+const sql  = "UPDATE center SET center_deleted = 'true' , active ='0' WHERE id = '"+req.body.center_id+"' RETURNING * " ;
+
+console.log('delete_center : SQL :'+sql ) ;
+const resultado = client.query(sql, (err, result) => {
+
+  if (err) {
+      console.log('delete_center ERR:'+err ) ;
+    }
+
+  console.log('delete_center : JSON RESPONSE DELTE AGENDA  = '+result ) ;
+  res.status(200).send(JSON.stringify(result) );
+  client.end()
+})
+
+})
+
+//********************************************* 
 // PROFESSIONAL GET ASSISTANTS
 //********************************************* 
+/*
 app.route('/professional_get_assistants')
 .post(function (req, res) {
  
@@ -546,7 +634,7 @@ const client = new Client({
 
 client.connect()
 // ****** Run query to bring appointment
-const sql  = "SELECT * FROM assistant WHERE id IN  (SELECT assistant_id FROM assistant_professional where professional_id='"+req.body.professional_id+"' ) " ;
+//const sql  = "SELECT * FROM assistant WHERE id IN (SELECT assistant_id FROM assistant_professional where professional_id='"+req.body.professional_id+"   ) AND assistant_deleted!='true' " ;
 console.log('professional_get_assistants: SQL GET AGENDA = '+sql ) ;
 const resultado = client.query(sql, (err, result) => {
 
@@ -560,7 +648,7 @@ const resultado = client.query(sql, (err, result) => {
 })
 
 })
-
+*/
 //********************************************* 
 // GET ASSISTANTS
 //********************************************* 
@@ -596,7 +684,6 @@ const resultado = client.query(sql, (err, result) => {
 
 })
 
-
 //********************************************* 
 // PROFESSIONAL  CREATE ASSISTANT
 //********************************************* 
@@ -626,7 +713,7 @@ sql =   " WITH ids AS (  INSERT INTO assistant ( assistant_document_id , assista
 
 
 
-console.log('create_center SQL:'+sql ) ;
+console.log('create_sistant SQL:'+sql ) ;
 	client.query(sql, (err, result) => {
 	  if (err) {
 	     // throw err ;
@@ -664,7 +751,9 @@ const client = new Client({
 
 client.connect()
 // ****** Run query to bring appointment
-const sql  = "DELETE FROM assistant WHERE id='"+req.body.assistant_id+"'  " ;
+//const sql  = "DELETE FROM assistant WHERE id='"+req.body.assistant_id+"'  " ;
+const sql = "UPDATE assistant  SET assistant_deleted = 'true' , assistant_active = 'false' WHERE id = '"+req.body.assistant_id+"' RETURNING * " ;
+
 console.log('professional_delete_assistant : SQL :'+sql ) ;
 const resultado = client.query(sql, (err, result) => {
 
