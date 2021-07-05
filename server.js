@@ -565,9 +565,6 @@ app.route('/get_calendar')
        ] 
   },
 					 
-					 
-                                           
-        
         ] //end year 2021        
        
 		},  
@@ -759,10 +756,74 @@ switch ( year_month_extract ) {
 								},
 							]				
 						};
-
-
     break;
-  default:
+    case '2021-07':
+      console.log("professional_get_month_calendar  2021-07");
+    json_response = { month_name : 'Julio' , year : '2021' ,  weeks : [  
+                  {
+                  week_number: 17, 
+                  days : [
+                          { day : '27' , month : '06' , year : '2021'  , comment:''  },  
+                          { day : '29' , month : '06' , year : '2021'  , comment:''  },
+                          { day : '30'  , month : '06' , year : '2021'  , comment:''  },
+                          { day : '01'  , month : '07' , year : '2021'  , comment:''  },
+                          { day : '02'  , month : '07' , year : '2021'  , comment:''  },
+                          { day : '03'  , month : '07' , year : '2021'  , comment:''  },
+                          { day : '04'  , month : '07' , year : '2021'  , comment:''  }
+                         ]
+                  },
+                  {
+                  week_number: 18, 
+                  days : [ 
+                          { day : '05' , month : '07' , year : '2021'  , comment:''  },  
+                          { day : '06' , month : '07' , year : '2021'  , comment:''  },
+                          { day : '07' , month : '07' , year : '2021'  , comment:''  },
+                          { day : '08' , month : '07' , year : '2021'  , comment:''  },
+                          { day : '09' , month : '07' , year : '2021'  , comment:''  },
+                          { day : '10' , month : '07' , year : '2021'  , comment:''  },
+                          { day : '11' , month : '07' , year : '2021'  , comment:''  }
+                        ]
+                  },
+                  {
+                  week_number: 19, 
+                  days : [ 
+                        { day : '12' , month : '07' , year : '2021'  , comment:''  },  
+                        { day : '13' , month : '07' , year : '2021'  , comment:''  },
+                        { day : '14' , month : '07' , year : '2021'  , comment:''  },
+                        { day : '15' , month : '07' , year : '2021'  , comment:''  },
+                        { day : '16' , month : '07' , year : '2021'  , comment:''  },
+                        { day : '17' , month : '07' , year : '2021'  , comment:''  },
+                        { day : '18' , month : '07' , year : '2021'  , comment:''  }        
+                    ]
+                  },
+                  {
+                  week_number: 20, 
+                  days : [ 
+                        { day : '19' , month : '07' , year : '2021'  , comment:''  },  
+                        { day : '20' , month : '07' , year : '2021'  , comment:''  },
+                        { day : '21' , month : '07' , year : '2021'  , comment:''  },
+                        { day : '22' , month : '07' , year : '2021'  , comment:''  },
+                        { day : '23' , month : '07' , year : '2021'  , comment:''  },
+                        { day : '24' , month : '07' , year : '2021'  , comment:''  },
+                        { day : '25' , month : '07' , year : '2021'  , comment:''  }    
+                      ]
+                  },
+                  {
+                  week_number: 21, 
+                  days : [ 
+                        { day : '26' , month : '07' , year : '2021'  , comment:''  },  
+                        { day : '27' , month : '07' , year : '2021'  , comment:''  },
+                        { day : '28' , month : '07' , year : '2021'  , comment:''  },
+                        { day : '29' , month : '07' , year : '2021'  , comment:''  },
+                        { day : '30' , month : '07' , year : '2021'  , comment:''  },
+                        { day : '31' , month : '07' , year : '2021'  , comment:''  },
+                        { day : '01' , month : '08' , year : '2021'  , comment:''  }    
+                      ]
+                  },
+                ]				
+              };
+
+    default:
 	
    break;
 }//END SWITCH
