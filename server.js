@@ -32,6 +32,41 @@ app.use(bodyParser.json());
 // ********* COMMON API *****************
 // **************************************
 
+// GET ASSISTANTS
+app.route('/get_professional_specialty')
+.post(function (req, res) {
+ 
+    console.log('get_professional_specialty:', req.body );
+ 
+// ****** Connect to postgre
+const { Pool, Client } = require('pg')
+const client = new Client({
+  user: 'conmeddb_user',
+  host: '127.0.0.1',
+  database: 'conmeddb02',
+  password: 'paranoid',
+  port: 5432,
+    })
+
+client.connect()
+// ****** Run query to bring appointment
+const sql  = "SELECT * from  specialty where id IN  (SELECT specialty_id FROM professional_specialty WHERE professional_id=1) ;" ;
+console.log('get_professional_specialty: SQL GET PROFESSIONAL SPECIALTY = '+sql ) ;
+const resultado = client.query(sql, (err, result) => {
+
+  if (err) {
+      console.log('get_professional_specialty ERR:'+err ) ;
+    }
+
+  console.log('get_professional_specialty : '+JSON.stringify(result) ) ;
+  res.status(200).send(JSON.stringify(result) );
+  client.end()
+})
+
+})
+
+
+
 // SAVE APPOINTMENT
 app.route('/save_appointment')
 .post(function (req, res) {
@@ -197,7 +232,7 @@ const client = new Client({
   database: 'conmeddb02',
   password: 'paranoid',
   port: 5432,
-})
+    })
 
 client.connect()
 // ****** Run query to bring appointment
@@ -886,7 +921,7 @@ const client = new Client({
 client.connect()
 // ****** Run query to bring appointment
 //const sql ="SELECT * FROM ( SELECT address as center_address, name as center_name, app_id,date, start_time, end_time, duration, specialty, center_id, available_public_search, confirmation_status, blocked, professional_id   FROM   (SELECT  id as app_id, date , start_time, end_time, duration, specialty, center_id, available_public_search, confirmation_status, blocked, professional_id   FROM appointment WHERE professional_id='"+req.body.professional_id+"' and Date >= '"+req.body.date+"' )   J LEFT JOIN center ON center.id=j.center_id  )K LEFT JOIN specialty ON specialty.id=K.specialty   " ;
-const sql ="SELECT * FROM ( SELECT  app_status, patient_name, patient_email, patient_phone1, patient_phone2, patient_insurance ,  patient_doc_id , name as specialty_name, center_address, center_name, app_id,date, start_time, end_time, duration, specialty, center_id, available_public_search, confirmation_status, app_blocked, professional_id, app_available   FROM (  SELECT app_status, patient_name, patient_email, patient_phone1, patient_phone2, patient_insurance ,  patient_doc_id , address as center_address, name as center_name, app_id,date, start_time, end_time, duration, specialty, center_id, available_public_search, confirmation_status, app_blocked, professional_id ,app_available  FROM  (SELECT app_status, patient_name, patient_email, patient_phone1, patient_phone2, patient_insurance ,  patient_doc_id ,id as app_id, date , start_time, end_time, duration, specialty, center_id, available_public_search, confirmation_status, app_blocked, professional_id , app_available  FROM appointment WHERE professional_id='"+req.body.professional_id+"' and Date = '"+req.body.date+"' ORDER BY start_time ASC ) J LEFT JOIN center ON center.id=j.center_id  )K LEFT JOIN specialty ON specialty.id=K.specialty ) L LEFT JOIN professional ON professional.id = L.professional_id " ;
+const sql ="SELECT * FROM ( SELECT  app_status, patient_name, patient_email, patient_phone1, patient_phone2, patient_insurance ,  patient_doc_id , name as specialty_name, center_address, center_name, center_color , app_id,date, start_time, end_time, duration, specialty, center_id, available_public_search, confirmation_status, app_blocked, professional_id, app_available   FROM (  SELECT app_status, patient_name, patient_email, patient_phone1, patient_phone2, patient_insurance ,  patient_doc_id , address as center_address, name as center_name, color as center_color, app_id,date, start_time, end_time, duration, specialty, center_id, available_public_search, confirmation_status, app_blocked, professional_id ,app_available  FROM  (SELECT app_status, patient_name, patient_email, patient_phone1, patient_phone2, patient_insurance ,  patient_doc_id ,id as app_id, date , start_time, end_time, duration, specialty, center_id, available_public_search, confirmation_status, app_blocked, professional_id , app_available  FROM appointment WHERE professional_id='"+req.body.professional_id+"' and Date = '"+req.body.date+"' ORDER BY start_time ASC ) J LEFT JOIN center ON center.id=j.center_id  )K LEFT JOIN specialty ON specialty.id=K.specialty ) L LEFT JOIN professional ON professional.id = L.professional_id " ;
 
 console.log('professional_get_appointments_day SQL:'+sql ) ;
 const resultado = client.query(sql, (err, result) => {
