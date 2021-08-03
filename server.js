@@ -87,19 +87,18 @@ const query_update = "UPDATE appointment SET patient_name = '"+req.body.patient_
 
 console.log(query_update);
 const resultado = client.query(query_update, (err, result) => {
+    //res.status(200).send(JSON.stringify(result)) ;
+    if (err) {
+      console.log('/save_appointment ERR:'+err ) ;
 
-     console.log('RESULTADO '+JSON.stringify(resultado))
-     var json_response_ok = { 
-			    result_status : 'inserted', 
-			    result_code: '200',
-			    	  };
-  
-    res.status(200).send(JSON.stringify(json_response_ok));
-    console.log("JSON RESPONSE BODY : "+JSON.stringify(json_response_ok));
-    console.log ("ERROR LOG : "+err);
+    }
+    else {
+    console.log("JSON RESPONSE BODY : "+JSON.stringify(result));
+    res.status(200).send(JSON.stringify(result.rows[0])) ;  
+    }
+    
 
-  client.end()
-
+    client.end()
 })
 
   //console.log(JSON.stringify(JSON.stringify(req))) ;
@@ -857,10 +856,87 @@ switch ( year_month_extract ) {
                   },
                 ]				
               };
+       case '2021-08':
+                console.log("professional_get_month_calendar  2021-08");
+              json_response = { month_name : 'Agosto' , year : '2021' ,  weeks : [  
+                            {
+                            week_number: 22, 
+                            days : [
+                                    { day : '26' , month : '07' , year : '2021'  , comment:''  },  
+                                    { day : '27' , month : '07' , year : '2021'  , comment:''  },
+                                    { day : '28'  , month : '07' , year : '2021'  , comment:''  },
+                                    { day : '29'  , month : '07' , year : '2021'  , comment:''  },
+                                    { day : '30'  , month : '07' , year : '2021'  , comment:''  },
+                                    { day : '31'  , month : '07' , year : '2021'  , comment:''  },
+                                    { day : '01'  , month : '08' , year : '2021'  , comment:''  }
+                                   ]
+                            },
+                            {
+                            week_number: 23, 
+                            days : [ 
+                                    { day : '02' , month : '08' , year : '2021'  , comment:''  },  
+                                    { day : '03' , month : '08' , year : '2021'  , comment:''  },
+                                    { day : '04' , month : '08' , year : '2021'  , comment:''  },
+                                    { day : '05' , month : '08' , year : '2021'  , comment:''  },
+                                    { day : '06' , month : '08' , year : '2021'  , comment:''  },
+                                    { day : '07' , month : '08' , year : '2021'  , comment:''  },
+                                    { day : '08' , month : '08' , year : '2021'  , comment:''  }
+                                  ]
+                            },
+                            {
+                            week_number: 24, 
+                            days : [ 
+                                  { day : '09' , month : '08' , year : '2021'  , comment:''  },  
+                                  { day : '10' , month : '08' , year : '2021'  , comment:''  },
+                                  { day : '11' , month : '08' , year : '2021'  , comment:''  },
+                                  { day : '12' , month : '08' , year : '2021'  , comment:''  },
+                                  { day : '13' , month : '08' , year : '2021'  , comment:''  },
+                                  { day : '14' , month : '08' , year : '2021'  , comment:''  },
+                                  { day : '15' , month : '08' , year : '2021'  , comment:''  }        
+                              ]
+                            },
+                            {
+                            week_number: 25, 
+                            days : [ 
+                                  { day : '16' , month : '08' , year : '2021'  , comment:''  },  
+                                  { day : '17' , month : '08' , year : '2021'  , comment:''  },
+                                  { day : '18' , month : '08' , year : '2021'  , comment:''  },
+                                  { day : '18' , month : '08' , year : '2021'  , comment:''  },
+                                  { day : '20' , month : '08' , year : '2021'  , comment:''  },
+                                  { day : '21' , month : '08' , year : '2021'  , comment:''  },
+                                  { day : '22' , month : '08' , year : '2021'  , comment:''  }    
+                                ]
+                            },
+                            {
+                            week_number: 26, 
+                            days : [ 
+                                  { day : '23' , month : '08' , year : '2021'  , comment:''  },  
+                                  { day : '24' , month : '08' , year : '2021'  , comment:''  },
+                                  { day : '25' , month : '08' , year : '2021'  , comment:''  },
+                                  { day : '26' , month : '08' , year : '2021'  , comment:''  },
+                                  { day : '27' , month : '08' , year : '2021'  , comment:''  },
+                                  { day : '28' , month : '08' , year : '2021'  , comment:''  },
+                                  { day : '29' , month : '08' , year : '2021'  , comment:''  }    
+                                ]
+                            },
+                            {
+                            week_number: 27, 
+                            days : [ 
+                                  { day : '30' , month : '08' , year : '2021'  , comment:''  },  
+                                  { day : '31' , month : '08' , year : '2021'  , comment:''  },
+                                  { day : '01' , month : '09' , year : '2021'  , comment:''  },
+                                  { day : '02' , month : '10' , year : '2021'  , comment:''  },
+                                  { day : '03' , month : '11' , year : '2021'  , comment:''  },
+                                  { day : '04' , month : '12' , year : '2021'  , comment:''  },
+                                  { day : '05' , month : '13' , year : '2021'  , comment:''  }    
+                                ]
+                            },
+                          ]				
+                        };
+
 
     default:
-	
-   break;
+	  break;
 }//END SWITCH
 
 	console.log(' professional_get_month_calendar RESPONSE  :', JSON.stringify(json_response) );
