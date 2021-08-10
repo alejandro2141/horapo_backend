@@ -901,7 +901,7 @@ switch ( year_month_extract ) {
                                   { day : '16' , month : '08' , year : '2021'  , comment:''  },  
                                   { day : '17' , month : '08' , year : '2021'  , comment:''  },
                                   { day : '18' , month : '08' , year : '2021'  , comment:''  },
-                                  { day : '18' , month : '08' , year : '2021'  , comment:''  },
+                                  { day : '19' , month : '08' , year : '2021'  , comment:''  },
                                   { day : '20' , month : '08' , year : '2021'  , comment:''  },
                                   { day : '21' , month : '08' , year : '2021'  , comment:''  },
                                   { day : '22' , month : '08' , year : '2021'  , comment:''  }    
