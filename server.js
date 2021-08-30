@@ -23,14 +23,29 @@ app.use(bodyParser.urlencoded({ extended: true }));
 app.use(bodyParser.json());
 
 
-
-
-
-
-
 // **************************************
 // ********* COMMON API *****************
 // **************************************
+
+// GET ASSISTANTS
+app.route('/get_public_token')
+.post(function (req, res) {
+    console.log('get_public_token:', req.body );
+   
+    var tday = new Date();
+    //var date = tday.getMinutes()+(tday.getHours()*60)+'-'+tday.getDate()+''+(tday.getMonth()+1) ;
+    var date = tday.getMinutes()+(tday.getHours()*60) ;
+
+    var json_response = { 
+        token :  date , 
+        min : '23579',
+            };
+    console.log("get_public_token Response: "+JSON.stringify(json_response));
+    console.log("Request Sesion. ID created:"+req.body.id+" Token Assigned:"+json_response.token );
+
+    res.status(200).send(JSON.stringify(json_response) );
+})
+
 
 // GET ASSISTANTS
 app.route('/get_professional_specialty')
