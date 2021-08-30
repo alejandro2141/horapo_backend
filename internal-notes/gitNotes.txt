@@ -1,3 +1,21 @@
-GIT NOTES
+GIT NOTES 1353-Elgo
+
 
 git clone --branch version1 https://github.com/alejandro2141/conmed.git
+
+Trae actualizaciones al directorio de trabajo
+git pull origin devel_0
+
+
+
+git add <filename>
+git add .
+
+Empujtar cambos a git
+git commit -m "Commit message2"
+git push origin devel_0
+
+
+Sacar del index el directorio de modulos
+git rm --cached -r node_modules/
+ 
