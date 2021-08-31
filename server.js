@@ -3,7 +3,7 @@
 const express = require('express');
 const bodyParser = require('body-parser');
 
-// Constants
+// Constantas
 const PORT = 8080;
 const HOST = '0.0.0.0';
 
