@@ -863,8 +863,82 @@ switch ( year_month_extract ) {
                                   { day : '05' , month : '13' , year : '2021'  , comment:''  }    
                                 ]
                             },
-                          ]				
+                          ]	
+                          
+                          
+
                         };
+
+                        case '2021-09':
+                          console.log("professional_get_month_calendar  2021-09");
+                        json_response = { month_name : 'Septiembre' , year : '2021' ,  weeks : [  
+                                      {
+                                      week_number: 28, 
+                                      days : [
+                                              { day : '30' , month : '08' , year : '2021'  , comment:''  },  
+                                              { day : '31' , month : '08' , year : '2021'  , comment:''  },
+                                              { day : '01'  , month : '09' , year : '2021'  , comment:''  },
+                                              { day : '02'  , month : '09' , year : '2021'  , comment:''  },
+                                              { day : '03'  , month : '09' , year : '2021'  , comment:''  },
+                                              { day : '04'  , month : '09' , year : '2021'  , comment:''  },
+                                              { day : '05'  , month : '09' , year : '2021'  , comment:''  }
+                                             ]
+                                      },
+                                      {
+                                      week_number: 29, 
+                                      days : [ 
+                                              { day : '06' , month : '09' , year : '2021'  , comment:''  },  
+                                              { day : '07' , month : '09' , year : '2021'  , comment:''  },
+                                              { day : '08' , month : '09' , year : '2021'  , comment:''  },
+                                              { day : '09' , month : '09' , year : '2021'  , comment:''  },
+                                              { day : '10' , month : '09' , year : '2021'  , comment:''  },
+                                              { day : '11' , month : '09' , year : '2021'  , comment:''  },
+                                              { day : '12' , month : '09' , year : '2021'  , comment:''  }
+                                            ]
+                                      },
+                                      {
+                                      week_number: 30, 
+                                      days : [ 
+                                            { day : '13' , month : '09' , year : '2021'  , comment:''  },  
+                                            { day : '14' , month : '09' , year : '2021'  , comment:''  },
+                                            { day : '15' , month : '09' , year : '2021'  , comment:''  },
+                                            { day : '16' , month : '09' , year : '2021'  , comment:''  },
+                                            { day : '17' , month : '09' , year : '2021'  , comment:''  },
+                                            { day : '18' , month : '09' , year : '2021'  , comment:''  },
+                                            { day : '19' , month : '09' , year : '2021'  , comment:''  }        
+                                        ]
+                                      },
+                                      {
+                                      week_number: 31, 
+                                      days : [ 
+                                            { day : '20' , month : '09' , year : '2021'  , comment:''  },  
+                                            { day : '21' , month : '09' , year : '2021'  , comment:''  },
+                                            { day : '22' , month : '09' , year : '2021'  , comment:''  },
+                                            { day : '23' , month : '09' , year : '2021'  , comment:''  },
+                                            { day : '24' , month : '09' , year : '2021'  , comment:''  },
+                                            { day : '25' , month : '09' , year : '2021'  , comment:''  },
+                                            { day : '26' , month : '09' , year : '2021'  , comment:''  }    
+                                          ]
+                                      },
+                                      {
+                                      week_number: 32, 
+                                      days : [ 
+                                            { day : '27' , month : '09' , year : '2021'  , comment:''  },  
+                                            { day : '28' , month : '09' , year : '2021'  , comment:''  },
+                                            { day : '29' , month : '09' , year : '2021'  , comment:''  },
+                                            { day : '30' , month : '09' , year : '2021'  , comment:''  },
+                                            { day : '01' , month : '10' , year : '2021'  , comment:''  },
+                                            { day : '02' , month : '10' , year : '2021'  , comment:''  },
+                                            { day : '03' , month : '10' , year : '2021'  , comment:''  }    
+                                          ]
+                                      },
+                                      
+                                    ]	
+                                    
+                                    
+                                    
+                                  };
+
 
 
     default:
