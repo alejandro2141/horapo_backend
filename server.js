@@ -43,7 +43,7 @@ const client = new Client({
 client.connect() ;
 // GET RECOVER APPOINTMENTS 
 var sql  = null;
-sql = "insert into patient_recover_appointments ( email ) values ('"+req.body.email+"') RETURN * ;  ";
+sql = "insert into patient_recover_appointments ( email ) values ('"+req.body.email+"') RETURNING * ;  ";
 
 console.log('recover_appointments SQL :'+sql ) ;
 	client.query(sql, (err, result) => {
