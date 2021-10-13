@@ -65,7 +65,6 @@ console.log('recover_appointments SQL :'+sql ) ;
 })
 
 
-
 // REGISTER PROFESIONAL
 app.route('/public_register_professional')
 .post(function (req, res) {
@@ -186,7 +185,7 @@ const client = new Client({
 client.connect()
 //const query_update = "UPDATE appointment SET reserve_patient_name = '"+req.body.patient_name+"' ,  reserve_patient_doc_id = '"+req.body.patient_doc_id+"' , reserve_patient_email = '"+req.body.patient_email+"' , reserve_patient_phone ='"+req.body.patient_phone+"' , reserve_patient_insurance='"+req.body.patient_insurance+"' , reserve_available='FALSE'    WHERE id = '"+req.body.appointment_id+"' RETURNING * " ;
 
-const query_update = "UPDATE appointment SET patient_name = '"+req.body.patient_name+"' ,  patient_doc_id = '"+req.body.patient_doc_id+"' , patient_email = '"+req.body.patient_email+"' , patient_phone1 ='"+req.body.patient_phone+"' , patient_insurance='"+req.body.patient_insurance+"' , app_available='FALSE'    WHERE id = '"+req.body.appointment_id+"'  RETURNING * ";
+const query_update = "UPDATE appointment SET patient_name = '"+req.body.patient_name+"' ,  patient_doc_id = '"+req.body.patient_doc_id+"' , patient_email = '"+req.body.patient_email+"' , patient_phone1 ='"+req.body.patient_phone+"' , patient_insurance='"+req.body.patient_insurance+"' , app_available='FALSE'     WHERE id = '"+req.body.appointment_id+"'  RETURNING * ";
 
 console.log(query_update);
 const resultado = client.query(query_update, (err, result) => {
@@ -482,7 +481,7 @@ const resultado = client.query(sql, (err, result) => {
 
 })
 
-
+/*
 // PUBLIC POST get Professioal GET CALENDAR
 app.route('/get_calendar')
 .post(function (req, res) {
@@ -619,6 +618,46 @@ app.route('/get_calendar')
    ] 
 },
 					 
+{"name" : "Octubre", "month_number" : "10" , days : [ 
+  {day_number: "", "special_comment" : " " } ,
+  {day_number: "", "special_comment" : " " } ,
+  {day_number: "", "special_comment" : " " } ,
+  {day_number: "", "special_comment" : " " } ,
+{day_number: "1", "special_comment" : "" } ,
+{day_number: "2", "special_comment" : "" } ,
+{day_number: "3", "special_comment" : "" } ,
+{day_number: "4", "special_comment" : "" } ,
+{day_number: "5", "special_comment" : "" } ,
+{day_number: "6", "special_comment" : "" } ,
+{day_number: "7", "special_comment" : "" } ,
+{day_number: "8", "special_comment" : "" } ,
+{day_number: "9", "special_comment" : "" } ,
+{day_number: "10", "special_comment" : "" } ,
+{day_number: "11", "special_comment" : "" } ,
+{day_number: "12", "special_comment" : "" } ,
+{day_number: "13", "special_comment" : "" } ,
+{day_number: "14", "special_comment" : "" } ,
+{day_number: "15", "special_comment" : "" } ,
+{day_number: "16", "special_comment" : "" } ,
+{day_number: "17", "special_comment" : "" } ,
+{day_number: "18", "special_comment" : "" } ,
+{day_number: "19", "special_comment" : "" } ,
+{day_number: "20", "special_comment" : "" } ,
+{day_number: "21", "special_comment" : "" } ,
+{day_number: "22", "special_comment" : "" } ,
+{day_number: "23", "special_comment" : "" } ,
+{day_number: "24", "special_comment" : "" } ,
+{day_number: "25", "special_comment" : "" } ,
+{day_number: "26", "special_comment" : "" } ,
+{day_number: "27", "special_comment" : "" } ,
+{day_number: "28", "special_comment" : "" } ,
+{day_number: "29", "special_comment" : "" } ,
+{day_number: "30", "special_comment" : "" } ,
+{day_number: "31",   "special_comment" : " " } 
+ ] 
+},
+
+
         ] //end year 2021        
        
 		},  
@@ -672,7 +711,7 @@ app.route('/get_calendar')
 	res.status(200).send(json_response);
 })
 
-
+*/
 
 //***************************************
 //******** PROFESIONAL API  *************
@@ -1027,6 +1066,76 @@ switch ( year_month_extract ) {
                                     
                                   };
 
+                                  case '2021-10':
+                                    console.log("professional_get_month_calendar  2021-10");
+                                  json_response = { month_name : 'Octubre' , year : '2021' ,  weeks : [  
+                                                {
+                                                week_number: 33, 
+                                                days : [
+                                                        { day : '27' , month : '09' , year : '2021'  , comment:''  },  
+                                                        { day : '28' , month : '09' , year : '2021'  , comment:''  },
+                                                        { day : '29'  , month : '09' , year : '2021'  , comment:''  },
+                                                        { day : '30'  , month : '09' , year : '2021'  , comment:''  },
+                                                        { day : '01'  , month : '10' , year : '2021'  , comment:''  },
+                                                        { day : '02'  , month : '10' , year : '2021'  , comment:''  },
+                                                        { day : '03'  , month : '10' , year : '2021'  , comment:''  }
+                                                       ]
+                                                },
+                                                {
+                                                week_number: 34, 
+                                                days : [ 
+                                                        { day : '04' , month : '10' , year : '2021'  , comment:''  },  
+                                                        { day : '05' , month : '10' , year : '2021'  , comment:''  },
+                                                        { day : '06' , month : '10' , year : '2021'  , comment:''  },
+                                                        { day : '07' , month : '10' , year : '2021'  , comment:''  },
+                                                        { day : '08' , month : '10' , year : '2021'  , comment:''  },
+                                                        { day : '09' , month : '10' , year : '2021'  , comment:''  },
+                                                        { day : '10' , month : '10' , year : '2021'  , comment:''  }
+                                                      ]
+                                                },
+                                                {
+                                                week_number: 35, 
+                                                days : [ 
+                                                      { day : '11' , month : '10' , year : '2021'  , comment:''  },  
+                                                      { day : '12' , month : '10' , year : '2021'  , comment:''  },
+                                                      { day : '13' , month : '10' , year : '2021'  , comment:''  },
+                                                      { day : '14' , month : '10' , year : '2021'  , comment:''  },
+                                                      { day : '15' , month : '10' , year : '2021'  , comment:''  },
+                                                      { day : '16' , month : '10' , year : '2021'  , comment:''  },
+                                                      { day : '17' , month : '10' , year : '2021'  , comment:''  }        
+                                                  ]
+                                                },
+                                                {
+                                                week_number: 36, 
+                                                days : [ 
+                                                      { day : '18' , month : '10' , year : '2021'  , comment:''  },  
+                                                      { day : '19' , month : '10' , year : '2021'  , comment:''  },
+                                                      { day : '20' , month : '10' , year : '2021'  , comment:''  },
+                                                      { day : '21' , month : '10' , year : '2021'  , comment:''  },
+                                                      { day : '22' , month : '10' , year : '2021'  , comment:''  },
+                                                      { day : '23' , month : '10' , year : '2021'  , comment:''  },
+                                                      { day : '24' , month : '10' , year : '2021'  , comment:''  }    
+                                                    ]
+                                                },
+                                                {
+                                                week_number: 37, 
+                                                days : [ 
+                                                      { day : '25' , month : '10' , year : '2021'  , comment:''  },  
+                                                      { day : '26' , month : '10' , year : '2021'  , comment:''  },
+                                                      { day : '27' , month : '10' , year : '2021'  , comment:''  },
+                                                      { day : '28' , month : '10' , year : '2021'  , comment:''  },
+                                                      { day : '29' , month : '10' , year : '2021'  , comment:''  },
+                                                      { day : '30' , month : '10' , year : '2021'  , comment:''  },
+                                                      { day : '31' , month : '10' , year : '2021'  , comment:''  }    
+                                                    ]
+                                                },
+                                                
+                                              ]	
+                                              
+                                              
+                                              
+                                            };
+
 
 
     default:
@@ -1350,6 +1459,57 @@ const resultado = client.query(sql, (err, result) => {
 
 })
 
+
+// PPROFESSIONAL CREATE APPOINTMENTS
+app.route('/professional_create_appointment')
+.post(function (req, res) {
+     console.log('aprofessional_create_appointments INPUT : ', req.body );
+// ****** Connect to postgre
+const { Pool, Client } = require('pg')
+const client = new Client({
+  user: 'conmeddb_user',
+  host: '127.0.0.1',
+  database: 'conmeddb02',
+  password: 'paranoid',
+  port: 5432,
+})
+
+let agenda = null;
+let agenda_name = 'No Name';
+var agenda_result = null;
+client.connect() ;
+
+// CICLE TO CREATE APPOINTMENTS
+let startTime=  new Date(req.body.form_date);
+startTime.setHours (req.body.form_start_time.substring(0,2) , req.body.form_start_time.substring(3,5) ) 
+//startTime.setHours( Math.trunc( req.body.form_start_time.substring(0,2) /60   )  );
+//startTime.setMinutes(  req.body.form_start_time % 60  );
+console.log("StartTime:"+startTime);
+
+console.log("BLOQUE start ---->:"+startTime);
+
+
+var SQL_VALUES= "INSERT INTO appointment ( professional_id ,center_id , date ,start_time , duration , specialty , available_public_search , app_available , app_blocked  ) VALUES ( '"+req.body.form_professional_id+"' , '"+req.body.form_center_id+"' , '"+req.body.form_date+"'  , '"+startTime.getHours()+":"+startTime.getMinutes()+":00' ,  '"+req.body.form_appointment_duration+"'  , '"+req.body.form_specialty_code+"'  ,  '"+req.body.form_public+"' ,'1','0'  ) " ;  
+
+console.log("SQL VALUES:"+SQL_VALUES);
+
+const resultado = client.query(SQL_VALUES, (err, result) => {
+  if (err) {
+     // throw err ;
+      console.log(' ERROR QUERY  = '+SQL_VALUES ) ;
+      console.log(err ) ;
+    }
+  res.status(200).send(JSON.stringify(result));
+  console.log('Success Insert = '+JSON.stringify(result) ) ;
+ // client.end()
+})
+
+
+})
+  
+
+
+
 // PPROFESSIONAL CREATE APPOINTMENTS
 app.route('/professional_create_appointments')
 .post(function (req, res) {
@@ -1429,6 +1589,8 @@ const resultado = client.query(SQL_VALUES, (err, result) => {
 
 })
   
+
+
 // PROFESSIONAL COPY CALENDAR DAY
 app.route('/professional_copy_calendar_day')
 .post(function (req, res) {
@@ -2366,6 +2528,7 @@ console.log('get_professional_data_by_agenda_id  SQL:'+sql ) ;
 //********************************************* 
 // PUBLIC POST get Professioal GET CALENDAR
 //********************************************* 
+
 app.route('/get_calendar')
 .post(function (req, res) {
 	console.log('get_calendar INPUT:', req.body );
