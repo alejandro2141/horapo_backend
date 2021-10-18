@@ -110,6 +110,99 @@ console.log('public_register_professional SQL :'+sql ) ;
 
 
 
+// SAVE APPOINTMENT
+app.route('/public_take_appointment')
+.post(function (req, res) {
+    console.log('public_take_appointment INPUT : ', req.body );
+// ****** Connect to postgre
+const { Pool, Client } = require('pg')
+const client = new Client({
+  user: 'conmeddb_user',
+  host: '127.0.0.1',
+  database: 'conmeddb02',
+  password: 'paranoid',
+  port: 5432,
+})
+client.connect()
+//const query_update = "UPDATE appointment SET reserve_patient_name = '"+req.body.patient_name+"' ,  reserve_patient_doc_id = '"+req.body.patient_doc_id+"' , reserve_patient_email = '"+req.body.patient_email+"' , reserve_patient_phone ='"+req.body.patient_phone+"' , reserve_patient_insurance='"+req.body.patient_insurance+"' , reserve_available='FALSE'    WHERE id = '"+req.body.appointment_id+"' RETURNING * " ;
+let query_update = "UPDATE appointment SET " ;
+
+// from Update Form
+if  (req.body.form_start_time != null )
+{ query_update += " start_time = '"+req.body.form_start_time+"'  , "   ;}
+
+if  (req.body.form_appointment_duration != null )
+{ query_update += " duration = '"+req.body.form_appointment_duration+"'  , "   ;}
+
+if  (req.body.form_center_id != null )
+{ query_update += " center_id = '"+req.body.form_center_id+"'  , "   ;}
+
+if  (req.body.form_specialty_code != null )
+{ query_update += " specialty = '"+req.body.form_specialty_code+"'  , "   ;}
+
+
+// FROM Take Appointment. 
+if  (req.body.patient_name != null )
+{ query_update += " patient_name = '"+req.body.patient_name+"'  , "   ;}
+
+if  (req.body.patient_doc_id != null )
+{  query_update += "patient_doc_id = '"+req.body.patient_doc_id+"' , " ; } 
+
+if  (req.body.patient_email != null )
+{  query_update += "patient_email = '"+req.body.patient_email+"' , "   ; } 
+ 
+if  (req.body.patient_phone != null )
+{  query_update += "patient_phone1 ='"+req.body.patient_phone+"' ,  " ; } 
+ 
+if  (req.body.patient_insurance != null )
+{  query_update += "patient_insurance='"+req.body.patient_insurance+"' , " ; } 
+/*
+  form_start_time: '09:00:00',
+  form_appointment_duration: '45',
+  appointment_id: 1235,
+  form_center_id: 45,
+  form_professional_id: '1',
+  form_date: '2021-10-21',
+  form_specialty_code: 131,
+  form_public:
+*/
+//last one of the query.- 
+query_update += " app_available ='false' , " ;
+
+if  (req.body.form_public != null )
+{  query_update += " available_public_search ='"+req.body.form_public+" ' " ; } 
+
+query_update += "    WHERE id = '"+req.body.appointment_id+"'  RETURNING * " ;
+
+//const query_update = "UPDATE appointment SET patient_name = '"+req.body.patient_name+"' ,  patient_doc_id = '"+req.body.patient_doc_id+"' , patient_email = '"+req.body.patient_email+"' , patient_phone1 ='"+req.body.patient_phone+"' , patient_insurance='"+req.body.patient_insurance+"' , app_available='FALSE'     WHERE id = '"+req.body.appointment_id+"'  RETURNING * ";
+
+console.log(query_update);
+const resultado = client.query(query_update, (err, result) => {
+    //res.status(200).send(JSON.stringify(result)) ;
+    if (err) {
+      console.log('/public_take_appointment ERR:'+err ) ;
+
+    }
+    else {
+    console.log("public_take_appointment JSON RESPONSE BODY : "+JSON.stringify(result));
+    res.status(200).send(JSON.stringify(result.rows[0])) ;  
+    }
+    
+
+    client.end()
+})
+
+  //console.log(JSON.stringify(JSON.stringify(req))) ;
+  
+  
+  
+ //res.send("saludos terricolas");
+  //res.status(200).json(resultado.rows) ;
+  // res.send(JSON.stringify(result));
+})
+
+
+
 // **************************************
 // ********* COMMON API ******************
 // **************************************
@@ -184,8 +277,54 @@ const client = new Client({
 })
 client.connect()
 //const query_update = "UPDATE appointment SET reserve_patient_name = '"+req.body.patient_name+"' ,  reserve_patient_doc_id = '"+req.body.patient_doc_id+"' , reserve_patient_email = '"+req.body.patient_email+"' , reserve_patient_phone ='"+req.body.patient_phone+"' , reserve_patient_insurance='"+req.body.patient_insurance+"' , reserve_available='FALSE'    WHERE id = '"+req.body.appointment_id+"' RETURNING * " ;
+let query_update = "UPDATE appointment SET " ;
 
-const query_update = "UPDATE appointment SET patient_name = '"+req.body.patient_name+"' ,  patient_doc_id = '"+req.body.patient_doc_id+"' , patient_email = '"+req.body.patient_email+"' , patient_phone1 ='"+req.body.patient_phone+"' , patient_insurance='"+req.body.patient_insurance+"' , app_available='FALSE'     WHERE id = '"+req.body.appointment_id+"'  RETURNING * ";
+// from Update Form
+if  (req.body.form_start_time != null )
+{ query_update += " start_time = '"+req.body.form_start_time+"'  , "   ;}
+
+if  (req.body.form_appointment_duration != null )
+{ query_update += " duration = '"+req.body.form_appointment_duration+"'  , "   ;}
+
+if  (req.body.form_center_id != null )
+{ query_update += " center_id = '"+req.body.form_center_id+"'  , "   ;}
+
+if  (req.body.form_specialty_code != null )
+{ query_update += " specialty = '"+req.body.form_specialty_code+"'  , "   ;}
+
+
+// FROM Take Appointment. 
+if  (req.body.patient_name != null )
+{ query_update += " patient_name = '"+req.body.patient_name+"'  , "   ;}
+
+if  (req.body.patient_doc_id != null )
+{  query_update += "patient_doc_id = '"+req.body.patient_doc_id+"' , " ; } 
+
+if  (req.body.patient_email != null )
+{  query_update += "patient_email = '"+req.body.patient_email+"' , "   ; } 
+ 
+if  (req.body.patient_phone != null )
+{  query_update += "patient_phone1 ='"+req.body.patient_phone+"' ,  " ; } 
+ 
+if  (req.body.patient_insurance != null )
+{  query_update += "patient_insurance='"+req.body.patient_insurance+"' , " ; } 
+/*
+  form_start_time: '09:00:00',
+  form_appointment_duration: '45',
+  appointment_id: 1235,
+  form_center_id: 45,
+  form_professional_id: '1',
+  form_date: '2021-10-21',
+  form_specialty_code: 131,
+  form_public:
+*/
+//last one of the query.- 
+if  (req.body.form_public != null )
+{  query_update += " available_public_search ='"+req.body.form_public+" ' " ; } 
+
+query_update += "    WHERE id = '"+req.body.appointment_id+"'  RETURNING * " ;
+
+//const query_update = "UPDATE appointment SET patient_name = '"+req.body.patient_name+"' ,  patient_doc_id = '"+req.body.patient_doc_id+"' , patient_email = '"+req.body.patient_email+"' , patient_phone1 ='"+req.body.patient_phone+"' , patient_insurance='"+req.body.patient_insurance+"' , app_available='FALSE'     WHERE id = '"+req.body.appointment_id+"'  RETURNING * ";
 
 console.log(query_update);
 const resultado = client.query(query_update, (err, result) => {
