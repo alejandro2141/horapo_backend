@@ -352,9 +352,49 @@ const resultado = client.query(query_update, (err, result) => {
 })
 
 // CANCEL APPOINTMENT 
-app.route('/cancel_appointment')
+app.route('/professional_cancel_appointment')
 .post(function (req, res) {
-    console.log('save_appointment INPUT : ', req.body );
+    console.log('Cancel App INPUT : ', req.body );
+// ****** Connect to postgre
+const { Pool, Client } = require('pg')
+const client = new Client({
+  user: 'conmeddb_user',
+  host: '127.0.0.1',
+  database: 'conmeddb02',
+  password: 'paranoid',
+  port: 5432,
+})
+client.connect()
+const query_update = "UPDATE appointment SET app_status = '0' , app_available = true , patient_doc_id = null , patient_name = null , patient_phone1 = null , patient_phone2 = null , patient_email = null , confirmation_status = null      WHERE id = '"+req.body.appointment_id+"' RETURNING * " ;
+
+console.log(query_update);
+const resultado = client.query(query_update, (err, result) => {
+
+     console.log('RESULTADO '+JSON.stringify(resultado))
+     var json_response_ok = { 
+			    result_status : 'inserted', 
+			    result_code: '200',
+			    	  };
+  
+    res.status(200).send(JSON.stringify(json_response_ok));
+    console.log("JSON RESPONSE BODY : "+JSON.stringify(json_response_ok));
+    console.log ("ERROR LOG : "+err);
+
+  client.end()
+})
+
+ //console.log(JSON.stringify(JSON.stringify(req))) ;
+ //res.send("saludos terricolas");
+ //res.status(200).json(resultado.rows) ;
+ // res.send(JSON.stringify(result));
+})
+
+
+
+// CANCEL APPOINTMENT 
+app.route('/cancel_hour')
+.post(function (req, res) {
+    console.log('Cancel HOUR INPUT : ', req.body );
 // ****** Connect to postgre
 const { Pool, Client } = require('pg')
 const client = new Client({
