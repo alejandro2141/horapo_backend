@@ -245,7 +245,7 @@ const client = new Client({
 
 client.connect()
 // ****** Run query to bring appointment
-const sql  = "SELECT * from  specialty where id IN  (SELECT specialty_id FROM professional_specialty WHERE professional_id=1) ;" ;
+const sql  = "SELECT * from  specialty where id IN  (SELECT specialty_id FROM professional_specialty WHERE professional_id="+req.body. professional_id+") ;" ;
 console.log('get_professional_specialty: SQL GET PROFESSIONAL SPECIALTY = '+sql ) ;
 const resultado = client.query(sql, (err, result) => {
 
@@ -350,6 +350,54 @@ const resultado = client.query(query_update, (err, result) => {
   //res.status(200).json(resultado.rows) ;
   // res.send(JSON.stringify(result));
 })
+
+/*****************************************************
+
+PROFESIONAL API
+
+*******************************************************/
+
+
+// SHUT DOWN FIRST LOGIN
+app.route('/professional_shutdown_firstlogin')
+.post(function (req, res) {
+    console.log('professional_shutdown_firstlogin INPUT : ', req.body );
+// ****** Connect to postgre
+const { Pool, Client } = require('pg')
+const client = new Client({
+  user: 'conmeddb_user',
+  host: '127.0.0.1',
+  database: 'conmeddb02',
+  password: 'paranoid',
+  port: 5432,
+})
+client.connect()
+const query_update = "UPDATE professional SET first_time = 'false' WHERE id = '"+req.body.professional_id+"' RETURNING * " ;
+
+console.log(query_update);
+const resultado = client.query(query_update, (err, result) => {
+
+     console.log('RESULTADO '+JSON.stringify(resultado))
+     var json_response_ok = { 
+			    result_status : 'Updated', 
+			    result_code: '200',
+			    	  };
+  
+    res.status(200).send(JSON.stringify(json_response_ok));
+    console.log("JSON RESPONSE BODY : "+JSON.stringify(json_response_ok));
+    console.log ("ERROR LOG : "+err);
+
+  client.end()
+})
+
+ //console.log(JSON.stringify(JSON.stringify(req))) ;
+ //res.send("saludos terricolas");
+ //res.status(200).json(resultado.rows) ;
+ // res.send(JSON.stringify(result));
+})
+
+
+
 
 // CANCEL APPOINTMENT 
 app.route('/professional_cancel_appointment')
@@ -1415,7 +1463,7 @@ client.connect()
 
 //const sql  = "SELECT * FROM (SELECT * FROM (SELECT * FROM professional WHERE email = '"+req.body.form_email+"')P LEFT JOIN account ON P.id = account.user_id) J WHERE j.pass = '"+req.body.form_pass+"' " ;
 //const sql = "INSERT INTO session (name, user_id,last_login , last_activity_time , user_type) RETURNING * SELECT   name, user_id , now() as last_login ,now() as last_activity_time, 1 as user_type  FROM (SELECT * FROM (SELECT * FROM professional WHERE email ='"+req.body.form_email+"' )P LEFT JOIN account ON P.id = account.user_id) J WHERE j.pass = '"+req.body.form_pass+"' RETURNING id" ;
-const sql = "INSERT INTO session (name, user_id,last_login , last_activity_time , user_type  ) SELECT   name, user_id , now() as last_login ,now() as last_activity_time, 1 as user_type  FROM (SELECT * FROM (SELECT * FROM professional WHERE email ='"+req.body.form_email+"' )P LEFT JOIN account ON P.id = account.user_id) J WHERE j.pass = '"+req.body.form_pass+"'   RETURNING * ";
+const sql = "INSERT INTO session (name, user_id,last_login , last_activity_time , user_type , first_time ) SELECT   name, user_id , now() as last_login ,now() as last_activity_time, 1 as user_type , first_time  FROM (SELECT * FROM (SELECT * FROM professional WHERE email ='"+req.body.form_email+"' )P LEFT JOIN account ON P.id = account.user_id) J WHERE j.pass = '"+req.body.form_pass+"'   RETURNING * ";
 
 console.log('professionalLogin SQL:'+sql ) ;
 var json_response = {  professional_id: null , result_code : 33 };
@@ -1433,6 +1481,7 @@ const resultado = client.query(sql, (err, result) => {
 					result_code: 0 ,
 					professional_name: result.rows[0].name ,
 					token : result.rows[0].id,
+          first_time : result.rows[0].first_time,
 					};
   }
   else
