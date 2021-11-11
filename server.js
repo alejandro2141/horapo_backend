@@ -1427,7 +1427,7 @@ const client = new Client({
 client.connect()
 // ****** Run query to bring appointment
 //const sql ="SELECT * FROM ( SELECT address as center_address, name as center_name, app_id,date, start_time, end_time, duration, specialty, center_id, available_public_search, confirmation_status, blocked, professional_id   FROM   (SELECT  id as app_id, date , start_time, end_time, duration, specialty, center_id, available_public_search, confirmation_status, blocked, professional_id   FROM appointment WHERE professional_id='"+req.body.professional_id+"' and Date >= '"+req.body.date+"' )   J LEFT JOIN center ON center.id=j.center_id  )K LEFT JOIN specialty ON specialty.id=K.specialty   " ;
-const sql ="SELECT * FROM ( SELECT  app_status, patient_name, patient_email, patient_phone1, patient_phone2, patient_insurance ,  patient_doc_id , name as specialty_name, center_address, center_name, center_color , app_id,date, start_time, end_time, duration, specialty, center_id, available_public_search, confirmation_status, app_blocked, professional_id, app_available   FROM (  SELECT app_status, patient_name, patient_email, patient_phone1, patient_phone2, patient_insurance ,  patient_doc_id , address as center_address, name as center_name, color as center_color, app_id,date, start_time, end_time, duration, specialty, center_id, available_public_search, confirmation_status, app_blocked, professional_id ,app_available  FROM  (SELECT app_status, patient_name, patient_email, patient_phone1, patient_phone2, patient_insurance ,  patient_doc_id ,id as app_id, date , start_time, end_time, duration, specialty, center_id, available_public_search, confirmation_status, app_blocked, professional_id , app_available  FROM appointment WHERE professional_id='"+req.body.professional_id+"' and Date = '"+req.body.date+"' ORDER BY start_time ASC ) J LEFT JOIN center ON center.id=j.center_id  )K LEFT JOIN specialty ON specialty.id=K.specialty ) L LEFT JOIN professional ON professional.id = L.professional_id " ;
+const sql ="SELECT * FROM ( SELECT  app_status, patient_name, patient_email, patient_phone1, patient_phone2, patient_insurance ,  patient_doc_id , name as specialty_name, center_address, center_name, center_color , app_id,date, start_time, end_time, duration, specialty,  specialty1 ,specialty2 ,specialty3,specialty4 , specialty5, center_id, available_public_search, confirmation_status, app_blocked, professional_id, app_available   FROM (  SELECT app_status, patient_name, patient_email, patient_phone1, patient_phone2, patient_insurance ,  patient_doc_id , address as center_address, name as center_name, color as center_color, app_id,date, start_time, end_time, duration, specialty,  specialty1 ,specialty2 ,specialty3,specialty4 , specialty5, center_id, available_public_search, confirmation_status, app_blocked, professional_id ,app_available  FROM  (SELECT app_status, patient_name, patient_email, patient_phone1, patient_phone2, patient_insurance ,  patient_doc_id ,id as app_id, date , start_time, end_time, duration, specialty,  specialty1 ,specialty2 ,specialty3,specialty4 , specialty5, center_id, available_public_search, confirmation_status, app_blocked, professional_id , app_available  FROM appointment WHERE professional_id='"+req.body.professional_id+"' and Date = '"+req.body.date+"' ORDER BY start_time ASC ) J LEFT JOIN center ON center.id=j.center_id  )K LEFT JOIN specialty ON specialty.id=K.specialty ) L LEFT JOIN professional ON professional.id = L.professional_id " ;
 
 console.log('professional_get_appointments_day SQL:'+sql ) ;
 const resultado = client.query(sql, (err, result) => {
@@ -1715,9 +1715,18 @@ startTime.setHours (req.body.form_start_time.substring(0,2) , req.body.form_star
 console.log("StartTime:"+startTime);
 
 console.log("BLOQUE start ---->:"+startTime);
+//let specialty_list = JSON.parse(req.body.form_specialty_code);
 
+//let specialty_list_array = 
 
-var SQL_VALUES= "INSERT INTO appointment ( professional_id ,center_id , date ,start_time , duration , specialty , available_public_search , app_available , app_blocked  ) VALUES ( '"+req.body.form_professional_id+"' , '"+req.body.form_center_id+"' , '"+req.body.form_date+"'  , '"+startTime.getHours()+":"+startTime.getMinutes()+":00' ,  '"+req.body.form_appointment_duration+"'  , '"+req.body.form_specialty_code+"'  ,  '"+req.body.form_public+"' ,'1','0'  ) " ;  
+req.body.form_specialty_code.push( { id: null, name: null , description: 'empty' } ) ;
+req.body.form_specialty_code.push( { id: null, name: null , description: 'empty' } ) ;
+req.body.form_specialty_code.push( { id: null, name: null , description: 'empty' } ) ;
+req.body.form_specialty_code.push( { id: null, name: null , description: 'empty' } ) ;
+req.body.form_specialty_code.push( { id: null, name: null , description: 'empty' } ) ;
+req.body.form_specialty_code.push( { id: null, name: null , description: 'empty' } ) ;
+
+var SQL_VALUES= "INSERT INTO appointment ( professional_id ,center_id , date ,start_time , duration , specialty , specialty1, specialty2, specialty3, specialty4, specialty5  , available_public_search , app_available , app_blocked  ) VALUES ( '"+req.body.form_professional_id+"' , '"+req.body.form_center_id+"' , '"+req.body.form_date+"'  , '"+startTime.getHours()+":"+startTime.getMinutes()+":00' ,  '"+req.body.form_appointment_duration+"'  , "+ req.body.form_specialty_code[0].id +" , "+ req.body.form_specialty_code[1].id +" , "+ req.body.form_specialty_code[2].id +" , "+ req.body.form_specialty_code[3].id +" , "+ req.body.form_specialty_code[4].id +" , "+ req.body.form_specialty_code[5].id +"  ,  '"+req.body.form_public+"' ,'1','0'  ) " ;  
 
 console.log("SQL VALUES:"+SQL_VALUES);
 
@@ -1884,7 +1893,7 @@ let sql_and_insurance =" ";
 
 
 if (req.body.specialty != null && req.body.specialty != ""  )
-{ sql_and_specialty = " AND specialty = '"+ req.body.specialty+"'"  }
+{ sql_and_specialty = " AND specialty = '"+ req.body.specialty+"' OR  specialty1 = '"+ req.body.specialty+"' OR  specialty2 = '"+ req.body.specialty+"' OR  specialty3 = '"+ req.body.specialty+"'  OR  specialty4 = '"+ req.body.specialty+"' OR  specialty5 = '"+ req.body.specialty+"'  " }
 
 if (req.body.comuna != null && req.body.comuna != ""  )
 { sql_and_comuna  = " WHERE   comuna = '"+ req.body.comuna+"'"  }
@@ -1894,8 +1903,8 @@ if (req.body.insurance != null  && req.body.insurance != "")
 
 //const sql ="SELECT * FROM appointment where Date = '"+req.body.date+"' AND "+ sqland +"  ORDER BY date DESC " ;
 const sql = `SELECT * FROM 
-( SELECT  patient_name, app_status, name as specialty_name, center_address, center_name, app_id, date, start_time, end_time, duration, specialty, center_id, available_public_search, confirmation_status, app_blocked, professional_id, app_available   FROM 
-( SELECT app_status, patient_name, patient_email, patient_phone1, patient_phone2, patient_insurance ,  patient_doc_id , address as center_address, name as center_name, app_id,date, start_time, end_time, duration, specialty, center_id, available_public_search, confirmation_status, app_blocked, professional_id ,app_available  FROM  
+( SELECT comuna, patient_name, app_status, name as specialty_name, center_address, center_name, app_id, date, start_time, end_time, duration, specialty, center_id, available_public_search, confirmation_status, app_blocked, professional_id, app_available   FROM 
+( SELECT comuna, app_status, patient_name, patient_email, patient_phone1, patient_phone2, patient_insurance ,  patient_doc_id , address as center_address, name as center_name, app_id,date, start_time, end_time, duration, specialty, center_id, available_public_search, confirmation_status, app_blocked, professional_id ,app_available  FROM  
  (SELECT app_status, patient_name, patient_email, patient_phone1, patient_phone2, patient_insurance ,  patient_doc_id ,id as app_id, date , start_time, end_time, duration, specialty, center_id, available_public_search, confirmation_status, app_blocked, professional_id , app_available  
 FROM appointment WHERE Date >= '`+req.body.date+`' 
 	AND available_public_search = '1'  
