@@ -1893,7 +1893,7 @@ let sql_and_insurance =" ";
 
 
 if (req.body.specialty != null && req.body.specialty != ""  )
-{ sql_and_specialty = " AND specialty = '"+ req.body.specialty+"' OR  specialty1 = '"+ req.body.specialty+"' OR  specialty2 = '"+ req.body.specialty+"' OR  specialty3 = '"+ req.body.specialty+"'  OR  specialty4 = '"+ req.body.specialty+"' OR  specialty5 = '"+ req.body.specialty+"'  " }
+{ sql_and_specialty = " AND ( specialty = '"+ req.body.specialty+"' OR  specialty1 = '"+ req.body.specialty+"' OR  specialty2 = '"+ req.body.specialty+"' OR  specialty3 = '"+ req.body.specialty+"'  OR  specialty4 = '"+ req.body.specialty+"' OR  specialty5 = '"+ req.body.specialty+"' ) " }
 
 if (req.body.comuna != null && req.body.comuna != ""  )
 { sql_and_comuna  = " WHERE   comuna = '"+ req.body.comuna+"'"  }
@@ -1903,8 +1903,8 @@ if (req.body.insurance != null  && req.body.insurance != "")
 
 //const sql ="SELECT * FROM appointment where Date = '"+req.body.date+"' AND "+ sqland +"  ORDER BY date DESC " ;
 const sql = `SELECT * FROM 
-( SELECT comuna, patient_name, app_status, name as specialty_name, center_address, center_name, app_id, date, start_time, end_time, duration, specialty, center_id, available_public_search, confirmation_status, app_blocked, professional_id, app_available   FROM 
-( SELECT comuna, app_status, patient_name, patient_email, patient_phone1, patient_phone2, patient_insurance ,  patient_doc_id , address as center_address, name as center_name, app_id,date, start_time, end_time, duration, specialty, center_id, available_public_search, confirmation_status, app_blocked, professional_id ,app_available  FROM  
+( SELECT url_map, comuna, patient_name, app_status, name as specialty_name, center_address, center_name, app_id, date, start_time, end_time, duration, specialty, center_id, available_public_search, confirmation_status, app_blocked, professional_id, app_available   FROM 
+( SELECT url_map, comuna, app_status, patient_name, patient_email, patient_phone1, patient_phone2, patient_insurance ,  patient_doc_id , address as center_address, name as center_name, app_id,date, start_time, end_time, duration, specialty, center_id, available_public_search, confirmation_status, app_blocked, professional_id ,app_available  FROM  
  (SELECT app_status, patient_name, patient_email, patient_phone1, patient_phone2, patient_insurance ,  patient_doc_id ,id as app_id, date , start_time, end_time, duration, specialty, center_id, available_public_search, confirmation_status, app_blocked, professional_id , app_available  
 FROM appointment WHERE Date >= '`+req.body.date+`' 
 	AND available_public_search = '1'  
