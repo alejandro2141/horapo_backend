@@ -397,8 +397,6 @@ const resultado = client.query(query_update, (err, result) => {
 })
 
 
-
-
 // CANCEL APPOINTMENT 
 app.route('/professional_cancel_appointment')
 .post(function (req, res) {
@@ -436,8 +434,6 @@ const resultado = client.query(query_update, (err, result) => {
  //res.status(200).json(resultado.rows) ;
  // res.send(JSON.stringify(result));
 })
-
-
 
 // CANCEL APPOINTMENT 
 app.route('/cancel_hour')
@@ -642,7 +638,6 @@ const resultado = client.query(sql, (err, result) => {
 
 })
 
-
 // GET COMUNA LIST
 app.route('/common_get_comuna_list')
 .post(function (req, res) {
@@ -674,7 +669,6 @@ const resultado = client.query(sql, (err, result) => {
 })
 
 })
-
 
 // GET INSURANCE LIST
 app.route('/common_get_insurance_list')
@@ -708,670 +702,9 @@ const resultado = client.query(sql, (err, result) => {
 
 })
 
-/*
-// PUBLIC POST get Professioal GET CALENDAR
-app.route('/get_calendar')
-.post(function (req, res) {
-	console.log('get_calendar INPUT:', req.body );
- 
- const json_response = { 
-"version": "Chilean Calendar v1.0",
-"years" : [ 
-        {"year_number" : "2021", months : [
-				
-          {"name" : "Julio", "month_number" : "7" , days : [ 
-            {day_number: "", "special_comment" : " " } ,
-            {day_number: "", "special_comment" : " " } ,
-            {day_number: "", "special_comment" : " " } ,
-          {day_number: "1", "special_comment" : "" } ,
-          {day_number: "2", "special_comment" : "" } ,
-          {day_number: "3", "special_comment" : "" } ,
-          {day_number: "4", "special_comment" : "" } ,
-          {day_number: "5", "special_comment" : "" } ,
-          {day_number: "6", "special_comment" : "" } ,
-          {day_number: "7", "special_comment" : "" } ,
-          {day_number: "8", "special_comment" : "" } ,
-          {day_number: "9", "special_comment" : "" } ,
-          {day_number: "10", "special_comment" : "" } ,
-          {day_number: "11", "special_comment" : "" } ,
-          {day_number: "12", "special_comment" : "" } ,
-          {day_number: "13", "special_comment" : "" } ,
-          {day_number: "14", "special_comment" : "" } ,
-          {day_number: "15", "special_comment" : "" } ,
-          {day_number: "16", "special_comment" : "" } ,
-          {day_number: "17", "special_comment" : "" } ,
-          {day_number: "18", "special_comment" : "" } ,
-          {day_number: "19", "special_comment" : "" } ,
-          {day_number: "20", "special_comment" : "" } ,
-          {day_number: "21", "special_comment" : "" } ,
-          {day_number: "22", "special_comment" : "" } ,
-          {day_number: "23", "special_comment" : "" } ,
-          {day_number: "24", "special_comment" : "" } ,
-          {day_number: "25", "special_comment" : "" } ,
-          {day_number: "26", "special_comment" : "" } ,
-          {day_number: "27", "special_comment" : "" } ,
-          {day_number: "28", "special_comment" : "" } ,
-          {day_number: "29", "special_comment" : "" } ,
-          {day_number: "30", "special_comment" : "" } ,
-          {day_number: "31", "special_comment" : "" } ,
-          {day_number: "",   "special_comment" : " " } 
-          
-           ] 
-      },
-
-      {"name" : "Agosto", "month_number" : "8" , days : [ 
-        {day_number: "", "special_comment" : " " } ,
-        {day_number: "", "special_comment" : " " } ,
-        {day_number: "", "special_comment" : " " } ,
-        {day_number: "", "special_comment" : " " } ,
-        {day_number: "", "special_comment" : " " } ,
-        {day_number: "", "special_comment" : " " } ,
-      {day_number: "1", "special_comment" : "" } ,
-      {day_number: "2", "special_comment" : "" } ,
-      {day_number: "3", "special_comment" : "" } ,
-      {day_number: "4", "special_comment" : "" } ,
-      {day_number: "5", "special_comment" : "" } ,
-      {day_number: "6", "special_comment" : "" } ,
-      {day_number: "7", "special_comment" : "" } ,
-      {day_number: "8", "special_comment" : "" } ,
-      {day_number: "9", "special_comment" : "" } ,
-      {day_number: "10", "special_comment" : "" } ,
-      {day_number: "11", "special_comment" : "" } ,
-      {day_number: "12", "special_comment" : "" } ,
-      {day_number: "13", "special_comment" : "" } ,
-      {day_number: "14", "special_comment" : "" } ,
-      {day_number: "15", "special_comment" : "" } ,
-      {day_number: "16", "special_comment" : "" } ,
-      {day_number: "17", "special_comment" : "" } ,
-      {day_number: "18", "special_comment" : "" } ,
-      {day_number: "19", "special_comment" : "" } ,
-      {day_number: "20", "special_comment" : "" } ,
-      {day_number: "21", "special_comment" : "" } ,
-      {day_number: "22", "special_comment" : "" } ,
-      {day_number: "23", "special_comment" : "" } ,
-      {day_number: "24", "special_comment" : "" } ,
-      {day_number: "25", "special_comment" : "" } ,
-      {day_number: "26", "special_comment" : "" } ,
-      {day_number: "27", "special_comment" : "" } ,
-      {day_number: "28", "special_comment" : "" } ,
-      {day_number: "29", "special_comment" : "" } ,
-      {day_number: "30", "special_comment" : "" } ,
-      {day_number: "31", "special_comment" : "" } ,
-      {day_number: "",   "special_comment" : " " } ,
-      {day_number: "",   "special_comment" : " " } ,
-      {day_number: "",   "special_comment" : " " } ,
-      {day_number: "",   "special_comment" : " " } ,
-      {day_number: "",   "special_comment" : " " } 
-      
-       ] 
-  },
-
-  {"name" : "Septiembre", "month_number" : "9" , days : [ 
-    {day_number: "", "special_comment" : " " } ,
-    {day_number: "", "special_comment" : " " } ,
-  {day_number: "1", "special_comment" : "" } ,
-  {day_number: "2", "special_comment" : "" } ,
-  {day_number: "3", "special_comment" : "" } ,
-  {day_number: "4", "special_comment" : "" } ,
-  {day_number: "5", "special_comment" : "" } ,
-  {day_number: "6", "special_comment" : "" } ,
-  {day_number: "7", "special_comment" : "" } ,
-  {day_number: "8", "special_comment" : "" } ,
-  {day_number: "9", "special_comment" : "" } ,
-  {day_number: "10", "special_comment" : "" } ,
-  {day_number: "11", "special_comment" : "" } ,
-  {day_number: "12", "special_comment" : "" } ,
-  {day_number: "13", "special_comment" : "" } ,
-  {day_number: "14", "special_comment" : "" } ,
-  {day_number: "15", "special_comment" : "" } ,
-  {day_number: "16", "special_comment" : "" } ,
-  {day_number: "17", "special_comment" : "" } ,
-  {day_number: "18", "special_comment" : "" } ,
-  {day_number: "19", "special_comment" : "" } ,
-  {day_number: "20", "special_comment" : "" } ,
-  {day_number: "21", "special_comment" : "" } ,
-  {day_number: "22", "special_comment" : "" } ,
-  {day_number: "23", "special_comment" : "" } ,
-  {day_number: "24", "special_comment" : "" } ,
-  {day_number: "25", "special_comment" : "" } ,
-  {day_number: "26", "special_comment" : "" } ,
-  {day_number: "27", "special_comment" : "" } ,
-  {day_number: "28", "special_comment" : "" } ,
-  {day_number: "29", "special_comment" : "" } ,
-  {day_number: "30", "special_comment" : "" } ,
-  {day_number: "",   "special_comment" : " " } ,
-  {day_number: "",   "special_comment" : " " } ,
-  {day_number: "",   "special_comment" : " " }  
-   ] 
-},
-					 
-{"name" : "Octubre", "month_number" : "10" , days : [ 
-  {day_number: "", "special_comment" : " " } ,
-  {day_number: "", "special_comment" : " " } ,
-  {day_number: "", "special_comment" : " " } ,
-  {day_number: "", "special_comment" : " " } ,
-{day_number: "1", "special_comment" : "" } ,
-{day_number: "2", "special_comment" : "" } ,
-{day_number: "3", "special_comment" : "" } ,
-{day_number: "4", "special_comment" : "" } ,
-{day_number: "5", "special_comment" : "" } ,
-{day_number: "6", "special_comment" : "" } ,
-{day_number: "7", "special_comment" : "" } ,
-{day_number: "8", "special_comment" : "" } ,
-{day_number: "9", "special_comment" : "" } ,
-{day_number: "10", "special_comment" : "" } ,
-{day_number: "11", "special_comment" : "" } ,
-{day_number: "12", "special_comment" : "" } ,
-{day_number: "13", "special_comment" : "" } ,
-{day_number: "14", "special_comment" : "" } ,
-{day_number: "15", "special_comment" : "" } ,
-{day_number: "16", "special_comment" : "" } ,
-{day_number: "17", "special_comment" : "" } ,
-{day_number: "18", "special_comment" : "" } ,
-{day_number: "19", "special_comment" : "" } ,
-{day_number: "20", "special_comment" : "" } ,
-{day_number: "21", "special_comment" : "" } ,
-{day_number: "22", "special_comment" : "" } ,
-{day_number: "23", "special_comment" : "" } ,
-{day_number: "24", "special_comment" : "" } ,
-{day_number: "25", "special_comment" : "" } ,
-{day_number: "26", "special_comment" : "" } ,
-{day_number: "27", "special_comment" : "" } ,
-{day_number: "28", "special_comment" : "" } ,
-{day_number: "29", "special_comment" : "" } ,
-{day_number: "30", "special_comment" : "" } ,
-{day_number: "31",   "special_comment" : " " } 
- ] 
-},
-
-
-        ] //end year 2021        
-       
-		},  
-		
-		{"year_number" : "2022", months : [  
-					{"name" : "Enero", "month_number" : "1" , days : [ 
-						    {day_number: "", "special_comment" : " " } ,
-							{day_number: "1", "special_comment" : "" } ,
-							{day_number: "2", "special_comment" : "" } ,
-							{day_number: "3", "special_comment" : "" } ,
-							{day_number: "4", "special_comment" : "" } ,
-							{day_number: "5", "special_comment" : "" } ,
-							{day_number: "6", "special_comment" : "" } ,
-							{day_number: "7", "special_comment" : "" } ,
-							{day_number: "8", "special_comment" : "" } ,
-							{day_number: "9", "special_comment" : "" } ,
-							{day_number: "10", "special_comment" : "" } ,
-							{day_number: "11", "special_comment" : "" } ,
-							{day_number: "12", "special_comment" : "" } ,
-							{day_number: "13", "special_comment" : "" } ,
-							{day_number: "14", "special_comment" : "" } ,
-							{day_number: "15", "special_comment" : "" } ,
-							{day_number: "16", "special_comment" : "" } ,
-							{day_number: "17", "special_comment" : "" } ,
-							{day_number: "18", "special_comment" : "" } ,
-							{day_number: "19", "special_comment" : "" } ,
-							{day_number: "20", "special_comment" : "" } ,
-							{day_number: "21", "special_comment" : "" } ,
-							{day_number: "22", "special_comment" : "" } ,
-							{day_number: "23", "special_comment" : "" } ,
-							{day_number: "24", "special_comment" : "" } ,
-							{day_number: "25", "special_comment" : "" } ,
-							{day_number: "26", "special_comment" : "" } ,
-							{day_number: "27", "special_comment" : "" } ,
-							{day_number: "28", "special_comment" : "" } ,
-							{day_number: "29", "special_comment" : "" } ,
-							{day_number: "30", "special_comment" : "" } ,
-							{day_number: "31", "special_comment" : "" } ,
-							{day_number: "",   "special_comment" : " " } ,
-							{day_number: "",   "special_comment" : " " } ,
-							{day_number: "",   "special_comment" : " " } 
-							 
-                                                                ] 
-					}, 
-					]        
-        },  
-		
-		]
-  
-} ;
-	res.status(200).send(json_response);
-})
-
-*/
-
 //***************************************
 //******** PROFESIONAL API  *************
 //***************************************
-
-// PROFESSIONAL professional_get_month_calendar
-app.route('/professional_get_month_calendar')
-.post(function (req, res) {
-console.log('professional_get_month_calendar INPUT:', req.body );
-
-const year_month_extract = req.body.requiredDay.substring(0, 7) ;
-var json_response = { error : 'No Set'} ;
-
-console.log("MONTH EXTRACT ="+year_month_extract );
-switch ( year_month_extract ) {
-  case '2021-05':
-	console.log("professional_get_month_calendar  2021-05");
-	json_response = { month_name : 'Mayo' , year : '2021' ,  weeks : [  
-								{
-								week_number: 12, 
-								days : [  { day : '28' , month : '04' , year : '2021'  , comment:'Cumpleaños'  },  
-										  { day : '29' , month : '04' , year : '2021'  , comment:'Cumpleaños'  },
-  										  { day : '30' , month : '04' , year : '2021'  , comment:'Cumpleaños'  },
-  										  { day : '01'  , month : '05' , year : '2021'  , comment:'Cumpleaños'  },
-  										  { day : '02'  , month : '05' , year : '2021'  , comment:'Cumpleaños'  },
-  										  { day : '03'  , month : '05' , year : '2021'  , comment:'Cumpleaños'  },
-										  { day : '04'  , month : '05' , year : '2021'  , comment:'Cumpleaños'  }
-										]
-								},
-								{
-								week_number: 13, 
-								days : [ { day : '05' , month : '05' , year : '2021'  , comment:'Cumpleaños'  },  
-										  { day : '06' , month : '05' , year : '2021'  , comment:'Cumpleaños'  },
-  										  { day : '07' , month : '05' , year : '2021'  , comment:'Cumpleaños'  },
-  										  { day : '08' , month : '05' , year : '2021'  , comment:'Cumpleaños'  },
-  										  { day : '09' , month : '05' , year : '2021'  , comment:'Cumpleaños'  },
-  										  { day : '10' , month : '05' , year : '2021'  , comment:'Cumpleaños'  },
-										  { day : '11' , month : '05' , year : '2021'  , comment:'Cumpleaños'  },
-										]
-								},
-								{
-								week_number: 14, 
-								days : [ { day : '12' , month : '05' , year : '2021'  , comment:'Cumpleaños'  },  
-										  { day : '13' , month : '05' , year : '2021'  , comment:'Cumpleaños'  },
-  										  { day : '14' , month : '05' , year : '2021'  , comment:'Cumpleaños'  },
-  										  { day : '15' , month : '05' , year : '2021'  , comment:'Cumpleaños'  },
-  										  { day : '16' , month : '05' , year : '2021'  , comment:'Cumpleaños'  },
-  										  { day : '17' , month : '05' , year : '2021'  , comment:'Cumpleaños'  },
-										  { day : '18' , month : '05' , year : '2021'  , comment:'Cumpleaños'  },
-										]
-								},
-								{
-								week_number: 15, 
-								days : [ { day : '19' , month : '05' , year : '2021'  , comment:'Cumpleaños'  },  
-										  { day : '20' , month : '05' , year : '2021'  , comment:'Cumpleaños'  },
-  										  { day : '21' , month : '05' , year : '2021'  , comment:'Cumpleaños'  },
-  										  { day : '22' , month : '05' , year : '2021'  , comment:'Cumpleaños'  },
-  										  { day : '23' , month : '05' , year : '2021'  , comment:'Cumpleaños'  },
-  										  { day : '24' , month : '05' , year : '2021'  , comment:'Cumpleaños'  },
-										  { day : '25' , month : '05' , year : '2021'  , comment:'Cumpleaños'  },
-										]
-								},
-								{
-								week_number: 16, 
-								days : [ { day : '26' , month : '05' , year : '2021'  , comment:'Cumpleaños'  },  
-										  { day : '27' , month : '05' , year : '2021'  , comment:'Cumpleaños'  },
-  										  { day : '28' , month : '05' , year : '2021'  , comment:'Cumpleaños'  },
-  										  { day : '29' , month : '05' , year : '2021'  , comment:'Cumpleaños'  },
-  										  { day : '30' , month : '05' , year : '2021'  , comment:'Cumpleaños'  },
-  										  { day : '01' , month : '06' , year : '2021'  , comment:'Cumpleaños'  },
-										  { day : '02' , month : '06' , year : '2021'  , comment:'Cumpleaños'  },
-										]
-								},
-							]				
-						};
-		
-	break;
-  case '2021-06':
-    console.log("professional_get_month_calendar  2021-06");
-	json_response = { month_name : 'Junio' , year : '2021' ,  weeks : [  
-								{
-								week_number: 12, 
-								days : [  { day : '30' , month : '05' , year : '2021'  , comment:''  },  
-										  { day : '31' , month : '05' , year : '2021'  , comment:''  },
-  										  { day : '01' , month : '06' , year : '2021'  , comment:''  },
-  										  { day : '02'  , month : '06' , year : '2021'  , comment:''  },
-  										  { day : '03'  , month : '06' , year : '2021'  , comment:''  },
-  										  { day : '04'  , month : '06' , year : '2021'  , comment:''  },
-										  { day : '05'  , month : '06' , year : '2021'  , comment:''  }
-										]
-								},
-								{
-								week_number: 13, 
-								days : [ { day : '06' , month : '06' , year : '2021'  , comment:''  },  
-										  { day : '07' , month : '06' , year : '2021'  , comment:''  },
-  										  { day : '08' , month : '06' , year : '2021'  , comment:''  },
-  										  { day : '09' , month : '06' , year : '2021'  , comment:''  },
-  										  { day : '10' , month : '06' , year : '2021'  , comment:''  },
-  										  { day : '11' , month : '06' , year : '2021'  , comment:''  },
-										  { day : '12' , month : '06' , year : '2021'  , comment:''  },
-										]
-								},
-								{
-								week_number: 14, 
-								days : [ { day : '13' , month : '06' , year : '2021'  , comment:''  },  
-										  { day : '14' , month : '06' , year : '2021'  , comment:''  },
-  										  { day : '15' , month : '06' , year : '2021'  , comment:''  },
-  										  { day : '16' , month : '06' , year : '2021'  , comment:''  },
-  										  { day : '17' , month : '06' , year : '2021'  , comment:''  },
-  										  { day : '18' , month : '06' , year : '2021'  , comment:''  },
-										  { day : '19' , month : '06' , year : '2021'  , comment:''  },
-										]
-								},
-								{
-								week_number: 15, 
-								days : [ { day : '20' , month : '06' , year : '2021'  , comment:''  },  
-										  { day : '21' , month : '06' , year : '2021'  , comment:''  },
-  										  { day : '22' , month : '06' , year : '2021'  , comment:''  },
-  										  { day : '23' , month : '06' , year : '2021'  , comment:''  },
-  										  { day : '24' , month : '06' , year : '2021'  , comment:''  },
-  										  { day : '25' , month : '06' , year : '2021'  , comment:''  },
-										  { day : '26' , month : '06' , year : '2021'  , comment:''  },
-										]
-								},
-								{
-								week_number: 16, 
-								days : [ { day : '27' , month : '06' , year : '2021'  , comment:''  },  
-										  { day : '28' , month : '06' , year : '2021'  , comment:''  },
-  										  { day : '29' , month : '06' , year : '2021'  , comment:''  },
-  										  { day : '30' , month : '06' , year : '2021'  , comment:''  },
-  										  { day : '01' , month : '07' , year : '2021'  , comment:''  },
-  										  { day : '02' , month : '07' , year : '2021'  , comment:''  },
-										  { day : '03' , month : '07' , year : '2021'  , comment:''  },
-										]
-								},
-							]				
-						};
-    break;
-    case '2021-07':
-      console.log("professional_get_month_calendar  2021-07");
-    json_response = { month_name : 'Julio' , year : '2021' ,  weeks : [  
-                  {
-                  week_number: 17, 
-                  days : [
-                          { day : '27' , month : '06' , year : '2021'  , comment:''  },  
-                          { day : '29' , month : '06' , year : '2021'  , comment:''  },
-                          { day : '30'  , month : '06' , year : '2021'  , comment:''  },
-                          { day : '01'  , month : '07' , year : '2021'  , comment:''  },
-                          { day : '02'  , month : '07' , year : '2021'  , comment:''  },
-                          { day : '03'  , month : '07' , year : '2021'  , comment:''  },
-                          { day : '04'  , month : '07' , year : '2021'  , comment:''  }
-                         ]
-                  },
-                  {
-                  week_number: 18, 
-                  days : [ 
-                          { day : '05' , month : '07' , year : '2021'  , comment:''  },  
-                          { day : '06' , month : '07' , year : '2021'  , comment:''  },
-                          { day : '07' , month : '07' , year : '2021'  , comment:''  },
-                          { day : '08' , month : '07' , year : '2021'  , comment:''  },
-                          { day : '09' , month : '07' , year : '2021'  , comment:''  },
-                          { day : '10' , month : '07' , year : '2021'  , comment:''  },
-                          { day : '11' , month : '07' , year : '2021'  , comment:''  }
-                        ]
-                  },
-                  {
-                  week_number: 19, 
-                  days : [ 
-                        { day : '12' , month : '07' , year : '2021'  , comment:''  },  
-                        { day : '13' , month : '07' , year : '2021'  , comment:''  },
-                        { day : '14' , month : '07' , year : '2021'  , comment:''  },
-                        { day : '15' , month : '07' , year : '2021'  , comment:''  },
-                        { day : '16' , month : '07' , year : '2021'  , comment:''  },
-                        { day : '17' , month : '07' , year : '2021'  , comment:''  },
-                        { day : '18' , month : '07' , year : '2021'  , comment:''  }        
-                    ]
-                  },
-                  {
-                  week_number: 20, 
-                  days : [ 
-                        { day : '19' , month : '07' , year : '2021'  , comment:''  },  
-                        { day : '20' , month : '07' , year : '2021'  , comment:''  },
-                        { day : '21' , month : '07' , year : '2021'  , comment:''  },
-                        { day : '22' , month : '07' , year : '2021'  , comment:''  },
-                        { day : '23' , month : '07' , year : '2021'  , comment:''  },
-                        { day : '24' , month : '07' , year : '2021'  , comment:''  },
-                        { day : '25' , month : '07' , year : '2021'  , comment:''  }    
-                      ]
-                  },
-                  {
-                  week_number: 21, 
-                  days : [ 
-                        { day : '26' , month : '07' , year : '2021'  , comment:''  },  
-                        { day : '27' , month : '07' , year : '2021'  , comment:''  },
-                        { day : '28' , month : '07' , year : '2021'  , comment:''  },
-                        { day : '29' , month : '07' , year : '2021'  , comment:''  },
-                        { day : '30' , month : '07' , year : '2021'  , comment:''  },
-                        { day : '31' , month : '07' , year : '2021'  , comment:''  },
-                        { day : '01' , month : '08' , year : '2021'  , comment:''  }    
-                      ]
-                  },
-                ]				
-              };
-       case '2021-08':
-                console.log("professional_get_month_calendar  2021-08");
-              json_response = { month_name : 'Agosto' , year : '2021' ,  weeks : [  
-                            {
-                            week_number: 22, 
-                            days : [
-                                    { day : '26' , month : '07' , year : '2021'  , comment:''  },  
-                                    { day : '27' , month : '07' , year : '2021'  , comment:''  },
-                                    { day : '28'  , month : '07' , year : '2021'  , comment:''  },
-                                    { day : '29'  , month : '07' , year : '2021'  , comment:''  },
-                                    { day : '30'  , month : '07' , year : '2021'  , comment:''  },
-                                    { day : '31'  , month : '07' , year : '2021'  , comment:''  },
-                                    { day : '01'  , month : '08' , year : '2021'  , comment:''  }
-                                   ]
-                            },
-                            {
-                            week_number: 23, 
-                            days : [ 
-                                    { day : '02' , month : '08' , year : '2021'  , comment:''  },  
-                                    { day : '03' , month : '08' , year : '2021'  , comment:''  },
-                                    { day : '04' , month : '08' , year : '2021'  , comment:''  },
-                                    { day : '05' , month : '08' , year : '2021'  , comment:''  },
-                                    { day : '06' , month : '08' , year : '2021'  , comment:''  },
-                                    { day : '07' , month : '08' , year : '2021'  , comment:''  },
-                                    { day : '08' , month : '08' , year : '2021'  , comment:''  }
-                                  ]
-                            },
-                            {
-                            week_number: 24, 
-                            days : [ 
-                                  { day : '09' , month : '08' , year : '2021'  , comment:''  },  
-                                  { day : '10' , month : '08' , year : '2021'  , comment:''  },
-                                  { day : '11' , month : '08' , year : '2021'  , comment:''  },
-                                  { day : '12' , month : '08' , year : '2021'  , comment:''  },
-                                  { day : '13' , month : '08' , year : '2021'  , comment:''  },
-                                  { day : '14' , month : '08' , year : '2021'  , comment:''  },
-                                  { day : '15' , month : '08' , year : '2021'  , comment:''  }        
-                              ]
-                            },
-                            {
-                            week_number: 25, 
-                            days : [ 
-                                  { day : '16' , month : '08' , year : '2021'  , comment:''  },  
-                                  { day : '17' , month : '08' , year : '2021'  , comment:''  },
-                                  { day : '18' , month : '08' , year : '2021'  , comment:''  },
-                                  { day : '19' , month : '08' , year : '2021'  , comment:''  },
-                                  { day : '20' , month : '08' , year : '2021'  , comment:''  },
-                                  { day : '21' , month : '08' , year : '2021'  , comment:''  },
-                                  { day : '22' , month : '08' , year : '2021'  , comment:''  }    
-                                ]
-                            },
-                            {
-                            week_number: 26, 
-                            days : [ 
-                                  { day : '23' , month : '08' , year : '2021'  , comment:''  },  
-                                  { day : '24' , month : '08' , year : '2021'  , comment:''  },
-                                  { day : '25' , month : '08' , year : '2021'  , comment:''  },
-                                  { day : '26' , month : '08' , year : '2021'  , comment:''  },
-                                  { day : '27' , month : '08' , year : '2021'  , comment:''  },
-                                  { day : '28' , month : '08' , year : '2021'  , comment:''  },
-                                  { day : '29' , month : '08' , year : '2021'  , comment:''  }    
-                                ]
-                            },
-                            {
-                            week_number: 27, 
-                            days : [ 
-                                  { day : '30' , month : '08' , year : '2021'  , comment:''  },  
-                                  { day : '31' , month : '08' , year : '2021'  , comment:''  },
-                                  { day : '01' , month : '09' , year : '2021'  , comment:''  },
-                                  { day : '02' , month : '10' , year : '2021'  , comment:''  },
-                                  { day : '03' , month : '11' , year : '2021'  , comment:''  },
-                                  { day : '04' , month : '12' , year : '2021'  , comment:''  },
-                                  { day : '05' , month : '13' , year : '2021'  , comment:''  }    
-                                ]
-                            },
-                          ]	
-                          
-                          
-
-                        };
-
-                        case '2021-09':
-                          console.log("professional_get_month_calendar  2021-09");
-                        json_response = { month_name : 'Septiembre' , year : '2021' ,  weeks : [  
-                                      {
-                                      week_number: 28, 
-                                      days : [
-                                              { day : '30' , month : '08' , year : '2021'  , comment:''  },  
-                                              { day : '31' , month : '08' , year : '2021'  , comment:''  },
-                                              { day : '01'  , month : '09' , year : '2021'  , comment:''  },
-                                              { day : '02'  , month : '09' , year : '2021'  , comment:''  },
-                                              { day : '03'  , month : '09' , year : '2021'  , comment:''  },
-                                              { day : '04'  , month : '09' , year : '2021'  , comment:''  },
-                                              { day : '05'  , month : '09' , year : '2021'  , comment:''  }
-                                             ]
-                                      },
-                                      {
-                                      week_number: 29, 
-                                      days : [ 
-                                              { day : '06' , month : '09' , year : '2021'  , comment:''  },  
-                                              { day : '07' , month : '09' , year : '2021'  , comment:''  },
-                                              { day : '08' , month : '09' , year : '2021'  , comment:''  },
-                                              { day : '09' , month : '09' , year : '2021'  , comment:''  },
-                                              { day : '10' , month : '09' , year : '2021'  , comment:''  },
-                                              { day : '11' , month : '09' , year : '2021'  , comment:''  },
-                                              { day : '12' , month : '09' , year : '2021'  , comment:''  }
-                                            ]
-                                      },
-                                      {
-                                      week_number: 30, 
-                                      days : [ 
-                                            { day : '13' , month : '09' , year : '2021'  , comment:''  },  
-                                            { day : '14' , month : '09' , year : '2021'  , comment:''  },
-                                            { day : '15' , month : '09' , year : '2021'  , comment:''  },
-                                            { day : '16' , month : '09' , year : '2021'  , comment:''  },
-                                            { day : '17' , month : '09' , year : '2021'  , comment:''  },
-                                            { day : '18' , month : '09' , year : '2021'  , comment:''  },
-                                            { day : '19' , month : '09' , year : '2021'  , comment:''  }        
-                                        ]
-                                      },
-                                      {
-                                      week_number: 31, 
-                                      days : [ 
-                                            { day : '20' , month : '09' , year : '2021'  , comment:''  },  
-                                            { day : '21' , month : '09' , year : '2021'  , comment:''  },
-                                            { day : '22' , month : '09' , year : '2021'  , comment:''  },
-                                            { day : '23' , month : '09' , year : '2021'  , comment:''  },
-                                            { day : '24' , month : '09' , year : '2021'  , comment:''  },
-                                            { day : '25' , month : '09' , year : '2021'  , comment:''  },
-                                            { day : '26' , month : '09' , year : '2021'  , comment:''  }    
-                                          ]
-                                      },
-                                      {
-                                      week_number: 32, 
-                                      days : [ 
-                                            { day : '27' , month : '09' , year : '2021'  , comment:''  },  
-                                            { day : '28' , month : '09' , year : '2021'  , comment:''  },
-                                            { day : '29' , month : '09' , year : '2021'  , comment:''  },
-                                            { day : '30' , month : '09' , year : '2021'  , comment:''  },
-                                            { day : '01' , month : '10' , year : '2021'  , comment:''  },
-                                            { day : '02' , month : '10' , year : '2021'  , comment:''  },
-                                            { day : '03' , month : '10' , year : '2021'  , comment:''  }    
-                                          ]
-                                      },
-                                      
-                                    ]	
-                                    
-                                    
-                                    
-                                  };
-
-                                  case '2021-10':
-                                    console.log("professional_get_month_calendar  2021-10");
-                                  json_response = { month_name : 'Octubre' , year : '2021' ,  weeks : [  
-                                                {
-                                                week_number: 33, 
-                                                days : [
-                                                        { day : '27' , month : '09' , year : '2021'  , comment:''  },  
-                                                        { day : '28' , month : '09' , year : '2021'  , comment:''  },
-                                                        { day : '29'  , month : '09' , year : '2021'  , comment:''  },
-                                                        { day : '30'  , month : '09' , year : '2021'  , comment:''  },
-                                                        { day : '01'  , month : '10' , year : '2021'  , comment:''  },
-                                                        { day : '02'  , month : '10' , year : '2021'  , comment:''  },
-                                                        { day : '03'  , month : '10' , year : '2021'  , comment:''  }
-                                                       ]
-                                                },
-                                                {
-                                                week_number: 34, 
-                                                days : [ 
-                                                        { day : '04' , month : '10' , year : '2021'  , comment:''  },  
-                                                        { day : '05' , month : '10' , year : '2021'  , comment:''  },
-                                                        { day : '06' , month : '10' , year : '2021'  , comment:''  },
-                                                        { day : '07' , month : '10' , year : '2021'  , comment:''  },
-                                                        { day : '08' , month : '10' , year : '2021'  , comment:''  },
-                                                        { day : '09' , month : '10' , year : '2021'  , comment:''  },
-                                                        { day : '10' , month : '10' , year : '2021'  , comment:''  }
-                                                      ]
-                                                },
-                                                {
-                                                week_number: 35, 
-                                                days : [ 
-                                                      { day : '11' , month : '10' , year : '2021'  , comment:''  },  
-                                                      { day : '12' , month : '10' , year : '2021'  , comment:''  },
-                                                      { day : '13' , month : '10' , year : '2021'  , comment:''  },
-                                                      { day : '14' , month : '10' , year : '2021'  , comment:''  },
-                                                      { day : '15' , month : '10' , year : '2021'  , comment:''  },
-                                                      { day : '16' , month : '10' , year : '2021'  , comment:''  },
-                                                      { day : '17' , month : '10' , year : '2021'  , comment:''  }        
-                                                  ]
-                                                },
-                                                {
-                                                week_number: 36, 
-                                                days : [ 
-                                                      { day : '18' , month : '10' , year : '2021'  , comment:''  },  
-                                                      { day : '19' , month : '10' , year : '2021'  , comment:''  },
-                                                      { day : '20' , month : '10' , year : '2021'  , comment:''  },
-                                                      { day : '21' , month : '10' , year : '2021'  , comment:''  },
-                                                      { day : '22' , month : '10' , year : '2021'  , comment:''  },
-                                                      { day : '23' , month : '10' , year : '2021'  , comment:''  },
-                                                      { day : '24' , month : '10' , year : '2021'  , comment:''  }    
-                                                    ]
-                                                },
-                                                {
-                                                week_number: 37, 
-                                                days : [ 
-                                                      { day : '25' , month : '10' , year : '2021'  , comment:''  },  
-                                                      { day : '26' , month : '10' , year : '2021'  , comment:''  },
-                                                      { day : '27' , month : '10' , year : '2021'  , comment:''  },
-                                                      { day : '28' , month : '10' , year : '2021'  , comment:''  },
-                                                      { day : '29' , month : '10' , year : '2021'  , comment:''  },
-                                                      { day : '30' , month : '10' , year : '2021'  , comment:''  },
-                                                      { day : '31' , month : '10' , year : '2021'  , comment:''  }    
-                                                    ]
-                                                },
-                                                
-                                              ]	
-                                              
-                                              
-                                              
-                                            };
-
-
-
-    default:
-	  break;
-}//END SWITCH
-
-	console.log(' professional_get_month_calendar RESPONSE  :', JSON.stringify(json_response) );
-	res.status(200).send(json_response);
-})
 
 // PROFESIONAL GET ASSISTANTS
 app.route('/professional_get_assistants')
@@ -1427,7 +760,7 @@ const client = new Client({
 client.connect()
 // ****** Run query to bring appointment
 //const sql ="SELECT * FROM ( SELECT address as center_address, name as center_name, app_id,date, start_time, end_time, duration, specialty, center_id, available_public_search, confirmation_status, blocked, professional_id   FROM   (SELECT  id as app_id, date , start_time, end_time, duration, specialty, center_id, available_public_search, confirmation_status, blocked, professional_id   FROM appointment WHERE professional_id='"+req.body.professional_id+"' and Date >= '"+req.body.date+"' )   J LEFT JOIN center ON center.id=j.center_id  )K LEFT JOIN specialty ON specialty.id=K.specialty   " ;
-const sql ="SELECT * FROM ( SELECT  app_status, patient_name, patient_email, patient_phone1, patient_phone2, patient_insurance ,  patient_doc_id , name as specialty_name, center_address, center_name, center_color , app_id,date, start_time, end_time, duration, specialty,  specialty1 ,specialty2 ,specialty3,specialty4 , specialty5, center_id, available_public_search, confirmation_status, app_blocked, professional_id, app_available   FROM (  SELECT app_status, patient_name, patient_email, patient_phone1, patient_phone2, patient_insurance ,  patient_doc_id , address as center_address, name as center_name, color as center_color, app_id,date, start_time, end_time, duration, specialty,  specialty1 ,specialty2 ,specialty3,specialty4 , specialty5, center_id, available_public_search, confirmation_status, app_blocked, professional_id ,app_available  FROM  (SELECT app_status, patient_name, patient_email, patient_phone1, patient_phone2, patient_insurance ,  patient_doc_id ,id as app_id, date , start_time, end_time, duration, specialty,  specialty1 ,specialty2 ,specialty3,specialty4 , specialty5, center_id, available_public_search, confirmation_status, app_blocked, professional_id , app_available  FROM appointment WHERE professional_id='"+req.body.professional_id+"' and Date = '"+req.body.date+"' ORDER BY start_time ASC ) J LEFT JOIN center ON center.id=j.center_id  )K LEFT JOIN specialty ON specialty.id=K.specialty ) L LEFT JOIN professional ON professional.id = L.professional_id " ;
+const sql ="SELECT * FROM ( SELECT  app_type_home ,app_type_center, app_type_remote, location1, location2,location3,location4,location5,location6, app_status, patient_name, patient_email, patient_phone1, patient_phone2, patient_insurance ,  patient_doc_id , name as specialty_name, center_address, center_name, center_color , app_id,date, start_time, end_time, duration, specialty,  specialty1 ,specialty2 ,specialty3,specialty4 , specialty5, center_id, available_public_search, confirmation_status, app_blocked, professional_id, app_available   FROM (  SELECT app_type_home ,app_type_center, app_type_remote, location1, location2,location3,location4,location5,location6, app_status, patient_name, patient_email, patient_phone1, patient_phone2, patient_insurance ,  patient_doc_id , address as center_address, name as center_name, color as center_color, app_id,date, start_time, end_time, duration, specialty,  specialty1 ,specialty2 ,specialty3,specialty4 , specialty5, center_id, available_public_search, confirmation_status, app_blocked, professional_id ,app_available  FROM  (SELECT app_type_home ,app_type_center, app_type_remote, location1, location2,location3,location4,location5,location6, app_status, patient_name, patient_email, patient_phone1, patient_phone2, patient_insurance ,  patient_doc_id ,id as app_id, date , start_time, end_time, duration, specialty,  specialty1 ,specialty2 ,specialty3,specialty4 , specialty5, center_id, available_public_search, confirmation_status, app_blocked, professional_id , app_available  FROM appointment WHERE professional_id='"+req.body.professional_id+"' and Date = '"+req.body.date+"' ORDER BY start_time ASC ) J LEFT JOIN center ON center.id=j.center_id  )K LEFT JOIN specialty ON specialty.id=K.specialty ) L LEFT JOIN professional ON professional.id = L.professional_id " ;
 
 console.log('professional_get_appointments_day SQL:'+sql ) ;
 const resultado = client.query(sql, (err, result) => {
@@ -1606,7 +939,7 @@ const resultado = client.query(sql, (err, result) => {
 })
 
 })
-
+/*
 // PROFESSIONAL  CREATE ASSISTANT
 app.route('/professional_create_assistant')
 .post(function (req, res) {
@@ -1686,7 +1019,7 @@ const resultado = client.query(sql, (err, result) => {
 })
 
 })
-
+*/
 
 // PPROFESSIONAL CREATE APPOINTMENTS
 app.route('/professional_create_appointment')
@@ -1710,23 +1043,26 @@ client.connect() ;
 // CICLE TO CREATE APPOINTMENTS
 let startTime=  new Date(req.body.form_date);
 startTime.setHours (req.body.form_start_time.substring(0,2) , req.body.form_start_time.substring(3,5) ) 
-//startTime.setHours( Math.trunc( req.body.form_start_time.substring(0,2) /60   )  );
-//startTime.setMinutes(  req.body.form_start_time % 60  );
 console.log("StartTime:"+startTime);
 
-console.log("BLOQUE start ---->:"+startTime);
-//let specialty_list = JSON.parse(req.body.form_specialty_code);
+req.body.form_specialty_code.push("null");
+req.body.form_specialty_code.push("null");
+req.body.form_specialty_code.push("null");
+req.body.form_specialty_code.push("null");
+req.body.form_specialty_code.push("null");
+req.body.form_specialty_code.push("null");
 
-//let specialty_list_array = 
+req.body.form_type_home_comunas.push("null");
+req.body.form_type_home_comunas.push("null");
+req.body.form_type_home_comunas.push("null");
+req.body.form_type_home_comunas.push("null");
+req.body.form_type_home_comunas.push("null");
+req.body.form_type_home_comunas.push("null");
 
-req.body.form_specialty_code.push( { id: null, name: null , description: 'empty' } ) ;
-req.body.form_specialty_code.push( { id: null, name: null , description: 'empty' } ) ;
-req.body.form_specialty_code.push( { id: null, name: null , description: 'empty' } ) ;
-req.body.form_specialty_code.push( { id: null, name: null , description: 'empty' } ) ;
-req.body.form_specialty_code.push( { id: null, name: null , description: 'empty' } ) ;
-req.body.form_specialty_code.push( { id: null, name: null , description: 'empty' } ) ;
 
-var SQL_VALUES= "INSERT INTO appointment ( professional_id ,center_id , date ,start_time , duration , specialty , specialty1, specialty2, specialty3, specialty4, specialty5  , available_public_search , app_available , app_blocked  ) VALUES ( '"+req.body.form_professional_id+"' , '"+req.body.form_center_id+"' , '"+req.body.form_date+"'  , '"+startTime.getHours()+":"+startTime.getMinutes()+":00' ,  '"+req.body.form_appointment_duration+"'  , "+ req.body.form_specialty_code[0].id +" , "+ req.body.form_specialty_code[1].id +" , "+ req.body.form_specialty_code[2].id +" , "+ req.body.form_specialty_code[3].id +" , "+ req.body.form_specialty_code[4].id +" , "+ req.body.form_specialty_code[5].id +"  ,  '"+req.body.form_public+"' ,'1','0'  ) " ;  
+console.log("professional_create_appointments");
+
+var SQL_VALUES= "INSERT INTO appointment ( app_type_home , app_type_center , app_type_remote ,  professional_id ,center_id , date ,start_time , duration , specialty , specialty1, specialty2, specialty3, specialty4, specialty5  , available_public_search , app_available , app_blocked , location1, location2 , location3 , location4 , location5 , location6 ) VALUES (   "+req.body.form_type_home+"   , "+req.body.form_type_center+" , "+req.body.form_type_remote+"  ,  '"+req.body.form_professional_id+"' , "+req.body.form_center_id+" , '"+req.body.form_date+"'  , '"+startTime.getHours()+":"+startTime.getMinutes()+":00' ,  '"+req.body.form_appointment_duration+"'  , "+ req.body.form_specialty_code[0] +" , "+ req.body.form_specialty_code[1] +" , "+ req.body.form_specialty_code[2] +" , "+ req.body.form_specialty_code[3] +" , "+ req.body.form_specialty_code[4] +" , "+ req.body.form_specialty_code[5] +"  ,  '"+req.body.form_public+"' ,'1','0' , "+req.body.form_type_home_comunas[0]+" , "+req.body.form_type_home_comunas[1]+" , "+req.body.form_type_home_comunas[2]+" , "+req.body.form_type_home_comunas[3]+" , "+req.body.form_type_home_comunas[4]+" , "+req.body.form_type_home_comunas[5]+" ) " ;  
 
 console.log("SQL VALUES:"+SQL_VALUES);
 
@@ -1890,26 +1226,52 @@ client.connect()
 let sql_and_specialty =" "; 
 let sql_and_comuna =" "; 
 let sql_and_insurance =" "; 
+let sql_appType =" "; 
 
 
+  //DEFINE  SQL RELATED TO APP TYPE : REMOTE, CENTER OR TELE
+if  ( req.body.type_home || req.body.type_center || req.body.type_remote )
+{  sql_appType = " AND  ( " ;
+  
+  if (req.body.type_home)
+  { sql_appType = sql_appType+" app_type_home = "+req.body.type_home+"   " }
+        //add separator if exits both
+        if (req.body.type_home && req.body.type_center)
+        { sql_appType = sql_appType+ " OR " ;}
+
+  if (req.body.type_center)
+  { sql_appType =sql_appType+"  app_type_center = "+req.body.type_center+"   " }
+
+        //add separator if exits both
+        if ((req.body.type_remote && req.body.type_center) || (req.body.type_home && req.body.type_remote ))
+        { sql_appType = sql_appType+ " OR " ;}
+
+  if (req.body.type_remote)
+  { sql_appType =sql_appType+"  app_type_remote = "+req.body.type_remote+"  " }
+  
+  sql_appType =sql_appType+" ) ";
+}
+
+
+// DEFINE SQL RELATED TO SPECIALTY
 if (req.body.specialty != null && req.body.specialty != ""  )
 { sql_and_specialty = " AND ( specialty = '"+ req.body.specialty+"' OR  specialty1 = '"+ req.body.specialty+"' OR  specialty2 = '"+ req.body.specialty+"' OR  specialty3 = '"+ req.body.specialty+"'  OR  specialty4 = '"+ req.body.specialty+"' OR  specialty5 = '"+ req.body.specialty+"' ) " }
-
 if (req.body.comuna != null && req.body.comuna != ""  )
 { sql_and_comuna  = " WHERE   comuna = '"+ req.body.comuna+"'"  }
-
 if (req.body.insurance != null  && req.body.insurance != "")
 { sql_and_insurance = " AND insurance = '"+ req.body.insurance+"'"   }
 
 //const sql ="SELECT * FROM appointment where Date = '"+req.body.date+"' AND "+ sqland +"  ORDER BY date DESC " ;
 const sql = `SELECT * FROM 
-( SELECT url_map, comuna, patient_name, app_status, name as specialty_name, center_address, center_name, app_id, date, start_time, end_time, duration, specialty, center_id, available_public_search, confirmation_status, app_blocked, professional_id, app_available   FROM 
-( SELECT url_map, comuna, app_status, patient_name, patient_email, patient_phone1, patient_phone2, patient_insurance ,  patient_doc_id , address as center_address, name as center_name, app_id,date, start_time, end_time, duration, specialty, center_id, available_public_search, confirmation_status, app_blocked, professional_id ,app_available  FROM  
- (SELECT app_status, patient_name, patient_email, patient_phone1, patient_phone2, patient_insurance ,  patient_doc_id ,id as app_id, date , start_time, end_time, duration, specialty, center_id, available_public_search, confirmation_status, app_blocked, professional_id , app_available  
+( SELECT app_type_home ,app_type_center, app_type_remote, location1, location2,location3,location4,location5,location6, url_map, comuna, patient_name, app_status, name as specialty_name, center_address, center_name, app_id, date, start_time, end_time, duration, specialty, center_id, available_public_search, confirmation_status, app_blocked, professional_id, app_available   FROM 
+( SELECT app_type_home ,app_type_center, app_type_remote, location1, location2,location3,location4,location5,location6, url_map, comuna, app_status, patient_name, patient_email, patient_phone1, patient_phone2, patient_insurance ,  patient_doc_id , address as center_address, name as center_name, app_id,date, start_time, end_time, duration, specialty, center_id, available_public_search, confirmation_status, app_blocked, professional_id ,app_available  FROM  
+ (SELECT app_type_home ,app_type_center, app_type_remote, location1, location2,location3,location4,location5,location6, app_status, patient_name, patient_email, patient_phone1, patient_phone2, patient_insurance ,  patient_doc_id ,id as app_id, date , start_time, end_time, duration, specialty, center_id, available_public_search, confirmation_status, app_blocked, professional_id , app_available  
 FROM appointment WHERE Date >= '`+req.body.date+`' 
 	AND available_public_search = '1'  
 	AND app_blocked = '0' 
-	AND app_available = 'true'  `+sql_and_specialty+`  
+	AND app_available = 'true' 
+   `+sql_and_specialty+`  
+   `+sql_appType+`  
 ORDER BY start_time ASC ) 
  J LEFT JOIN center ON center.id=j.center_id  `+sql_and_comuna +`  )
  K LEFT JOIN specialty ON specialty.id=K.specialty ) 
