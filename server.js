@@ -1256,8 +1256,39 @@ if  ( req.body.type_home || req.body.type_center || req.body.type_remote )
 // DEFINE SQL RELATED TO SPECIALTY
 if (req.body.specialty != null && req.body.specialty != ""  )
 { sql_and_specialty = " AND ( specialty = '"+ req.body.specialty+"' OR  specialty1 = '"+ req.body.specialty+"' OR  specialty2 = '"+ req.body.specialty+"' OR  specialty3 = '"+ req.body.specialty+"'  OR  specialty4 = '"+ req.body.specialty+"' OR  specialty5 = '"+ req.body.specialty+"' ) " }
+
+//IF FILTER BY COMUNA
 if (req.body.comuna != null && req.body.comuna != ""  )
-{ sql_and_comuna  = " WHERE   comuna = '"+ req.body.comuna+"'"  }
+{ 
+  //Means user include Comuna filter, 
+  //first check if filter Home and Center are False. 
+  if ( !req.body.type_home && !req.body.type_center )  
+  { // SO, we pefrom a search by comuna (center) or Location (for Home)
+    sql_and_comuna  = " WHERE  ( comuna = '"+ req.body.comuna+"' OR location1 = '"+ req.body.comuna+"' OR location2 = '"+ req.body.comuna+"'  OR  location3 = '"+ req.body.comuna+"'  OR  location4 = '"+ req.body.comuna+"'  OR  location5 = '"+ req.body.comuna+"'  OR  location6 = '"+ req.body.comuna+"'  )"   ;
+  }
+  // check if user click on Both Filter Home and Center
+  else if (req.body.type_home && req.body.type_center)
+  {
+        sql_and_comuna  = " WHERE  ( comuna = '"+ req.body.comuna+"' OR location1 = '"+ req.body.comuna+"' OR location2 = '"+ req.body.comuna+"'  OR  location3 = '"+ req.body.comuna+"'  OR  location4 = '"+ req.body.comuna+"'  OR  location5 = '"+ req.body.comuna+"'  OR  location6 = '"+ req.body.comuna+"'  )"   ;
+  }
+  //means we have a mix, True and False in center or Home
+  else {
+        if (req.body.type_center)
+          {
+          sql_and_comuna  = " WHERE   comuna = '"+ req.body.comuna+"' "   ;
+          }
+        else if (req.body.type_home)
+          {
+          sql_and_comuna  = " WHERE  ( location1 = '"+ req.body.comuna+"'  OR   location2 = '"+ req.body.comuna+"'  OR  location3 = '"+ req.body.comuna+"'  OR  location4 = '"+ req.body.comuna+"'  OR  location5 = '"+ req.body.comuna+"'  OR  location6 = '"+ req.body.comuna+"' ) "  ;
+          }   
+  }
+
+ 
+
+} //END FILTER BY COMUNA
+
+//agregar aqui logica para incluir busqueda de citas a domicilio busqueda por comuna
+
 if (req.body.insurance != null  && req.body.insurance != "")
 { sql_and_insurance = " AND insurance = '"+ req.body.insurance+"'"   }
 
@@ -1272,6 +1303,8 @@ FROM appointment WHERE Date >= '`+req.body.date+`'
 	AND app_available = 'true' 
    `+sql_and_specialty+`  
    `+sql_appType+`  
+   `+sql_and_comuna+`  
+   
 ORDER BY start_time ASC ) 
  J LEFT JOIN center ON center.id=j.center_id  `+sql_and_comuna +`  )
  K LEFT JOIN specialty ON specialty.id=K.specialty ) 
