@@ -386,7 +386,7 @@ var json_response = { result_status : 1 };
 
 sql = "INSERT INTO appointment (date, start_time, duration, specialty, specialty1, specialty2,specialty3,specialty4, center_id, professional_id , app_available , app_public , available_public_search, location1,location2,location3 , location4 , location6, location7, location8, app_type_home , app_type_center, app_type_remote) " ;
 sql = sql + " SELECT '"+req.body.destination+"' , start_time, duration, specialty, specialty1, specialty2,specialty3,specialty4,  center_id, professional_id , true , app_public , false ,  location1, location2,location3 , location4 , location6, location7, location8,  app_type_home ,  app_type_center,  app_type_remote";
-sql = sql + " FROM appointment  WHERE professional_id = '"+req.body.session_params.id+"'  AND date='"+req.body.origin+"'  " ; 
+sql = sql + " FROM appointment  WHERE professional_id = '"+req.body.p_id+"'  AND date='"+req.body.origin+"'  " ; 
   
 
 console.log('professional_duplicate_day SQL:'+sql ) ;
