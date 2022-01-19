@@ -759,6 +759,38 @@ const resultado = client.query(sql, (err, result) => {
 //***************************************
 
 
+// PROFESSIONAL GET TimeTable
+app.route('/rofessional_get_calendars')
+.post(function (req, res) {
+ 
+    console.log('rofessional_get_calendars :', req.body );
+ 
+// ****** Connect to postgre
+const { Pool, Client } = require('pg')
+const client = new Client({
+  user: 'conmeddb_user',
+  host: '127.0.0.1',
+  database: 'conmeddb02',
+  password: 'paranoid',
+  port: 5432,
+})
+
+client.connect()
+// ****** Run query to bring appointment
+const sql  = "SELECT * FROM professional_calendar WHERE professional_id='"+req.body.professional_id+"'  " ;
+console.log('professional_get_centers: SQL :'+sql ) ;
+const resultado = client.query(sql, (err, result) => {
+
+  if (err) {
+      console.log('rofessional_get_calendars ERR:'+err ) ;
+    }
+
+  console.log('professional_get_calendars : '+JSON.stringify(result) ) ;
+  res.status(200).send(JSON.stringify(result) );
+  client.end() ;
+})
+
+})
 
 
 // PROFESIONAL GET ASSISTANTS
