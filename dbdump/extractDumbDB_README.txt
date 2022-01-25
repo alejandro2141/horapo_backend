@@ -8,4 +8,4 @@ git commit -m ""
 sudo su postgres 
 dropdb conmeddb02
 psql conmeddb02 < backupNew-10-13-2021
-psql -f backupNew-11-05-2021  postgre
+psql -f backupNew-11-05-2021  postgres
