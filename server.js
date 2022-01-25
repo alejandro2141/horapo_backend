@@ -759,6 +759,55 @@ const resultado = client.query(sql, (err, result) => {
 //***************************************
 
 
+// PROFESSIONAL CREATE CALENDAR 
+app.route('/professional_create_calendar')
+.post(function (req, res) {
+    console.log('professional_create_calendar INPUT:', req.body );
+// ****** Connect to postgre
+const { Pool, Client } = require('pg')
+const client = new Client({
+  user: 'conmeddb_user',
+  host: '127.0.0.1',
+  database: 'conmeddb02',
+  password: 'paranoid',
+  port: 5432,
+})
+client.connect() ;
+// GET PROFESSIONAL DATA
+var sql  = null;
+var json_response = { result_status : 1 };
+//var res = null; 	
+// CHECK INPUT PARAMETERS TO IDENTIFY IF  REQUEST IS TO CREATE CENTER
+// CREATE DIRECTLY AGENDA 
+//const sql  = "INSERT INTO centers ( name ,  address , phone1, phone2 ) VALUES (  '"+req.body.center_name+"', '"+req.body.center_address+"' , '"+req.body.center_phone1+"', '"+req.body.center_phone2+"' ) RETURNING id " ;
+sql = "INSERT INTO professional_calendar (professional_id , start_time,  end_time, specialty1, duration, time_between, monday, tuesday, wednesday, thursday, friday, saturday , sunday, date_start, date_end,  home_visit, center_visit, video_call, status  ) VALUES ( '"+req.body.professional_id+"',  '"+req.body.form_start_time+"' , '"+req.body.form_end_time+"', '"+req.body.form_specialty_id+"' , '"+req.body.form_app_duration+"' , '"+req.body.form_app_time_between+"' ,  '"+req.body.form_recurrency_mon+"' ,  '"+req.body.form_recurrency_tue+"'  ,  '"+req.body.form_recurrency_wed +"' ,  '"+req.body.form_recurrency_thu+"'  ,  '"+req.body.form_recurrency_fri+"'  , '"+req.body.form_recurrency_sat+"'  ,  '"+req.body.form_recurrency_sun+"'  ,   '"+req.body.form_calendar_start+"'  ,  '"+req.body.form_calendar_end+"'  ,  '"+req.body.form_appointment_center+"'  , '"+req.body.form_appointment_home+"'  ,  '"+req.body.form_appointment_remote+"'  , '1' )  " ;
+ 
+
+
+console.log('create_calendar SQL:'+sql ) ;
+  
+	client.query(sql, (err, result) => {
+	  if (err) {
+	     // throw err ;
+	      console.log('professional_create_center ERROR  CENTER CREATION QUERY:'+sql ) ;
+	      console.log(err ) ;
+	    }
+	    else
+	    {
+	 // json_response = { result_status : 0  , center_id : result.data.center_id  };
+	  res.status(200).send(JSON.stringify(result));
+	  console.log('professional_create_center  SUCCESS CENTER INSERT ' ) ; 
+    console.log('professional_create_center  OUTPUT  :'+JSON.stringify(result) ) ; 
+	   }
+	   
+	  client.end()
+	})
+  
+
+})
+
+
+
 // PROFESSIONAL GET TimeTable
 app.route('/rofessional_get_calendars')
 .post(function (req, res) {
