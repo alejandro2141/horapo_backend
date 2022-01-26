@@ -1075,89 +1075,8 @@ const resultado = client.query(sql, (err, result) => {
 })
 
 })
-/*
-// PROFESSIONAL  CREATE ASSISTANT
-app.route('/professional_create_assistant')
-.post(function (req, res) {
-    console.log('professional_create_assistant INPUT:', req.body );
-// ****** Connect to postgre
-const { Pool, Client } = require('pg')
-const client = new Client({
-  user: 'conmeddb_user',
-  host: '127.0.0.1',
-  database: 'conmeddb02',
-  password: 'paranoid',
-  port: 5432,
-})
-client.connect() ;
-// GET PROFESSIONAL DATA
-var sql  = null;
-var json_response = { result_status : 1 };
-//var res = null; 	
-// CHECK INPUT PARAMETERS TO IDENTIFY IF  REQUEST IS TO CREATE CENTER
-// CREATE DIRECTLY AGENDA 
-//const sql  = "INSERT INTO centers ( name ,  address , phone1, phone2 ) VALUES (  '"+req.body.center_name+"', '"+req.body.center_address+"' , '"+req.body.center_phone1+"', '"+req.body.center_phone2+"' ) RETURNING id " ;
-//sql = " WITH ids AS (  INSERT INTO assistant ( assistant_document_id , assistant_name , assistant_email , assistant_phone , assistant_active ) VALUES (  '"+req.body.assistant_doc_id+"' , '"+req.body.assistant_name+"' , '"+req.body.assistant_email+"' ,'"+req.body.center_phone1+"' , '1' ) RETURNING id as center_id ) INSERT INTO center_professional (professional_id, center_id) VALUES ('"+req.body.professional_id+"', (SELECT center_id from ids) ) RETURNING * ;  ";
 
-sql =   " WITH ids AS (  INSERT INTO assistant ( assistant_document_id , assistant_name , assistant_email , assistant_phone , assistant_active ) VALUES (  '"+req.body.assistant_doc_id+"' , '"+req.body.assistant_name+"', '"+req.body.assistant_email+"' ,'"+req.body.assistant_phone1+"','1' ) RETURNING id as assistant_id ) INSERT INTO assistant_professional (professional_id, assistant_id) VALUES ('"+req.body.professional_id+"', (SELECT assistant_id from ids) ) RETURNING * " ;
-
-
-
-console.log('create_sistant SQL:'+sql ) ;
-	client.query(sql, (err, result) => {
-	  if (err) {
-	     // throw err ;
-	      console.log('professional_create_assistant ERROR  CENTER CREATION QUERY:'+sql ) ;
-	      console.log(err ) ;
-	    }
-	    else
-	    {
-	 // json_response = { result_status : 0  , center_id : result.data.center_id  };
-	  res.status(200).send(JSON.stringify(result));
-	  console.log('professional_create_assistant  SUCCESS CENTER INSERT ' ) ; 
-    console.log('professional_create_assistant  OUTPUT  :'+JSON.stringify(result) ) ; 
-	   }
-	   
-	  client.end()
-	})
-
-})
-
-//  DELETE ASSISTANT 
-app.route('/professional_delete_assistant')
-.post(function (req, res) {
-     console.log('professional_delete_assistant :', req.body );
- // ****** Connect to postgre
-const { Pool, Client } = require('pg')
-const client = new Client({
-  user: 'conmeddb_user',
-  host: '127.0.0.1',
-  database: 'conmeddb02',
-  password: 'paranoid',
-  port: 5432,
-})
-
-client.connect()
-// ****** Run query to bring appointment
-//const sql  = "DELETE FROM assistant WHERE id='"+req.body.assistant_id+"'  " ;
-const sql = "UPDATE assistant  SET assistant_deleted = 'true' , assistant_active = 'false' WHERE id = '"+req.body.assistant_id+"' RETURNING * " ;
-
-console.log('professional_delete_assistant : SQL :'+sql ) ;
-const resultado = client.query(sql, (err, result) => {
-
-  if (err) {
-      console.log('professional_delete_assistant ERR:'+err ) ;
-    }
-
-  console.log('professional_delete_assistant : RESPONSE:'+JSON.stringify(result) ) ;
-  res.status(200).send(JSON.stringify(result) );
-  client.end()
-})
-
-})
-*/
-
-// PPROFESSIONAL CREATE APPOINTMENTS
+// PPROFESSIONAL CREATE APPOINTMENT SIN S
 app.route('/professional_create_appointment')
 .post(function (req, res) {
      console.log('aprofessional_create_appointments INPUT : ', req.body );
@@ -1339,6 +1258,104 @@ const resultado = client.query(sql, (err, result) => {
 //***************************************
 //******** PATIENT API  *****************
 //***************************************
+
+
+//PATIENT GET APPOINTMENTS  SEARCH BY CALENDAR
+app.route('/patient_get_appointments_day2')
+.post(function (req, res) {
+ 
+    console.log('patient_get_appointments_day2 : INPUT : ', req.body );
+ 
+// ****** Connect to postgre
+const { Pool, Client } = require('pg')
+const client = new Client({
+  user: 'conmeddb_user',
+  host: '127.0.0.1',
+  database: 'conmeddb02',
+  password: 'paranoid',
+  port: 5432,
+})
+client.connect()
+
+let sql_and_specialty =" "; 
+let sql_and_comuna =" "; 
+let sql_and_insurance =" "; 
+let sql_appType =" "; 
+
+let calendars_array   =  null ; 
+let appointments_available = [] ;
+
+const sql_calendars  = " SELECT * FROM (SELECT id as calendar_id , *  FROM professional_calendar WHERE specialty1 = '152'  AND date_start >= '"+req.body.date+"'  AND start_time  >= '00:00:00' AND active = true ) C  LEFT JOIN professional ON C.professional_id = professional.id ";
+console.log('patient_get_appointments_day2 SQL:'+sql_calendars ) ;
+const resultado = client.query(sql_calendars, (err, result) => {
+
+  if (err) {
+      console.log('patient_get_appointments_day2 ERROR QUERY = '+sql_calendars ) ;
+    }
+  
+  console.log('Total Calendars Found:'+result.rowCount);
+  calendars_array = result.rows ;
+  console.log('patient_get_appointments_day2 sql_calendars RESPONSE  = '+JSON.stringify(calendars_array) ) ;
+
+    // FOREACH CALENDAR, 
+      for (var i = 0; i < result.rowCount ; i++) {
+
+        console.log("\n CALENDAR:"+i+" --- "); 
+        console.log("CALENDAR: Start Time -> "+ calendars_array[i].start_time  ); 
+        console.log("CALENDAR: End Time  -> "+ calendars_array[i].end_time  ); 
+        console.log("CALENDAR: App Duration  -> "+ calendars_array[i].duration  ); 
+        console.log("CALENDAR: Time Between  -> "+ calendars_array[i].time_between ); 
+        console.log("CALENDAR: Date Start  -> "+ calendars_array[i].date_start  ); 
+        console.log("CALENDAR: Date End  -> "+ calendars_array[i].date_end  ); 
+      
+        let aux_date_start = new Date(calendars_array[i].date_start) ; 
+        let aux_date_end = new Date(calendars_array[i].date_end) ;
+
+        console.log("CALENDAR: Date Start Javascript  -> "+aux_date_start.getDay()+"/"+( aux_date_start.getMonth() +1 )+"/"+ aux_date_start.getFullYear() ); 
+        console.log("CALENDAR: Date End Javascript  -> "+aux_date_end.getDay()+"/"+( aux_date_end.getMonth() +1 )+"/"+ aux_date_end.getFullYear() ); 
+       
+
+        let aux_start_time = new Date ('Thu, 01 Jan 1970 '+calendars_array[i].start_time ).getTime();
+        let aux_end_time = new Date ('Thu, 01 Jan 1970 '+calendars_array[i].end_time ).getTime();      
+
+        let total_available_time =  aux_end_time  - aux_start_time ; 
+        let app_duration =  (( parseInt(calendars_array[i].duration) + parseInt(calendars_array[i].time_between) ) * 60 * 1000 ) ;
+        let app_total_slots = total_available_time / app_duration ;
+        console.log ("total_available_app_perDay : Total slots:"+ app_total_slots )
+
+
+        //INSERT APP TO THE ARRAY 
+                  for (let x = 1; x <= app_total_slots ; x ++) {
+                        var appointment = {
+                          calendar_id : calendars_array[i].calendar_id , 
+                          date : req.body.date ,
+                          professional : calendars_array[i].name , 
+                          specialty1 : calendars_array[i].specialty1 , 
+                          duration : calendars_array[i].duration ,
+                          home_visit : calendars_array[i].home_visit ,
+                          center_visit :calendars_array[i].center_visit ,
+                          status : calendars_array[i].status  ,
+                        }
+
+                      appointments_available.push(appointment) ;
+                  }
+      
+      }//END FOREACH CALENDAR
+      console.log ("appointments_available Largo :  "+appointments_available.length )
+      console.log ("appointments_available "+JSON.stringify(appointments_available) )
+
+
+
+
+
+  res.status(200).send("OK");
+  client.end()
+})
+
+
+})
+
+ 
 
 //PATIENT GET APPOINTMENTS DAY
 app.route('/patient_get_appointments_day')
