@@ -1267,15 +1267,18 @@ app.route('/patient_get_appointments_day2')
     console.log('patient_get_appointments_day2 : INPUT : ', req.body );
     console.log('response in route: '+get_professional_apptointments_day());
 
-    let resp_calendar= get_calendars_available(req.body);
+    let resp_app_available= get_appointments_available(req.body);
    
-    resp_calendar.then(result => console.log("RESULT: "+JSON.stringify(result))  )
 
     /*
     resp_calendar.then(result => console.log(result) )
     
     let resp_app_taken=get_professional_apptointments_day()
     resp_app_taken.then(result => console.log(result) )
+
+
+    res.status(200).send(JSON.stringify(result) );
+  client.end()
     */
    
 
@@ -2671,6 +2674,36 @@ const conn_data = {
 }
   
 
+async function get_appointments_available(json)
+{
+  let professional_ids = [] ;
+
+  //1 get all callendars match
+  let calendars = await get_calendars_available(json)
+  //2 get all appointments of Profecioals belog calendars for the days required
+  //extract professional ids from Calendars
+  for(var i=0; i<calendars.length; i++){
+    professional_ids.push(calendars[i]['professional_id']);
+    //console.log ("\n Value= "+calendars[i]['professional_id']) ; 
+  }
+
+  console.log('Calendars Professional IDS:'+professional_ids );
+  //filtrar para no tener ids repetidos. 
+
+  let dates = [json.date] 
+  let appoitnments = await get_professional_apptointments_day(professional_ids,dates)
+
+  for(var i=0; i<appointments.length; i++){
+    console.log("appointments id:"+appointments[i].id) ;
+    //console.log ("\n Value= "+calendars[i]['professional_id']) ; 
+  }
+
+  //3 for each Calendar divide that based in APpointments already reserved. 
+
+
+
+}
+
 
 async function get_calendars_available(json)
 {
@@ -2686,14 +2719,16 @@ async function get_calendars_available(json)
 }
 
 
-async function get_professional_apptointments_day()
+async function get_professional_apptointments_day(ids,dates)
 {
   const { Client } = require('pg')
   const client = new Client(conn_data)
   await client.connect()
-  
-  const res = await client.query('SELECT $1::text as message', ['Hello world2 !'])
-  return res.rows[0].message ;
+  console.log("ids:"+ids+" dates:"+dates)
+  const sql_apps_taken  = "SELECT * FROM appointment WHERE date = '"+dates+"'  and professional_id = '"+ids+"' ;";
+          
+  const res = await client.query(sql_apps_taken)
+  return res.rows;
   await client.end() 
 }
 
