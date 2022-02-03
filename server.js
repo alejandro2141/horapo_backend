@@ -1253,9 +1253,6 @@ const resultado = client.query(SQL_VALUES, (err, result) => {
 
 
 })
-  
-
-
 
 // PPROFESSIONAL CREATE APPOINTMENTS
 app.route('/professional_create_appointments')
@@ -1336,8 +1333,6 @@ const resultado = client.query(SQL_VALUES, (err, result) => {
 
 })
   
-
-
 // PROFESSIONAL COPY CALENDAR DAY
 app.route('/professional_copy_calendar_day')
 .post(function (req, res) {
@@ -2428,11 +2423,22 @@ async function get_appointments_available(json)
                         var appointment = {
                           calendar_id : calendars[i].calendar_id , 
                           date : json.date ,
-                          professional : calendars[i].name , 
+                          professional_name : calendars[i].professional_name , 
                           specialty1 : calendars[i].specialty1 , 
                           duration : calendars[i].duration ,
+
                           home_visit : calendars[i].home_visit ,
+                          home_visit_location1 : calendars[i].home_visit_location1 ,
+                          home_visit_location2 : calendars[i].home_visit_location2 ,
+                          home_visit_location3 : calendars[i].home_visit_location3 ,
+                          home_visit_location4 : calendars[i].home_visit_location4 ,
+                          home_visit_location5 : calendars[i].home_visit_location5 ,
+                          home_visit_location6 : calendars[i].home_visit_location6 ,
+
                           center_visit :calendars[i].center_visit ,
+                          center_name :calendars[i].center_name ,
+                          center_address :calendars[i].center_address ,
+
                           status : calendars[i].status  ,
 
                           start_time : aux_date.getUTCHours()+":"+aux_date.getUTCMinutes() , 
@@ -2462,10 +2468,13 @@ async function get_calendars_available(json)
   let specialty = " " ;
   if (json.specialty != null )
   {
-    specialty = " specialty1 = '"+json.specialty+"' AND " ;
+    specialty = "AND specialty1 = '"+json.specialty+"'  " ;
   }
 
-  const sql_calendars  = " SELECT * FROM (SELECT id as calendar_id , *  FROM professional_calendar WHERE "+specialty+" date_start <= '"+json.date+"' AND date_end >= '"+json.date+"'  AND start_time  >= '00:00:00' AND active = true ) C  LEFT JOIN professional ON C.professional_id = professional.id ";
+  //const sql_calendars  = " SELECT * FROM (SELECT id as calendar_id , *  FROM professional_calendar WHERE "+specialty+" date_start <= '"+json.date+"' AND date_end >= '"+json.date+"'  AND start_time  >= '00:00:00' AND active = true ) C  LEFT JOIN  professional ON C.professional_id = professional.id ";
+  const sql_calendars  = " SELECT name AS center_name, address AS center_address, * FROM (  SELECT name AS professional_name , calendar_id, professional_id, start_time, end_time, specialty1, duration, time_between, monday, tuesday, wednesday, thursday, friday, saturday, sunday, date_start, date_end , home_visit,  center_visit, video_call, status, home_visit_location1, home_visit_location2, home_visit_location3, home_visit_location4, home_visit_location5,  home_visit_location6, center_visit_center_id, phone AS professional_phone  FROM (SELECT id as calendar_id , *  FROM professional_calendar WHERE  active = true "+specialty+"  AND date_end >= '"+json.date+"'  AND start_time  >= '00:00:00'  ) C  LEFT JOIN professional ON C.professional_id = professional.id )     K LEFT JOIN center ON  k.center_visit_center_id = center.id " ; 
+
+
   console.log ("QUERY GET CALENDAR = "+sql_calendars);
   const res = await client.query(sql_calendars) 
   return res.rows ;
@@ -2487,7 +2496,6 @@ async function get_professional_appointment_day(ids,dates)
       {
       aux_dates += "," ;
       }
-
     //console.log ("\n Value= "+calendars[i]['professional_id']) ; 
   }
 
