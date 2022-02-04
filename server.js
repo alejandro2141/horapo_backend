@@ -109,7 +109,50 @@ console.log('public_register_professional SQL :'+sql ) ;
 })
 
 
+// SAVE APPOINTMENT New Version
+app.route('/public_take_appointment')
+.post(function (req, res) {
+    console.log('public_take_appointment INPUT : ', req.body );
+// ****** Connect to postgre
+const { Pool, Client } = require('pg')
+const client = new Client({
+  user: 'conmeddb_user',
+  host: '127.0.0.1',
+  database: 'conmeddb02',
+  password: 'paranoid',
+  port: 5432,
+})
+client.connect()
+/*
+//const query_update = "UPDATE appointment SET reserve_patient_name = '"+req.body.patient_name+"' ,  reserve_patient_doc_id = '"+req.body.patient_doc_id+"' , reserve_patient_email = '"+req.body.patient_email+"' , reserve_patient_phone ='"+req.body.patient_phone+"' , reserve_patient_insurance='"+req.body.patient_insurance+"' , reserve_available='FALSE'    WHERE id = '"+req.body.appointment_id+"' RETURNING * " ;
+let query_reserve =  "INSERT INTO appointment (date, start_time, duration, specialty, specialty1, specialty2,specialty3,specialty4, center_id, professional_id , app_available , app_public , available_public_search, location1,location2,location3 , location4 , location6, location7, location8, app_type_home , app_type_center, app_type_remote) " ;
+sql = sql + " SELECT '"+req.body.destination+"' , start_time, duration, specialty, specialty1, specialty2,specialty3,specialty4,  center_id, professional_id , true , app_public , false ,  location1, location2,location3 , location4 , location6, location7, location8,  app_type_home ,  app_type_center,  app_type_remote";
+sql = sql + " FROM appointment  WHERE professional_id = '"+req.body.p_id+"'  AND date='"+req.body.origin+"'  " ; 
+ */
+let query_reserve = " " ;
 
+
+//const query_update = "UPDATE appointment SET patient_name = '"+req.body.patient_name+"' ,  patient_doc_id = '"+req.body.patient_doc_id+"' , patient_email = '"+req.body.patient_email+"' , patient_phone1 ='"+req.body.patient_phone+"' , patient_insurance='"+req.body.patient_insurance+"' , app_available='FALSE'     WHERE id = '"+req.body.appointment_id+"'  RETURNING * ";
+
+console.log(query_reserve);
+const resultado = client.query(query_reserve, (err, result) => {
+    //res.status(200).send(JSON.stringify(result)) ;
+    if (err) {
+      console.log('/public_take_appointment ERR:'+err ) ;
+    }
+    else {
+    console.log("public_take_appointment JSON RESPONSE BODY : "+JSON.stringify(result));
+    res.status(200).send(JSON.stringify(result.rows[0])) ;  
+    }
+    
+
+    client.end()
+})
+
+})
+
+
+/*
 // SAVE APPOINTMENT
 app.route('/public_take_appointment')
 .post(function (req, res) {
@@ -162,16 +205,7 @@ if  (req.body.patient_address != null )
 //set SPECIALTY RESERVED
 if  (req.body.specialty_reserved != null )
 {  query_update += "specialty_reserved ='"+req.body.specialty_reserved+"' , " ; } 
-/*
-  form_start_time: '09:00:00',
-  form_appointment_duration: '45',
-  appointment_id: 1235,
-  form_center_id: 45,
-  form_professional_id: '1',
-  form_date: '2021-10-21',
-  form_specialty_code: 131,
-  form_public:
-*/
+
 //last one of the query.- 
 query_update += " app_available ='false' , " ;
 
@@ -206,7 +240,7 @@ const resultado = client.query(query_update, (err, result) => {
   // res.send(JSON.stringify(result));
 })
 
-
+*/
 
 // **************************************
 // ********* COMMON API ******************
@@ -1402,7 +1436,7 @@ app.route('/patient_get_appointments_day2')
 })
 
  
-
+/*
 //PATIENT GET APPOINTMENTS DAY
 app.route('/patient_get_appointments_day')
 .post(function (req, res) {
@@ -1522,7 +1556,7 @@ const resultado = client.query(sql, (err, result) => {
 })
 })
 
- 
+*/ 
  /*
   xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
   xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
@@ -2471,8 +2505,47 @@ async function get_calendars_available(json)
     specialty = "AND specialty1 = '"+json.specialty+"'  " ;
   }
 
+  // IF HOME VISIT  OR IN CENTER 
+  let app_type = " " ;
+  if (json.type_home)
+        {
+          app_type = "AND home_visit = 'true'  " ;
+        }
+  if (json.type_center)
+        {
+          app_type = "AND center_visit = 'true'  " ;
+        }
+  
+   if (json.type_center && json.type_home)
+   {
+    app_type = " " ;
+   }
+   // END HOME VISIT
+
+   // IF LOCATION SEARCH
+   let sql_location = "" ;
+   if (json.location != null )
+   { 
+      if ( (json.type_home && json.type_home) || (!json.type_home && !json.type_home)   )
+      {
+        sql_location = " WHERE home_visit_location1 IN ("+json.location+") OR home_visit_location2 IN ("+json.location+")  OR home_visit_location3 IN ("+json.location+") OR home_visit_location4 IN ("+json.location+") OR home_visit_location5 IN ("+json.location+") OR home_visit_location6 IN ("+json.location+")  OR comuna IN ("+json.location+")  " ;
+      }   
+      else if (json.type_home)
+      {
+      sql_location = " WHERE home_visit_location1 IN ("+json.location+") OR home_visit_location2 IN ("+json.location+")  OR home_visit_location3 IN ("+json.location+") OR home_visit_location4 IN ("+json.location+") OR home_visit_location5 IN ("+json.location+") OR home_visit_location6 IN ("+json.location+")    " ;
+      }
+      else if (json.type_center)
+      {
+      sql_location = "WHERE comuna IN ("+json.location+") " ;
+      }
+
+   
+    }
+
+   //END IF LOCATION
+
   //const sql_calendars  = " SELECT * FROM (SELECT id as calendar_id , *  FROM professional_calendar WHERE "+specialty+" date_start <= '"+json.date+"' AND date_end >= '"+json.date+"'  AND start_time  >= '00:00:00' AND active = true ) C  LEFT JOIN  professional ON C.professional_id = professional.id ";
-  const sql_calendars  = " SELECT name AS center_name, address AS center_address, * FROM (  SELECT name AS professional_name , calendar_id, professional_id, start_time, end_time, specialty1, duration, time_between, monday, tuesday, wednesday, thursday, friday, saturday, sunday, date_start, date_end , home_visit,  center_visit, video_call, status, home_visit_location1, home_visit_location2, home_visit_location3, home_visit_location4, home_visit_location5,  home_visit_location6, center_visit_center_id, phone AS professional_phone  FROM (SELECT id as calendar_id , *  FROM professional_calendar WHERE  active = true "+specialty+"  AND date_end >= '"+json.date+"'  AND start_time  >= '00:00:00'  ) C  LEFT JOIN professional ON C.professional_id = professional.id )     K LEFT JOIN center ON  k.center_visit_center_id = center.id " ; 
+  const sql_calendars  = "SELECT * FROM (SELECT name AS center_name, address AS center_address, * FROM (  SELECT name AS professional_name , calendar_id, professional_id, start_time, end_time, specialty1, duration, time_between, monday, tuesday, wednesday, thursday, friday, saturday, sunday, date_start, date_end , home_visit,  center_visit, video_call, status, home_visit_location1, home_visit_location2, home_visit_location3, home_visit_location4, home_visit_location5,  home_visit_location6, center_visit_center_id, phone AS professional_phone  FROM (SELECT id as calendar_id , *  FROM professional_calendar WHERE  active = true "+specialty+"  AND date_start <= '"+json.date+"'  AND date_end >= '"+json.date+"'  AND start_time  >= '00:00:00'  "+app_type+" ) C  LEFT JOIN professional ON C.professional_id = professional.id )     K LEFT JOIN center ON  k.center_visit_center_id = center.id )J  "+sql_location+" " ; 
 
 
   console.log ("QUERY GET CALENDAR = "+sql_calendars);
