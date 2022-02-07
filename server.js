@@ -2410,10 +2410,10 @@ async function get_appointments_available(json)
     dates.push("2022-02-01");
   let appointments_available = [] ; 
  
-  //1 get all callendars match
+   // 1.-  CALENDARS 
   let calendars = await get_calendars_available(json)
   console.log('Calendars :'+JSON.stringify(calendars));
-  //2 get all appointments of Profecioals belog calendars for the days required
+  // get all appointments of Profecioals belog calendars for the days required
   //extract professional ids from Calendars
   for(var i=0; i<calendars.length; i++){
     professional_ids.push(calendars[i]['professional_id']);
@@ -2423,18 +2423,24 @@ async function get_appointments_available(json)
   //filtrar para no tener ids repetidos. 
   //MUST ELIMINATE DUPLICATED IDs 
    dates.push(json.date);
-  
+
+   // 2.-  APPOINTMENTS TAKEN
   let appointments = await get_professional_appointment_day(professional_ids,dates)
   
   // now we cut calendar skiping appotintments taken 
   for(var i=0; i<calendars.length; i++){
+
+      // Make first filter  to get only appointment belong to this professional id
+      let appointments_filtered = [] ; 
+      appointments_filtered =  appointments.filter (app => app.professional_id == calendars[i].professional_id ) 
+      //  console.log("aux_appointment_filtered : "+ JSON.stringify(aux_appointment_filtered)  );
+
  
       console.log ("\n Processing calendar id:"+calendars[i].id)
       let appointment_id_filtered = appointments.filter(appointments => appointments.professional_id == calendars[i].professional_id );
       console.log("\n Searching appointments for professional_id : "+calendars[i].professional_id );
       console.log("\n FOUND Appointments ("+appointment_id_filtered.lenght+") : "+appointment_id_filtered );
       console.log("\n");
-
 
         console.log("\n CALENDAR:"+i+" --- "); 
         console.log("CALENDAR: Start Time -> "+ calendars[i].start_time  ); 
@@ -2494,12 +2500,29 @@ async function get_appointments_available(json)
                           start_time : aux_date.getHours()+":"+aux_date.getMinutes() , 
                         }
 
-
-
                       start_time_slot +=  app_duration ;
 
+                      let aux_date_compare = new Date() ; 
+
+                      //check if this Available App is not already taken by users. 
+                      //AQUI ME QUEDE
+                      let exist = appointments_filtered.filter(w => w.start_time == aux_date.getTime() );
+                      console.log ("FILTERING : ")
+                      if (exist.length > 0 )
+                      {
+                     // console.log("DISMISS block time :Appointment id "+exist.id+ " TIME:"+exist.start_time ) ; 
+                      console.log("DISMISS block time :"+JSON.stringify(exist) ) ; 
+                      }
+                      else
+                      {
                       appointments_available.push(appointment) ;
-                  }
+                      }
+
+                      
+
+                    }
+
+
 
   }
 
