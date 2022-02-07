@@ -128,8 +128,22 @@ client.connect()
 let query_reserve =  "INSERT INTO appointment (date, start_time, duration, specialty, specialty1, specialty2,specialty3,specialty4, center_id, professional_id , app_available , app_public , available_public_search, location1,location2,location3 , location4 , location6, location7, location8, app_type_home , app_type_center, app_type_remote) " ;
 sql = sql + " SELECT '"+req.body.destination+"' , start_time, duration, specialty, specialty1, specialty2,specialty3,specialty4,  center_id, professional_id , true , app_public , false ,  location1, location2,location3 , location4 , location6, location7, location8,  app_type_home ,  app_type_center,  app_type_remote";
 sql = sql + " FROM appointment  WHERE professional_id = '"+req.body.p_id+"'  AND date='"+req.body.origin+"'  " ; 
- */
-let query_reserve = " " ;
+
+ INSERT INTO appointment ( 
+	 date , start_time,  duration,  center_id, confirmation_status, professional_id, patient_doc_id, patient_name,  
+	 patient_email, app_available, app_status, app_blocked, app_public,  location1, location2, location3, location4, location5, location6, 
+	 app_type_home, app_type_center, patient_notification_email_reserved , specialty_reserved , patient_address 
+ )
+ VALUES ( '2022-01-01' , '01:00:00' , '15' ,  '12' , '0' , '2' , '13909371-2' , 'JUan Alejandro MOrales' , 'alejandro2141@gmail.com' ,
+		 '1' , '1' , '0' , '1', '1017', '1017','1017','1017','1017','1017',
+		'true', 'false' , '1' , '153', 'avenida Vivaceta 1543, Departamento 123, Independencia, Santiago Chile'
+		)
+*/
+
+let query_reserve = "INSERT INTO appointment (  date , start_time,  duration,  center_id, confirmation_status, professional_id, patient_doc_id, patient_name,    patient_email, patient_phone1,  patient_age,  app_available, app_status, app_blocked, app_public,  location1, location2, location3, location4, location5, location6,   app_type_home, app_type_center, patient_notification_email_reserved , specialty_reserved , patient_address ) "  ; 
+
+query_reserve  += " VALUES ( '"+req.body.appointment_date+"' , '"+req.body.appointment_start_time+"' , '"+req.body.appointment_duration+"' ,  '"+req.body.appointment_center_id+"' , '0' , '"+req.body.appointment_professional_id+"' , '"+req.body.patient_doc_id+"' , '"+req.body.patient_name+"' , '"+req.body.patient_email+"' , '"+req.body.patient_phone+"' ,  '"+req.body.patient_age+"' ,'false' , '1' , '0' , '1', "+req.body.appointment_location1+" , "+req.body.appointment_location2+" ,"+req.body.appointment_location3+" ,"+req.body.appointment_location4+" ,"+req.body.appointment_location5+" ,"+req.body.appointment_location6+" , '"+req.body.appointment_type_home+"' , '"+req.body.appointment_type_center+"' , '1' , '"+req.body.specialty_reserved+"' , '"+req.body.patient_address+"'  	) " ; 
+
 
 
 //const query_update = "UPDATE appointment SET patient_name = '"+req.body.patient_name+"' ,  patient_doc_id = '"+req.body.patient_doc_id+"' , patient_email = '"+req.body.patient_email+"' , patient_phone1 ='"+req.body.patient_phone+"' , patient_insurance='"+req.body.patient_insurance+"' , app_available='FALSE'     WHERE id = '"+req.body.appointment_id+"'  RETURNING * ";
@@ -2460,6 +2474,9 @@ async function get_appointments_available(json)
                           professional_name : calendars[i].professional_name , 
                           specialty1 : calendars[i].specialty1 , 
                           duration : calendars[i].duration ,
+                          professional_id : calendars[i].professional_id , 
+
+                          pattient_doc_id : calendars[i].pattient_doc_id ,
 
                           home_visit : calendars[i].home_visit ,
                           home_visit_location1 : calendars[i].home_visit_location1 ,
@@ -2470,6 +2487,7 @@ async function get_appointments_available(json)
                           home_visit_location6 : calendars[i].home_visit_location6 ,
 
                           center_visit :calendars[i].center_visit ,
+                          center_id :calendars[i].center_visit_center_id ,
                           center_name :calendars[i].center_name ,
                           center_address :calendars[i].center_address ,
 
