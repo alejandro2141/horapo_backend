@@ -2429,15 +2429,16 @@ async function get_appointments_available(json)
   
   // now we cut calendar skiping appotintments taken 
   for(var i=0; i<calendars.length; i++){
-
-      // Make first filter  to get only appointment belong to this professional id
-      let appointments_filtered = [] ; 
-      appointments_filtered =  appointments.filter (app => app.professional_id == calendars[i].professional_id ) 
-      //  console.log("aux_appointment_filtered : "+ JSON.stringify(aux_appointment_filtered)  );
-
- 
-      console.log ("\n Processing calendar id:"+calendars[i].id)
       let appointment_id_filtered = appointments.filter(appointments => appointments.professional_id == calendars[i].professional_id );
+      console.log("Appointment_id_filtered :"+appointment_id_filtered.length);
+      // Make first filter  to get only appointment belong to this professional id
+      //let appointments_filtered = [] ; 
+      //appointments_filtered =  appointments.filter (app => app.professional_id == calendars[i].professional_id ) 
+      //console.log("aux_appointment_filtered : "+ JSON.stringify(aux_appointment_filtered)  );
+
+      //console.log ("\n Processing calendar id:"+calendars[i].id)
+      
+      /*
       console.log("\n Searching appointments for professional_id : "+calendars[i].professional_id );
       console.log("\n FOUND Appointments ("+appointment_id_filtered.lenght+") : "+appointment_id_filtered );
       console.log("\n");
@@ -2449,13 +2450,13 @@ async function get_appointments_available(json)
         console.log("CALENDAR: Time Between  -> "+ calendars[i].time_between ); 
         console.log("CALENDAR: Date Start  -> "+ calendars[i].date_start  ); 
         console.log("CALENDAR: Date End  -> "+ calendars[i].date_end  ); 
-      
+      */
         let aux_date_start = new Date(calendars[i].date_start) ; 
         let aux_date_end = new Date(calendars[i].date_end) ;
-
+      /*
         console.log("CALENDAR: Date Start Javascript  -> "+aux_date_start.getDay()+"/"+( aux_date_start.getMonth() +1 )+"/"+ aux_date_start.getFullYear() ); 
         console.log("CALENDAR: Date End Javascript  -> "+aux_date_end.getDay()+"/"+( aux_date_end.getMonth() +1 )+"/"+ aux_date_end.getFullYear() ); 
-       
+       */
         let aux_start_time = new Date ('Thu, 01 Jan 1970 '+calendars[i].start_time ).getTime();
         let aux_end_time = new Date ('Thu, 01 Jan 1970 '+calendars[i].end_time ).getTime();      
 
@@ -2472,7 +2473,7 @@ async function get_appointments_available(json)
                   for (let x = 1; x <= app_total_slots ; x ++) {
                     let aux_date = new Date(start_time_slot)
 
-                        var appointment = {
+                        var appointment_slot = {
                           calendar_id : calendars[i].calendar_id , 
                           date : json.date ,
                           professional_name : calendars[i].professional_name , 
@@ -2502,12 +2503,43 @@ async function get_appointments_available(json)
 
                       start_time_slot +=  app_duration ;
 
-                      let aux_date_compare = new Date() ; 
-
                       //check if this Available App is not already taken by users. 
                       //AQUI ME QUEDE
-                      let exist = appointments_filtered.filter(w => w.start_time == aux_date.getTime() );
-                      console.log ("FILTERING : ")
+                      console.log("FILTERS CALENDAR    -> id: "+calendars[i].calendar_id+" Professional Id: "+calendars[i].professional_id+"   " )
+                      //let exist = appointments_filtered.filter(w => w.start_time == aux_date.getTime() );
+                      let aux_date_slot= new Date ('Thu, 01 Jan 1970 '+appointment_slot.start_time ).getTime();
+
+                      if (appointment_id_filtered.length > 0) 
+                      {
+                            for (let i = 0; i < appointment_id_filtered.length; i++) {
+                              let aux_date_app = new Date('Thu, 01 Jan 1970 '+appointment_id_filtered[i].start_time).getTime(); ;
+                              console.log("---> FILTERS Appointment id: "+appointment_id_filtered[i].id+" StartTIme: "+appointment_id_filtered[i].start_time  )
+                              console.log("---> FILTERS APP  StartTIme: "+appointment_id_filtered[i].start_time+" vs APPSLOT " +appointment_slot.start_time  )
+                              console.log("---> FILTERS comparison result : slot Startime:  "+aux_date_slot +" vs APPFound " +aux_date_app )
+                              
+                                if ( aux_date_slot === aux_date_app)
+                                {
+                                  console.log("MATCH TRUE  Skip "+appointment_slot.date+" "+appointment_slot.start_time+" Professional_id: "+appointment_slot.professional_id );
+                                }
+                                else
+                                {
+                                  console.log("MATCH FALSE. ADD TO APP AVAILABLE LIST "+appointment_slot.date+" "+appointment_slot.start_time+" Professional_id: "+appointment_slot.professional_id );
+                                  appointments_available.push(appointment_slot)
+                                }
+                            }
+                      }
+                      else{ 
+                          appointments_available.push(appointment_slot) ;
+                      }
+                      //console.log("FILTER APPOINTMENT  -> Comparison AppId: "+appointments_filtered[0].id+" Slot StartTime n"+x+" : "+ appointment.start_time + " 1st Appointment StartTIme: "+appointments_filtered[0].start_time  );
+                      //console.log("COMPARISON RESULT  : "+('00:00'=='00:00') );
+
+
+
+                      //console.log("COMPARISON RESULT DATE GetTime : "+ ( Date('00:00').getTime() == Date('00:00').getTime() ) );
+                      //exist.forEach(element => console.log("FILTERS ->  Appointment id:"+element.id+ " Start Date:"+element.start_date+" \n " ));
+                      
+/*                   
                       if (exist.length > 0 )
                       {
                      // console.log("DISMISS block time :Appointment id "+exist.id+ " TIME:"+exist.start_time ) ; 
@@ -2517,7 +2549,7 @@ async function get_appointments_available(json)
                       {
                       appointments_available.push(appointment) ;
                       }
-
+*/
                       
 
                     }
