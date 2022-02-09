@@ -2407,19 +2407,25 @@ async function get_appointments_available(json)
   let professional_ids = [] ;
     professional_ids.push(999);
   let dates = [] ;
-    dates.push("2022-02-01");
+   // dates.push("2022-02-01");
   let appointments_available = [] ; 
  
    // 1.-  CALENDARS 
   let calendars = await get_calendars_available(json)
-  console.log('Calendars :'+JSON.stringify(calendars));
+
+  console.log('SEARCH Calendars Match with Search Parameters Total:'+calendars.length );
+  
   // get all appointments of Profecioals belog calendars for the days required
   //extract professional ids from Calendars
   for(var i=0; i<calendars.length; i++){
     professional_ids.push(calendars[i]['professional_id']);
     //console.log ("\n Value= "+calendars[i]['professional_id']) ; 
   }
-  console.log('Calendars Professional IDS:'+professional_ids );
+  professional_ids = professional_ids.sort().filter(function(item, pos, ary) {
+    return !pos || item != ary[pos - 1];
+    });
+
+  console.log('SEARCH Calendars Professional Ids:'+professional_ids );
   //filtrar para no tener ids repetidos. 
   //MUST ELIMINATE DUPLICATED IDs 
    dates.push(json.date);
@@ -2498,7 +2504,12 @@ async function get_appointments_available(json)
 
                           status : calendars[i].status  ,
 
-                          start_time : aux_date.getHours()+":"+aux_date.getMinutes() , 
+                          //start_time : "0"+aux_date.getHours()+":0"+aux_date.getMinutes() , 
+                          start_time :  aux_date.getHours().toString().padStart(2, '0')+":"+aux_date.getMinutes().toString().padStart(2, '0') , 
+
+                          //new String(new char[width - toPad.length()]).replace('\0', fill) + toPad;
+                        
+                        
                         }
 
                       start_time_slot +=  app_duration ;
@@ -2550,8 +2561,10 @@ async function get_appointments_available(json)
                       appointments_available.push(appointment) ;
                       }
 */
-                      
+                    console.log(" SEARCH APPOINTMENT AVAILABLE to display Lenght:"+appointments_available.lenght);
+                    appointments_available.sort(function(b, a){ return (new Date('Thu, 01 Jan 1970 '+b.start_time) - new Date('Thu, 01 Jan 1970 '+a.start_time )) } ) 
 
+                    
                     }
 
 
@@ -2614,12 +2627,9 @@ async function get_calendars_available(json)
 
    
     }
-
-   //END IF LOCATION
-
+  //END IF LOCATION
   //const sql_calendars  = " SELECT * FROM (SELECT id as calendar_id , *  FROM professional_calendar WHERE "+specialty+" date_start <= '"+json.date+"' AND date_end >= '"+json.date+"'  AND start_time  >= '00:00:00' AND active = true ) C  LEFT JOIN  professional ON C.professional_id = professional.id ";
   const sql_calendars  = "SELECT * FROM (SELECT name AS center_name, address AS center_address, * FROM (  SELECT name AS professional_name , calendar_id, professional_id, start_time, end_time, specialty1, duration, time_between, monday, tuesday, wednesday, thursday, friday, saturday, sunday, date_start, date_end , home_visit,  center_visit, video_call, status, home_visit_location1, home_visit_location2, home_visit_location3, home_visit_location4, home_visit_location5,  home_visit_location6, center_visit_center_id, phone AS professional_phone  FROM (SELECT id as calendar_id , *  FROM professional_calendar WHERE  active = true "+specialty+"  AND date_start <= '"+json.date+"'  AND date_end >= '"+json.date+"'  AND start_time  >= '00:00:00'  "+app_type+" ) C  LEFT JOIN professional ON C.professional_id = professional.id )     K LEFT JOIN center ON  k.center_visit_center_id = center.id )J  "+sql_location+" " ; 
-
 
   console.log ("QUERY GET CALENDAR = "+sql_calendars);
   const res = await client.query(sql_calendars) 
