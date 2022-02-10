@@ -2409,23 +2409,23 @@ async function get_appointments_available(json)
   let dates = [] ;
    // dates.push("2022-02-01");
   let appointments_available = [] ; 
- 
+  console.log('GET APPOINTMENT AVAILABLE ');
    // 1.-  CALENDARS 
   let calendars = await get_calendars_available(json)
+  console.log('1.- GET CALENDARS Match with Search Parameters Total:'+calendars.length );
+  calendars.forEach(cal => console.log("CALENDAR ID :"+cal.id));
 
-  console.log('SEARCH Calendars Match with Search Parameters Total:'+calendars.length );
-  
   // get all appointments of Profecioals belog calendars for the days required
   //extract professional ids from Calendars
   for(var i=0; i<calendars.length; i++){
     professional_ids.push(calendars[i]['professional_id']);
-    //console.log ("\n Value= "+calendars[i]['professional_id']) ; 
   }
+
   professional_ids = professional_ids.sort().filter(function(item, pos, ary) {
     return !pos || item != ary[pos - 1];
     });
-
-  console.log('SEARCH Calendars Professional Ids:'+professional_ids );
+  console.log('CALENDARS LIST Professional Ids:'+professional_ids );
+  
   //filtrar para no tener ids repetidos. 
   //MUST ELIMINATE DUPLICATED IDs 
    dates.push(json.date);
@@ -2436,27 +2436,7 @@ async function get_appointments_available(json)
   // now we cut calendar skiping appotintments taken 
   for(var i=0; i<calendars.length; i++){
       let appointment_id_filtered = appointments.filter(appointments => appointments.professional_id == calendars[i].professional_id );
-      console.log("Appointment_id_filtered :"+appointment_id_filtered.length);
-      // Make first filter  to get only appointment belong to this professional id
-      //let appointments_filtered = [] ; 
-      //appointments_filtered =  appointments.filter (app => app.professional_id == calendars[i].professional_id ) 
-      //console.log("aux_appointment_filtered : "+ JSON.stringify(aux_appointment_filtered)  );
-
-      //console.log ("\n Processing calendar id:"+calendars[i].id)
-      
-      /*
-      console.log("\n Searching appointments for professional_id : "+calendars[i].professional_id );
-      console.log("\n FOUND Appointments ("+appointment_id_filtered.lenght+") : "+appointment_id_filtered );
-      console.log("\n");
-
-        console.log("\n CALENDAR:"+i+" --- "); 
-        console.log("CALENDAR: Start Time -> "+ calendars[i].start_time  ); 
-        console.log("CALENDAR: End Time  -> "+ calendars[i].end_time  ); 
-        console.log("CALENDAR: App Duration  -> "+ calendars[i].duration  ); 
-        console.log("CALENDAR: Time Between  -> "+ calendars[i].time_between ); 
-        console.log("CALENDAR: Date Start  -> "+ calendars[i].date_start  ); 
-        console.log("CALENDAR: Date End  -> "+ calendars[i].date_end  ); 
-      */
+     
         let aux_date_start = new Date(calendars[i].date_start) ; 
         let aux_date_end = new Date(calendars[i].date_end) ;
       /*
@@ -2469,12 +2449,11 @@ async function get_appointments_available(json)
         let total_available_time =  aux_end_time  - aux_start_time ; 
         let app_duration =  (( parseInt(calendars[i].duration) + parseInt(calendars[i].time_between) ) * 60 * 1000 ) ;
         let app_total_slots = total_available_time / app_duration ;
-        console.log ("Proceed to create Slots, Total slots:"+ app_total_slots )
-
-        //before creat available App we get all APP TAKEN 
+        console.log("CALENDAR TOTAL DRAFT slots TO CREATE:"+ app_total_slots+"FOR PROFESSIONAL ID:"+calendars[i].professional_id )
+        console.log("CALENDAR APPOINTMENT ALREADY RESERVED :"+appointment_id_filtered.length+ " For Professional id: "+calendars[i].professional_id);
+        console.log("NOW we will CREATE SLOTS skiping reserved.");
 
         let start_time_slot = aux_start_time;
-         
         //INSERT Appointments TO ARRAY based in CALENDAR times 
                   for (let x = 1; x <= app_total_slots ; x ++) {
                     let aux_date = new Date(start_time_slot)
@@ -2516,7 +2495,7 @@ async function get_appointments_available(json)
 
                       //check if this Available App is not already taken by users. 
                       //AQUI ME QUEDE
-                      console.log("FILTERS CALENDAR    -> id: "+calendars[i].calendar_id+" Professional Id: "+calendars[i].professional_id+"   " )
+                      //console.log("FILTERS CALENDAR    -> id: "+calendars[i].calendar_id+" Professional Id: "+calendars[i].professional_id+"   " )
                       //let exist = appointments_filtered.filter(w => w.start_time == aux_date.getTime() );
                       let aux_date_slot= new Date ('Thu, 01 Jan 1970 '+appointment_slot.start_time ).getTime();
 
@@ -2524,10 +2503,10 @@ async function get_appointments_available(json)
                       {
                             for (let i = 0; i < appointment_id_filtered.length; i++) {
                               let aux_date_app = new Date('Thu, 01 Jan 1970 '+appointment_id_filtered[i].start_time).getTime(); ;
-                              console.log("---> FILTERS Appointment id: "+appointment_id_filtered[i].id+" StartTIme: "+appointment_id_filtered[i].start_time  )
+                            /*  console.log("---> FILTERS Appointment id: "+appointment_id_filtered[i].id+" StartTIme: "+appointment_id_filtered[i].start_time  )
                               console.log("---> FILTERS APP  StartTIme: "+appointment_id_filtered[i].start_time+" vs APPSLOT " +appointment_slot.start_time  )
                               console.log("---> FILTERS comparison result : slot Startime:  "+aux_date_slot +" vs APPFound " +aux_date_app )
-                              
+                              */
                                 if ( aux_date_slot === aux_date_app)
                                 {
                                   console.log("MATCH TRUE  Skip "+appointment_slot.date+" "+appointment_slot.start_time+" Professional_id: "+appointment_slot.professional_id );
@@ -2561,17 +2540,17 @@ async function get_appointments_available(json)
                       appointments_available.push(appointment) ;
                       }
 */
-                    console.log(" SEARCH APPOINTMENT AVAILABLE to display Lenght:"+appointments_available.lenght);
+                    console.log("CALENDAR APPOINTMENT SORT")
                     appointments_available.sort(function(b, a){ return (new Date('Thu, 01 Jan 1970 '+b.start_time) - new Date('Thu, 01 Jan 1970 '+a.start_time )) } ) 
-
+                    console.log("CALENDAR APPOINTMENT AVAILABLE to display Lenght:"+appointments_available.lenght);
                     
                     }
 
 
 
   }
-
-  console.log ("\n APPOINTMENTS AVAILABLE TO DISPLAY :"+JSON.stringify(appointments_available));
+  console.log ("************* FINAL TO DISPLAY ************************ ");
+  console.log (" APPOINTMENTS AVAILABLE TO DISPLAY :"+JSON.stringify(appointments_available));
 
   return  appointments_available ;
 
@@ -2631,7 +2610,7 @@ async function get_calendars_available(json)
   //const sql_calendars  = " SELECT * FROM (SELECT id as calendar_id , *  FROM professional_calendar WHERE "+specialty+" date_start <= '"+json.date+"' AND date_end >= '"+json.date+"'  AND start_time  >= '00:00:00' AND active = true ) C  LEFT JOIN  professional ON C.professional_id = professional.id ";
   const sql_calendars  = "SELECT * FROM (SELECT name AS center_name, address AS center_address, * FROM (  SELECT name AS professional_name , calendar_id, professional_id, start_time, end_time, specialty1, duration, time_between, monday, tuesday, wednesday, thursday, friday, saturday, sunday, date_start, date_end , home_visit,  center_visit, video_call, status, home_visit_location1, home_visit_location2, home_visit_location3, home_visit_location4, home_visit_location5,  home_visit_location6, center_visit_center_id, phone AS professional_phone  FROM (SELECT id as calendar_id , *  FROM professional_calendar WHERE  active = true "+specialty+"  AND date_start <= '"+json.date+"'  AND date_end >= '"+json.date+"'  AND start_time  >= '00:00:00'  "+app_type+" ) C  LEFT JOIN professional ON C.professional_id = professional.id )     K LEFT JOIN center ON  k.center_visit_center_id = center.id )J  "+sql_location+" " ; 
 
-  console.log ("QUERY GET CALENDAR = "+sql_calendars);
+  //console.log ("QUERY GET CALENDAR = "+sql_calendars);
   const res = await client.query(sql_calendars) 
   return res.rows ;
   await client.end() 
@@ -2642,7 +2621,7 @@ async function get_professional_appointment_day(ids,dates)
   const { Client } = require('pg')
   const client = new Client(conn_data)
   await client.connect()
-  console.log("ids:"+ids+" dates:"+dates)
+  //console.log("ids:"+ids+" dates:"+dates)
 
   let aux_dates =" ";
   for(var i=0; i<dates.length; i++){
@@ -2656,7 +2635,7 @@ async function get_professional_appointment_day(ids,dates)
   }
 
   const sql_apps_taken  = "SELECT * FROM appointment WHERE date IN ("+aux_dates+")  and professional_id  IN ("+ids+") ;";
-  console.log("SQL QUERY: "+sql_apps_taken)
+  //console.log("SQL QUERY: "+sql_apps_taken)
   const res = await client.query(sql_apps_taken)
   return res.rows;
   await client.end() 
