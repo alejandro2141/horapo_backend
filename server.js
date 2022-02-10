@@ -141,7 +141,7 @@ sql = sql + " FROM appointment  WHERE professional_id = '"+req.body.p_id+"'  AND
 */
 
 let query_reserve = "INSERT INTO appointment (  date , start_time,  duration,  center_id, confirmation_status, professional_id, patient_doc_id, patient_name,    patient_email, patient_phone1,  patient_age,  app_available, app_status, app_blocked, app_public,  location1, location2, location3, location4, location5, location6,   app_type_home, app_type_center, patient_notification_email_reserved , specialty_reserved , patient_address )  "  ; 
-query_reserve  += " VALUES ( '"+req.body.appointment_date+"' , '"+req.body.appointment_start_time+"' , '"+req.body.appointment_duration+"' ,  '"+req.body.appointment_center_id+"' , '0' , '"+req.body.appointment_professional_id+"' , '"+req.body.patient_doc_id+"' , '"+req.body.patient_name+"' , '"+req.body.patient_email+"' , '"+req.body.patient_phone+"' ,  '"+req.body.patient_age+"' ,'false' , '1' , '0' , '1', "+req.body.appointment_location1+" , "+req.body.appointment_location2+" ,"+req.body.appointment_location3+" ,"+req.body.appointment_location4+" ,"+req.body.appointment_location5+" ,"+req.body.appointment_location6+" , '"+req.body.appointment_type_home+"' , '"+req.body.appointment_type_center+"' , '1' , '"+req.body.specialty_reserved+"' , '"+req.body.patient_address+"'  	) RETURNING * " ; 
+query_reserve  += " VALUES ( '"+req.body.appointment_date+"' , '"+req.body.appointment_start_time+"' , '"+req.body.appointment_duration+"' ,  "+req.body.appointment_center_id+" , '0' , '"+req.body.appointment_professional_id+"' , '"+req.body.patient_doc_id+"' , '"+req.body.patient_name+"' , '"+req.body.patient_email+"' , '"+req.body.patient_phone+"' ,  '"+req.body.patient_age+"' ,'false' , '1' , '0' , '1', "+req.body.appointment_location1+" , "+req.body.appointment_location2+" ,"+req.body.appointment_location3+" ,"+req.body.appointment_location4+" ,"+req.body.appointment_location5+" ,"+req.body.appointment_location6+" , '"+req.body.appointment_type_home+"' , '"+req.body.appointment_type_center+"' , '1' , '"+req.body.specialty_reserved+"' , '"+req.body.patient_address+"'  	) RETURNING * " ; 
 
 
 //const query_update = "UPDATE appointment SET patient_name = '"+req.body.patient_name+"' ,  patient_doc_id = '"+req.body.patient_doc_id+"' , patient_email = '"+req.body.patient_email+"' , patient_phone1 ='"+req.body.patient_phone+"' , patient_insurance='"+req.body.patient_insurance+"' , app_available='FALSE'     WHERE id = '"+req.body.appointment_id+"'  RETURNING * ";
@@ -2449,14 +2449,15 @@ async function get_appointments_available(json)
         let total_available_time =  aux_end_time  - aux_start_time ; 
         let app_duration =  (( parseInt(calendars[i].duration) + parseInt(calendars[i].time_between) ) * 60 * 1000 ) ;
         let app_total_slots = total_available_time / app_duration ;
-        console.log("CALENDAR TOTAL DRAFT slots TO CREATE:"+ app_total_slots+"FOR PROFESSIONAL ID:"+calendars[i].professional_id )
+        console.log("CALENDAR TOTAL DRAFT slots TO CREATE:"+ app_total_slots+"   FOR PROFESSIONAL ID:"+calendars[i].professional_id )
         console.log("CALENDAR APPOINTMENT ALREADY RESERVED :"+appointment_id_filtered.length+ " For Professional id: "+calendars[i].professional_id);
-        console.log("NOW we will CREATE SLOTS skiping reserved.");
+        console.log("START CYCLE TO CREATE SLOTS (skiping reserved)");
 
         let start_time_slot = aux_start_time;
         //INSERT Appointments TO ARRAY based in CALENDAR times 
                   for (let x = 1; x <= app_total_slots ; x ++) {
-                    let aux_date = new Date(start_time_slot)
+                      
+                        let aux_date = new Date(start_time_slot)
 
                         var appointment_slot = {
                           calendar_id : calendars[i].calendar_id , 
@@ -2480,28 +2481,25 @@ async function get_appointments_available(json)
                           center_id :calendars[i].center_visit_center_id ,
                           center_name :calendars[i].center_name ,
                           center_address :calendars[i].center_address ,
-
                           status : calendars[i].status  ,
-
                           //start_time : "0"+aux_date.getHours()+":0"+aux_date.getMinutes() , 
                           start_time :  aux_date.getHours().toString().padStart(2, '0')+":"+aux_date.getMinutes().toString().padStart(2, '0') , 
-
                           //new String(new char[width - toPad.length()]).replace('\0', fill) + toPad;
-                        
-                        
                         }
 
                       start_time_slot +=  app_duration ;
-
+                      
+                      console.log("--> DRAFT SLOT "+x+"/"+app_total_slots+" Start_Time: "+appointment_slot.start_time+" Duration:"+appointment_slot.duration );
                       //check if this Available App is not already taken by users. 
                       //AQUI ME QUEDE
                       //console.log("FILTERS CALENDAR    -> id: "+calendars[i].calendar_id+" Professional Id: "+calendars[i].professional_id+"   " )
                       //let exist = appointments_filtered.filter(w => w.start_time == aux_date.getTime() );
                       let aux_date_slot= new Date ('Thu, 01 Jan 1970 '+appointment_slot.start_time ).getTime();
-
+                      let skip_insert = false ; 
                       if (appointment_id_filtered.length > 0) 
                       {
                             for (let i = 0; i < appointment_id_filtered.length; i++) {
+                             // console.log("----> CYCLE APPOINTMENTS to compare "+(i+1)+"/"+appointment_id_filtered.length );
                               let aux_date_app = new Date('Thu, 01 Jan 1970 '+appointment_id_filtered[i].start_time).getTime(); ;
                             /*  console.log("---> FILTERS Appointment id: "+appointment_id_filtered[i].id+" StartTIme: "+appointment_id_filtered[i].start_time  )
                               console.log("---> FILTERS APP  StartTIme: "+appointment_id_filtered[i].start_time+" vs APPSLOT " +appointment_slot.start_time  )
@@ -2509,14 +2507,20 @@ async function get_appointments_available(json)
                               */
                                 if ( aux_date_slot === aux_date_app)
                                 {
-                                  console.log("MATCH TRUE  Skip "+appointment_slot.date+" "+appointment_slot.start_time+" Professional_id: "+appointment_slot.professional_id );
+                                  console.log("------> MATCH TRUE --> SKIPING "+appointment_slot.date+" "+appointment_slot.start_time+" Professional_id: "+appointment_slot.professional_id );
+                                  skip_insert = true ;
                                 }
                                 else
                                 {
-                                  console.log("MATCH FALSE. ADD TO APP AVAILABLE LIST "+appointment_slot.date+" "+appointment_slot.start_time+" Professional_id: "+appointment_slot.professional_id );
-                                  appointments_available.push(appointment_slot)
+                                  //console.log("------> MATCH FALSE. ADD TO APP AVAILABLE LIST "+appointment_slot.date+" "+appointment_slot.start_time+" Professional_id: "+appointment_slot.professional_id );
+                                  //appointments_available.push(appointment_slot)
                                 }
                             }
+                            if (!skip_insert) 
+                            {
+                              appointments_available.push(appointment_slot)
+                            }
+
                       }
                       else{ 
                           appointments_available.push(appointment_slot) ;
@@ -2524,11 +2528,8 @@ async function get_appointments_available(json)
                       //console.log("FILTER APPOINTMENT  -> Comparison AppId: "+appointments_filtered[0].id+" Slot StartTime n"+x+" : "+ appointment.start_time + " 1st Appointment StartTIme: "+appointments_filtered[0].start_time  );
                       //console.log("COMPARISON RESULT  : "+('00:00'=='00:00') );
 
-
-
                       //console.log("COMPARISON RESULT DATE GetTime : "+ ( Date('00:00').getTime() == Date('00:00').getTime() ) );
-                      //exist.forEach(element => console.log("FILTERS ->  Appointment id:"+element.id+ " Start Date:"+element.start_date+" \n " ));
-                      
+                      //exist.forEach(element => console.log("FILTERS ->  Appointment id:"+element.id+ " Start Date:"+element.start_date+" \n " ));                      
 /*                   
                       if (exist.length > 0 )
                       {
@@ -2540,20 +2541,20 @@ async function get_appointments_available(json)
                       appointments_available.push(appointment) ;
                       }
 */
-                    console.log("CALENDAR APPOINTMENT SORT")
-                    appointments_available.sort(function(b, a){ return (new Date('Thu, 01 Jan 1970 '+b.start_time) - new Date('Thu, 01 Jan 1970 '+a.start_time )) } ) 
-                    console.log("CALENDAR APPOINTMENT AVAILABLE to display Lenght:"+appointments_available.lenght);
+              
+                     //console.log("CALENDAR APPOINTMENT AVAILABLE to display Lenght:"+appointments_available.lenght);
                     
                     }
 
-
-
-  }
+             } // END FOR CYCLE CALENDARS
+  console.log("CALENDAR APPOINTMENT SORT")
+  appointments_available.sort(function(b, a){ return (new Date('Thu, 01 Jan 1970 '+b.start_time) - new Date('Thu, 01 Jan 1970 '+a.start_time )) } ) 
+                  
   console.log ("************* FINAL TO DISPLAY ************************ ");
-  console.log (" APPOINTMENTS AVAILABLE TO DISPLAY :"+JSON.stringify(appointments_available));
+  console.log ("FINAL  APPOINTMENTS AVAILABLE TO DISPLAY :"+appointments_available.length);
+  console.log ("DETAILS FINAL  APPOINTMENTS AVAILABLE TO DISPLAY :"+JSON.stringify(appointments_available));
 
   return  appointments_available ;
-
 
 }
 
