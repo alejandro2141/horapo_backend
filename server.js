@@ -494,8 +494,8 @@ const resultado = client.query(query_update, (err, result) => {
  // res.send(JSON.stringify(result));
 })
 
-
-// CANCEL APPOINTMENT 
+/*
+// PROFESSIONAL CANCEL APPOINTMENT 
 app.route('/professional_cancel_appointment')
 .post(function (req, res) {
     console.log('Cancel App INPUT : ', req.body );
@@ -532,6 +532,52 @@ const resultado = client.query(query_update, (err, result) => {
  //res.status(200).json(resultado.rows) ;
  // res.send(JSON.stringify(result));
 })
+*/
+
+
+// PROFESSIONAL CANCEL APPOINTMENT 
+app.route('/professional_cancel_appointment')
+.post(function (req, res) {
+    console.log('professional_cancel_appointment INPUT : ', req.body );
+// ****** Connect to postgre
+const { Pool, Client } = require('pg')
+const client = new Client({
+  user: 'conmeddb_user',
+  host: '127.0.0.1',
+  database: 'conmeddb02',
+  password: 'paranoid',
+  port: 5432,
+})
+client.connect()
+//const query_update = "UPDATE appointment SET app_status = '0' , app_available = true , patient_doc_id = null , patient_name = null , patient_phone1 = null , patient_phone2 = null , patient_email = null , confirmation_status = null      WHERE id = '"+req.body.appointment_id+"' RETURNING * " ;
+
+const query_update = "DELETE  FROM appointment WHERE id = '"+req.body.appointment_id+"' RETURNING * " ;
+
+
+
+console.log(query_update);
+const resultado = client.query(query_update, (err, result) => {
+
+     console.log('RESULTADO '+JSON.stringify(resultado))
+     var json_response_ok = { 
+			    result_status : 'inserted', 
+			    result_code: '200',
+			    	  };
+  
+    res.status(200).send(JSON.stringify(json_response_ok));
+    console.log("JSON RESPONSE BODY : "+JSON.stringify(json_response_ok));
+    console.log ("ERROR LOG : "+err);
+
+  client.end()
+})
+
+ //console.log(JSON.stringify(JSON.stringify(req))) ;
+ //res.send("saludos terricolas");
+ //res.status(200).json(resultado.rows) ;
+ // res.send(JSON.stringify(result));
+})
+
+
 
 // CANCEL APPOINTMENT 
 app.route('/cancel_hour')
@@ -1043,6 +1089,7 @@ const resultado = client.query(sql, (err, result) => {
 
 })
 
+/*
 // PROFESIONAL GET APPOINTMENT DAY
 app.route('/professional_get_appointments_day')
 .post(function (req, res) {
@@ -1074,6 +1121,54 @@ const resultado = client.query(sql, (err, result) => {
   client.end()
 })
 })
+*/
+
+/*
+// PROFESIONAL GET APPOINTMENT DAY
+app.route('/professional_get_appointments_day')
+.post(function (req, res) {
+     console.log('professional_get_appointments_day : INPUT : ', req.body );
+ 
+// ****** Connect to postgre
+const { Pool, Client } = require('pg')
+const client = new Client({
+  user: 'conmeddb_user',
+  host: '127.0.0.1',
+  database: 'conmeddb02',
+  password: 'paranoid',
+  port: 5432,
+})
+client.connect()
+// ****** Run query to bring appointment
+//const sql ="SELECT * FROM ( SELECT address as center_address, name as center_name, app_id,date, start_time, end_time, duration, specialty, center_id, available_public_search, confirmation_status, blocked, professional_id   FROM   (SELECT  id as app_id, date , start_time, end_time, duration, specialty, center_id, available_public_search, confirmation_status, blocked, professional_id   FROM appointment WHERE professional_id='"+req.body.professional_id+"' and Date >= '"+req.body.date+"' )   J LEFT JOIN center ON center.id=j.center_id  )K LEFT JOIN specialty ON specialty.id=K.specialty   " ;
+const sql ="SELECT * FROM ( SELECT specialty_reserved, patient_address, app_type_home ,app_type_center, app_type_remote, location1, location2,location3,location4,location5,location6, app_status, patient_name, patient_email, patient_phone1, patient_phone2, patient_insurance ,  patient_doc_id , name as specialty_name, center_address, center_name, center_color , app_id,date, start_time, end_time, duration, specialty,  specialty1 ,specialty2 ,specialty3,specialty4 , specialty5, center_id, available_public_search, confirmation_status, app_blocked, professional_id, app_available   FROM (  SELECT specialty_reserved, patient_address, app_type_home ,app_type_center, app_type_remote, location1, location2,location3,location4,location5,location6, app_status, patient_name, patient_email, patient_phone1, patient_phone2, patient_insurance ,  patient_doc_id , address as center_address, name as center_name, color as center_color, app_id,date, start_time, end_time, duration, specialty,  specialty1 ,specialty2 ,specialty3,specialty4 , specialty5, center_id, available_public_search, confirmation_status, app_blocked, professional_id ,app_available  FROM  (SELECT specialty_reserved, patient_address, app_type_home ,app_type_center, app_type_remote, location1, location2,location3,location4,location5,location6, app_status, patient_name, patient_email, patient_phone1, patient_phone2, patient_insurance ,  patient_doc_id ,id as app_id, date , start_time, end_time, duration, specialty,  specialty1 ,specialty2 ,specialty3,specialty4 , specialty5, center_id, available_public_search, confirmation_status, app_blocked, professional_id , app_available  FROM appointment WHERE professional_id='"+req.body.professional_id+"' and Date = '"+req.body.date+"' ORDER BY start_time ASC ) J LEFT JOIN center ON center.id=j.center_id  )K LEFT JOIN specialty ON specialty.id=K.specialty ) L LEFT JOIN professional ON professional.id = L.professional_id " ;
+
+console.log('professional_get_appointments_day SQL:'+sql ) ;
+const resultado = client.query(sql, (err, result) => {
+
+  if (err) {
+      console.log('professional_get_appointments_day ERROR QUERY = '+sql ) ;
+    }
+  console.log('professional_get_appointments_day RESPONSE  = '+JSON.stringify(result) ) ;
+  res.status(200).send(JSON.stringify(result) );
+  client.end()
+})
+})
+
+*/
+
+
+// PROFESIONAL GET APPOINTMENT DAY
+app.route('/professional_get_appointments_day2')
+.post(function (req, res) {
+     console.log('professional_get_appointments_day2 : INPUT : ', req.body );
+ 
+     let resp_app_available = get_appointments_available_professional(req.body);
+     resp_app_available.then( v => {  console.log("RESPONSE: "+JSON.stringify(v)) ; return (res.status(200).send(JSON.stringify(v))) } )
+     
+})
+
+
 
 // PROFESSIONAL LOGIN 
 app.route('/professional_login')
@@ -1432,19 +1527,15 @@ app.route('/patient_get_appointments_day2')
     resp_app_available.then( v => {  console.log("RESPONSE: "+JSON.stringify(v)) ; return (res.status(200).send(JSON.stringify(v))) } )
     
     //res.status(200).send(JSON.stringify(resp_app_available));
-    
 
     /*
     resp_calendar.then(result => console.log(result) )
     
     let resp_app_taken=get_professional_apptointments_day()
     resp_app_taken.then(result => console.log(result) )
-
-
     res.status(200).send(JSON.stringify(result) );
   client.end()
     */
-   
 })
 
  
@@ -2604,9 +2695,7 @@ async function get_calendars_available(json)
       {
       sql_location = "WHERE comuna IN ("+json.location+") " ;
       }
-
-   
-    }
+  }
   //END IF LOCATION
   //const sql_calendars  = " SELECT * FROM (SELECT id as calendar_id , *  FROM professional_calendar WHERE "+specialty+" date_start <= '"+json.date+"' AND date_end >= '"+json.date+"'  AND start_time  >= '00:00:00' AND active = true ) C  LEFT JOIN  professional ON C.professional_id = professional.id ";
   const sql_calendars  = "SELECT * FROM (SELECT name AS center_name, address AS center_address, * FROM (  SELECT name AS professional_name , calendar_id, professional_id, start_time, end_time, specialty1, duration, time_between, monday, tuesday, wednesday, thursday, friday, saturday, sunday, date_start, date_end , home_visit,  center_visit, video_call, status, home_visit_location1, home_visit_location2, home_visit_location3, home_visit_location4, home_visit_location5,  home_visit_location6, center_visit_center_id, phone AS professional_phone  FROM (SELECT id as calendar_id , *  FROM professional_calendar WHERE  active = true "+specialty+"  AND date_start <= '"+json.date+"'  AND date_end >= '"+json.date+"'  AND start_time  >= '00:00:00'  "+app_type+" ) C  LEFT JOIN professional ON C.professional_id = professional.id )     K LEFT JOIN center ON  k.center_visit_center_id = center.id )J  "+sql_location+" " ; 
@@ -2616,6 +2705,7 @@ async function get_calendars_available(json)
   return res.rows ;
   await client.end() 
 }
+
 
 async function get_professional_appointment_day(ids,dates)
 {
@@ -2642,6 +2732,178 @@ async function get_professional_appointment_day(ids,dates)
   await client.end() 
 }
 
+
+async function get_appointments_available_professional(json)
+{
+  let professional_ids = [] ;
+    professional_ids.push(999);
+  let dates = [] ;
+   // dates.push("2022-02-01");
+  let appointments_available = [] ; 
+  console.log('GET APPOINTMENT AVAILABLE PROFESSIONAL ');
+   // 1.-  CALENDARS 
+  let calendars = await get_calendars_available_professional(json)
+  console.log('1.- GET CALENDARS Match with Search Parameters Total:'+calendars.length );
+  calendars.forEach(cal => console.log("CALENDAR ID :"+cal.id));
+
+  // get all appointments of Profecioals belog calendars for the days required
+  //extract professional ids from Calendars
+  for(var i=0; i<calendars.length; i++){
+    professional_ids.push(calendars[i]['professional_id']);
+  }
+
+  professional_ids = professional_ids.sort().filter(function(item, pos, ary) {
+    return !pos || item != ary[pos - 1];
+    });
+  console.log('CALENDARS LIST Professional Ids:'+professional_ids );
+  
+  //filtrar para no tener ids repetidos. 
+  //MUST ELIMINATE DUPLICATED IDs 
+   dates.push(json.date);
+
+   // 2.-  APPOINTMENTS TAKEN
+  let appointments = await get_professional_appointment_day(professional_ids,dates)
+  
+  // now we cut calendar skiping appotintments taken 
+  for(var i=0; i<calendars.length; i++){
+      let appointment_id_filtered = appointments.filter(appointments => appointments.professional_id == calendars[i].professional_id );
+     
+        let aux_date_start = new Date(calendars[i].date_start) ; 
+        let aux_date_end = new Date(calendars[i].date_end) ;
+      /*
+        console.log("CALENDAR: Date Start Javascript  -> "+aux_date_start.getDay()+"/"+( aux_date_start.getMonth() +1 )+"/"+ aux_date_start.getFullYear() ); 
+        console.log("CALENDAR: Date End Javascript  -> "+aux_date_end.getDay()+"/"+( aux_date_end.getMonth() +1 )+"/"+ aux_date_end.getFullYear() ); 
+       */
+        let aux_start_time = new Date ('Thu, 01 Jan 1970 '+calendars[i].start_time ).getTime();
+        let aux_end_time = new Date ('Thu, 01 Jan 1970 '+calendars[i].end_time ).getTime();      
+
+        let total_available_time =  aux_end_time  - aux_start_time ; 
+        let app_duration =  (( parseInt(calendars[i].duration) + parseInt(calendars[i].time_between) ) * 60 * 1000 ) ;
+        let app_total_slots = total_available_time / app_duration ;
+        console.log("CALENDAR TOTAL DRAFT slots TO CREATE:"+ app_total_slots+"   FOR PROFESSIONAL ID:"+calendars[i].professional_id )
+        console.log("CALENDAR APPOINTMENT ALREADY RESERVED :"+appointment_id_filtered.length+ " For Professional id: "+calendars[i].professional_id);
+        console.log("START CYCLE TO CREATE SLOTS (skiping reserved)");
+
+        let start_time_slot = aux_start_time;
+        //INSERT Appointments TO ARRAY based in CALENDAR times 
+                  for (let x = 1; x <= app_total_slots ; x ++) {
+                      
+                        let aux_date = new Date(start_time_slot)
+
+                        var appointment_slot = {
+                          calendar_id : calendars[i].calendar_id , 
+                          date : json.date ,
+                          professional_name : calendars[i].professional_name , 
+                          specialty1 : calendars[i].specialty1 , 
+                          duration : calendars[i].duration ,
+                          professional_id : calendars[i].professional_id , 
+
+                          pattient_doc_id : calendars[i].pattient_doc_id ,
+
+                          home_visit : calendars[i].home_visit ,
+                          home_visit_location1 : calendars[i].home_visit_location1 ,
+                          home_visit_location2 : calendars[i].home_visit_location2 ,
+                          home_visit_location3 : calendars[i].home_visit_location3 ,
+                          home_visit_location4 : calendars[i].home_visit_location4 ,
+                          home_visit_location5 : calendars[i].home_visit_location5 ,
+                          home_visit_location6 : calendars[i].home_visit_location6 ,
+
+                          center_visit :calendars[i].center_visit ,
+                          center_id :calendars[i].center_visit_center_id ,
+                          center_name :calendars[i].center_name ,
+                          center_address :calendars[i].center_address ,
+                          status : calendars[i].status  ,
+                          //start_time : "0"+aux_date.getHours()+":0"+aux_date.getMinutes() , 
+                          start_time :  aux_date.getHours().toString().padStart(2, '0')+":"+aux_date.getMinutes().toString().padStart(2, '0') , 
+                          //new String(new char[width - toPad.length()]).replace('\0', fill) + toPad;
+                        }
+
+                      start_time_slot +=  app_duration ;
+                      
+                      console.log("--> DRAFT SLOT "+x+"/"+app_total_slots+" Start_Time: "+appointment_slot.start_time+" Duration:"+appointment_slot.duration );
+                      //check if this Available App is not already taken by users. 
+                      //AQUI ME QUEDE
+                      //console.log("FILTERS CALENDAR    -> id: "+calendars[i].calendar_id+" Professional Id: "+calendars[i].professional_id+"   " )
+                      //let exist = appointments_filtered.filter(w => w.start_time == aux_date.getTime() );
+                      let aux_date_slot= new Date ('Thu, 01 Jan 1970 '+appointment_slot.start_time ).getTime();
+                      let skip_insert = false ; 
+                      if (appointment_id_filtered.length > 0) 
+                      {
+                            for (let i = 0; i < appointment_id_filtered.length; i++) {
+                             // console.log("----> CYCLE APPOINTMENTS to compare "+(i+1)+"/"+appointment_id_filtered.length );
+                              let aux_date_app = new Date('Thu, 01 Jan 1970 '+appointment_id_filtered[i].start_time).getTime(); ;
+                            /*  console.log("---> FILTERS Appointment id: "+appointment_id_filtered[i].id+" StartTIme: "+appointment_id_filtered[i].start_time  )
+                              console.log("---> FILTERS APP  StartTIme: "+appointment_id_filtered[i].start_time+" vs APPSLOT " +appointment_slot.start_time  )
+                              console.log("---> FILTERS comparison result : slot Startime:  "+aux_date_slot +" vs APPFound " +aux_date_app )
+                              */
+                                if ( aux_date_slot === aux_date_app)
+                                {
+                                  console.log("------> MATCH TRUE --> SKIPING "+appointment_slot.date+" "+appointment_slot.start_time+" Professional_id: "+appointment_slot.professional_id );
+                                 // skip_insert = true ;
+                                }
+                                else
+                                {
+                                  //console.log("------> MATCH FALSE. ADD TO APP AVAILABLE LIST "+appointment_slot.date+" "+appointment_slot.start_time+" Professional_id: "+appointment_slot.professional_id );
+                                  //appointments_available.push(appointment_slot)
+                                }
+                            }
+                            if (!skip_insert) 
+                            {
+                              appointments_available.push(appointment_slot)
+                            }
+
+                      }
+                      else{ 
+                          appointments_available.push(appointment_slot) ;
+                      }
+                      //console.log("FILTER APPOINTMENT  -> Comparison AppId: "+appointments_filtered[0].id+" Slot StartTime n"+x+" : "+ appointment.start_time + " 1st Appointment StartTIme: "+appointments_filtered[0].start_time  );
+                      //console.log("COMPARISON RESULT  : "+('00:00'=='00:00') );
+
+                      //console.log("COMPARISON RESULT DATE GetTime : "+ ( Date('00:00').getTime() == Date('00:00').getTime() ) );
+                      //exist.forEach(element => console.log("FILTERS ->  Appointment id:"+element.id+ " Start Date:"+element.start_date+" \n " ));                      
+/*                   
+                      if (exist.length > 0 )
+                      {
+                     // console.log("DISMISS block time :Appointment id "+exist.id+ " TIME:"+exist.start_time ) ; 
+                      console.log("DISMISS block time :"+JSON.stringify(exist) ) ; 
+                      }
+                      else
+                      {
+                      appointments_available.push(appointment) ;
+                      }
+*/
+              
+                     //console.log("CALENDAR APPOINTMENT AVAILABLE to display Lenght:"+appointments_available.lenght);
+                    
+                    }
+
+             } // END FOR CYCLE CALENDARS
+  console.log("CALENDAR APPOINTMENT SORT")
+  appointments_available.sort(function(b, a){ return (new Date('Thu, 01 Jan 1970 '+b.start_time) - new Date('Thu, 01 Jan 1970 '+a.start_time )) } ) 
+                  
+  console.log ("************* FINAL TO DISPLAY ************************ ");
+  console.log ("FINAL  APPOINTMENTS AVAILABLE TO DISPLAY :"+appointments_available.length);
+  console.log ("DETAILS FINAL  APPOINTMENTS AVAILABLE TO DISPLAY :"+JSON.stringify(appointments_available));
+
+  return  appointments_available ;
+
+}
+
+async function get_calendars_available_professional(json)
+{
+  const { Client } = require('pg')
+  const client = new Client(conn_data)
+  await client.connect()
+    
+  //END IF LOCATION
+  //const sql_calendars  = " SELECT * FROM (SELECT id as calendar_id , *  FROM professional_calendar WHERE "+specialty+" date_start <= '"+json.date+"' AND date_end >= '"+json.date+"'  AND start_time  >= '00:00:00' AND active = true ) C  LEFT JOIN  professional ON C.professional_id = professional.id ";
+  const sql_calendars  = "SELECT * FROM (SELECT name AS center_name, address AS center_address, * FROM (  SELECT name AS professional_name , calendar_id, professional_id, start_time, end_time, specialty1, duration, time_between, monday, tuesday, wednesday, thursday, friday, saturday, sunday, date_start, date_end , home_visit,  center_visit, video_call, status, home_visit_location1, home_visit_location2, home_visit_location3, home_visit_location4, home_visit_location5,  home_visit_location6, center_visit_center_id, phone AS professional_phone  FROM (SELECT id as calendar_id , *  FROM professional_calendar WHERE  active = true  AND date_start <= '"+json.date+"'  AND date_end >= '"+json.date+"'  AND start_time  >= '00:00:00' AND  professional_id = '"+json.professional_id+"' ) C  LEFT JOIN professional ON C.professional_id = professional.id )     K LEFT JOIN center ON  k.center_visit_center_id = center.id )J  " ; 
+
+  //console.log ("QUERY GET CALENDAR = "+sql_calendars);
+  const res = await client.query(sql_calendars) 
+  return res.rows ;
+  await client.end() 
+}
 
 
 
