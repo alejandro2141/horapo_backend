@@ -2743,8 +2743,8 @@ async function get_appointments_available_professional(json)
   console.log('GET APPOINTMENT AVAILABLE PROFESSIONAL ');
    // 1.-  CALENDARS 
   let calendars = await get_calendars_available_professional(json)
-  console.log('1.- GET CALENDARS Match with Search Parameters Total:'+calendars.length );
-  calendars.forEach(cal => console.log("CALENDAR ID :"+cal.id));
+  console.log('1.- GET CALENDARS PROFESSIONAL Match with Search Parameters Total:'+calendars.length );
+  
 
   // get all appointments of Profecioals belog calendars for the days required
   //extract professional ids from Calendars
@@ -2763,17 +2763,71 @@ async function get_appointments_available_professional(json)
 
    // 2.-  APPOINTMENTS TAKEN
   let appointments = await get_professional_appointment_day(professional_ids,dates)
-  
+  console.log("APPOINTMENTS FOUND Professional IDs"+professional_ids +" Dates"+dates);
+  console.log("APPOINTMENTS "+JSON.stringify(appointments) );
+//INSER APPOINTMENTS
+
+let appointment_id_filtered = appointments ;
+     
+  if (appointment_id_filtered.length > 0) 
+  {
+        for (let i = 0; i < appointment_id_filtered.length; i++) {
+
+//get_professional_appointment_day
+/*
+{"specialty":null,"center_id":null,"confirmation_status":0,"professional_id":1,
+"patient_doc_id":"22778989-4","patient_name":"Matilde Aurora Morales Alfonso",
+"patient_email":"alejandro2141@gmail.com","patient_phone1":"7774729","patient_phone2":null,
+"patient_insurance":null,"app_available":false,"app_status":1,"app_blocked":0,"app_public":true,
+"available_public_search":null,"specialty1":null,"specialty2":null,"specialty3":null,"specialty5":null,
+"specialty4":null,"location1":1662,"location2":1662,"location3":1662,"location4":1662,"location5":1662,
+"location6":1662,"location7":null,"location8":null,"app_type_home":true,"app_type_center":false,"app_type_remote":null,
+"patient_notification_email_reserved":1,"specialty_reserved":147,
+"patient_address":"San Pablo 1353 Dpto 392","patient_age":3}
+*/
+          let appointment_taken = {
+                 // calendar_id : appointment_id_filtered[i].calendar_id , 
+                 id :  appointment_id_filtered[i].id ,
+                 date :appointment_id_filtered[i].date ,
+                 start_time :  appointment_id_filtered[i].start_time , 
+                 duration : appointment_id_filtered[i].duration ,
+                 pattient_doc_id : calendars[i].pattient_doc_id ,
+                 pattient_name : calendars[i].pattient_name ,
+                 pattient_email : calendars[i].pattient_email ,
+                 patient_phone1 : calendars[i].patient_phone1 ,
+                 patient_phone2 : calendars[i].patient_phone2 ,
+                 app_status : calendars[i].app_status , 
+
+                 patient_notification_email_reserved : calendars[i].patient_notification_email_reserved ,
+                 patient_address : calendars[i].patient_address , 
+                 patient_age  : calendars[i].patient_age ,  
+                 specialty1 : appointment_id_filtered[i].specialty_reserved , 
+            
+                  home_visit : calendars[i].app_type_home ,
+                  center_visit :appointment_id_filtered[i].app_type_center ,
+            
+                  center_id :appointment_id_filtered[i].center_id ,
+              //    center_name :calendars[i].center_name ,
+              //    center_address :calendars[i].center_address ,
+              //    status : appointment_id_filtered[i].status  ,
+                  //start_time : "0"+aux_date.getHours()+":0"+aux_date.getMinutes() , 
+                 
+                  //new String(new char[width - toPad.length()]).replace('\0', fill) + toPad;
+                  color : '#ff0000' ,
+                  app_available : appointment_id_filtered[i].app_available
+
+                }
+          appointments_available.push(appointment_taken);
+
+        }
+  }
+
   // now we cut calendar skiping appotintments taken 
   for(var i=0; i<calendars.length; i++){
-      let appointment_id_filtered = appointments.filter(appointments => appointments.professional_id == calendars[i].professional_id );
-     
+      
         let aux_date_start = new Date(calendars[i].date_start) ; 
         let aux_date_end = new Date(calendars[i].date_end) ;
-      /*
-        console.log("CALENDAR: Date Start Javascript  -> "+aux_date_start.getDay()+"/"+( aux_date_start.getMonth() +1 )+"/"+ aux_date_start.getFullYear() ); 
-        console.log("CALENDAR: Date End Javascript  -> "+aux_date_end.getDay()+"/"+( aux_date_end.getMonth() +1 )+"/"+ aux_date_end.getFullYear() ); 
-       */
+    
         let aux_start_time = new Date ('Thu, 01 Jan 1970 '+calendars[i].start_time ).getTime();
         let aux_end_time = new Date ('Thu, 01 Jan 1970 '+calendars[i].end_time ).getTime();      
 
@@ -2782,8 +2836,7 @@ async function get_appointments_available_professional(json)
         let app_total_slots = total_available_time / app_duration ;
         console.log("CALENDAR TOTAL DRAFT slots TO CREATE:"+ app_total_slots+"   FOR PROFESSIONAL ID:"+calendars[i].professional_id )
         console.log("CALENDAR APPOINTMENT ALREADY RESERVED :"+appointment_id_filtered.length+ " For Professional id: "+calendars[i].professional_id);
-        console.log("START CYCLE TO CREATE SLOTS (skiping reserved)");
-
+     
         let start_time_slot = aux_start_time;
         //INSERT Appointments TO ARRAY based in CALENDAR times 
                   for (let x = 1; x <= app_total_slots ; x ++) {
@@ -2816,68 +2869,20 @@ async function get_appointments_available_professional(json)
                           //start_time : "0"+aux_date.getHours()+":0"+aux_date.getMinutes() , 
                           start_time :  aux_date.getHours().toString().padStart(2, '0')+":"+aux_date.getMinutes().toString().padStart(2, '0') , 
                           //new String(new char[width - toPad.length()]).replace('\0', fill) + toPad;
+                          color : calendars[i].color ,
+
                         }
 
                       start_time_slot +=  app_duration ;
                       
-                      console.log("--> DRAFT SLOT "+x+"/"+app_total_slots+" Start_Time: "+appointment_slot.start_time+" Duration:"+appointment_slot.duration );
-                      //check if this Available App is not already taken by users. 
-                      //AQUI ME QUEDE
-                      //console.log("FILTERS CALENDAR    -> id: "+calendars[i].calendar_id+" Professional Id: "+calendars[i].professional_id+"   " )
-                      //let exist = appointments_filtered.filter(w => w.start_time == aux_date.getTime() );
+                      console.log("--> DRAFT SLOT "+x+"/"+app_total_slots+" Start_Time: "+appointment_slot.start_time+" Duration:"+appointment_slot.duration +" Color:"+appointment_slot.color );
                       let aux_date_slot= new Date ('Thu, 01 Jan 1970 '+appointment_slot.start_time ).getTime();
-                      let skip_insert = false ; 
-                      if (appointment_id_filtered.length > 0) 
-                      {
-                            for (let i = 0; i < appointment_id_filtered.length; i++) {
-                             // console.log("----> CYCLE APPOINTMENTS to compare "+(i+1)+"/"+appointment_id_filtered.length );
-                              let aux_date_app = new Date('Thu, 01 Jan 1970 '+appointment_id_filtered[i].start_time).getTime(); ;
-                            /*  console.log("---> FILTERS Appointment id: "+appointment_id_filtered[i].id+" StartTIme: "+appointment_id_filtered[i].start_time  )
-                              console.log("---> FILTERS APP  StartTIme: "+appointment_id_filtered[i].start_time+" vs APPSLOT " +appointment_slot.start_time  )
-                              console.log("---> FILTERS comparison result : slot Startime:  "+aux_date_slot +" vs APPFound " +aux_date_app )
-                              */
-                                if ( aux_date_slot === aux_date_app)
-                                {
-                                  console.log("------> MATCH TRUE --> SKIPING "+appointment_slot.date+" "+appointment_slot.start_time+" Professional_id: "+appointment_slot.professional_id );
-                                 // skip_insert = true ;
-                                }
-                                else
-                                {
-                                  //console.log("------> MATCH FALSE. ADD TO APP AVAILABLE LIST "+appointment_slot.date+" "+appointment_slot.start_time+" Professional_id: "+appointment_slot.professional_id );
-                                  //appointments_available.push(appointment_slot)
-                                }
-                            }
-                            if (!skip_insert) 
-                            {
-                              appointments_available.push(appointment_slot)
-                            }
-
-                      }
-                      else{ 
-                          appointments_available.push(appointment_slot) ;
-                      }
-                      //console.log("FILTER APPOINTMENT  -> Comparison AppId: "+appointments_filtered[0].id+" Slot StartTime n"+x+" : "+ appointment.start_time + " 1st Appointment StartTIme: "+appointments_filtered[0].start_time  );
-                      //console.log("COMPARISON RESULT  : "+('00:00'=='00:00') );
-
-                      //console.log("COMPARISON RESULT DATE GetTime : "+ ( Date('00:00').getTime() == Date('00:00').getTime() ) );
-                      //exist.forEach(element => console.log("FILTERS ->  Appointment id:"+element.id+ " Start Date:"+element.start_date+" \n " ));                      
-/*                   
-                      if (exist.length > 0 )
-                      {
-                     // console.log("DISMISS block time :Appointment id "+exist.id+ " TIME:"+exist.start_time ) ; 
-                      console.log("DISMISS block time :"+JSON.stringify(exist) ) ; 
-                      }
-                      else
-                      {
-                      appointments_available.push(appointment) ;
-                      }
-*/
-              
-                     //console.log("CALENDAR APPOINTMENT AVAILABLE to display Lenght:"+appointments_available.lenght);
-                    
+                      
+                      appointments_available.push(appointment_slot)
                     }
 
              } // END FOR CYCLE CALENDARS
+
   console.log("CALENDAR APPOINTMENT SORT")
   appointments_available.sort(function(b, a){ return (new Date('Thu, 01 Jan 1970 '+b.start_time) - new Date('Thu, 01 Jan 1970 '+a.start_time )) } ) 
                   
@@ -2897,7 +2902,7 @@ async function get_calendars_available_professional(json)
     
   //END IF LOCATION
   //const sql_calendars  = " SELECT * FROM (SELECT id as calendar_id , *  FROM professional_calendar WHERE "+specialty+" date_start <= '"+json.date+"' AND date_end >= '"+json.date+"'  AND start_time  >= '00:00:00' AND active = true ) C  LEFT JOIN  professional ON C.professional_id = professional.id ";
-  const sql_calendars  = "SELECT * FROM (SELECT name AS center_name, address AS center_address, * FROM (  SELECT name AS professional_name , calendar_id, professional_id, start_time, end_time, specialty1, duration, time_between, monday, tuesday, wednesday, thursday, friday, saturday, sunday, date_start, date_end , home_visit,  center_visit, video_call, status, home_visit_location1, home_visit_location2, home_visit_location3, home_visit_location4, home_visit_location5,  home_visit_location6, center_visit_center_id, phone AS professional_phone  FROM (SELECT id as calendar_id , *  FROM professional_calendar WHERE  active = true  AND date_start <= '"+json.date+"'  AND date_end >= '"+json.date+"'  AND start_time  >= '00:00:00' AND  professional_id = '"+json.professional_id+"' ) C  LEFT JOIN professional ON C.professional_id = professional.id )     K LEFT JOIN center ON  k.center_visit_center_id = center.id )J  " ; 
+  const sql_calendars  = "SELECT * FROM (SELECT name AS center_name, address AS center_address, * FROM (  SELECT name AS professional_name , calendar_id, professional_id, start_time, end_time, specialty1, duration, time_between, monday, tuesday, wednesday, thursday, friday, saturday, sunday, date_start, date_end , home_visit,  center_visit, video_call, status, home_visit_location1, home_visit_location2, home_visit_location3, home_visit_location4, home_visit_location5,  home_visit_location6, center_visit_center_id, phone AS professional_phone, color  FROM (SELECT id as calendar_id , *  FROM professional_calendar WHERE  active = true  AND date_start <= '"+json.date+"'  AND date_end >= '"+json.date+"'  AND start_time  >= '00:00:00' AND  professional_id = '"+json.professional_id+"' ) C  LEFT JOIN professional ON C.professional_id = professional.id )     K LEFT JOIN center ON  k.center_visit_center_id = center.id )J  " ; 
 
   //console.log ("QUERY GET CALENDAR = "+sql_calendars);
   const res = await client.query(sql_calendars) 
