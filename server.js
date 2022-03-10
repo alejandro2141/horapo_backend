@@ -2735,20 +2735,24 @@ async function get_professional_appointment_day(ids,dates)
 //called from  professional_get_appointment_day2
 async function get_appointments_available_professional(json)
 {
+  console.log("get_appointments_available_professional INPUT:"+json);
+  
   let professional_ids = [] ;
-    professional_ids.push(999);
+  professional_ids.push(json.professional_id);
+  
   let dates = [] ;
-   // dates.push("2022-02-01");
   let appointments_available = [] ; 
-  console.log('GET APPOINTMENT AVAILABLE PROFESSIONAL ');
-   // 1.-  CALENDARS 
+  
+  // 1.-  CALENDARS 
   let calendars = await get_calendars_available_professional(json)
   console.log('1.- GET CALENDARS PROFESSIONAL Match with Search Parameters Total:'+calendars.length );
   console.log ("1.- CALENDARS  FOUND : "+JSON.stringify(calendars));
   //extract professional ids from Calendars
+  /*
   for(var i=0; i<calendars.length; i++){
     professional_ids.push(calendars[i]['professional_id']);
   }
+  */
 
   professional_ids = professional_ids.sort().filter(function(item, pos, ary) {
     return !pos || item != ary[pos - 1];
@@ -2770,13 +2774,18 @@ async function get_appointments_available_professional(json)
   {
         for (let i = 0; i < appointment_id_filtered.length; i++) {
 
-         console.log (" ********************************************************************************** "); 
         //GET COLOR
+        let message1 = null
         let cal_color =  calendars.find(cal => cal.calendar_id === appointment_id_filtered[i].calendar_id) ;
-        let aux_color = null ;
+        let aux_color = '#EEEEEE' ;
+
         if (cal_color != null)
          {
-         aux_color = cal_color.color ; 
+           aux_color = cal_color.color ; 
+         }
+         else
+         {
+            message1 ="" ; 
          }
          //console.log (" painting appointment taken (Cal:id:"+appointment_id_filtered[i].calendar_id+"):   CALENDAR FOUND : "+ calendars.find(cal => cal.calendar_id === appointment_id_filtered[i].calendar_id).color );
          //console.log (" ********************************************************************************** "); 
@@ -2809,11 +2818,11 @@ async function get_appointments_available_professional(json)
                   //start_time : "0"+aux_date.getHours()+":0"+aux_date.getMinutes() , 
                   //new String(new char[width - toPad.length()]).replace('\0', fill) + toPad;
                   color :  aux_color  ,
-                  app_available : appointment_id_filtered[i].app_available
-
+                  app_available : appointment_id_filtered[i].app_available ,
+                  message1 : message1 
                 }
-          appointments_available.push(appointment_taken);
 
+          appointments_available.push(appointment_taken);
         }
   }
 
@@ -2868,17 +2877,51 @@ async function get_appointments_available_professional(json)
 
                         }
 
-                      start_time_slot +=  app_duration ;
-                      
+                      start_time_slot +=  app_duration ;  
                       //console.log("--> DRAFT SLOT "+x+"/"+app_total_slots+" Start_Time: "+appointment_slot.start_time+" Duration:"+appointment_slot.duration +" Color:"+appointment_slot.color );
                       let aux_date_slot= new Date ('Thu, 01 Jan 1970 '+appointment_slot.start_time ).getTime();
-                      
+                      //CHECK IF time is taken
+                      /*
+                      if (appointments_available[0] != null)
+                      {
+                      console.log("-------------> COMPARISON  APP:"+appointments_available[0].start_time + " CALENDAR:"+appointment_slot.start_time)
+                      }
+                      */
+                     let aux = appointments_available.find( x => x.start_time.substring(0,4) === appointment_slot.start_time.substring(0,4) ) ;
+                     
+                     if (aux != null)
+                     {
+                     console.log ("-----------MATCH : "+aux.start_time.substring(0,4)  )
+                        //skip the push because there is a appointment before taken at same tiem
+                        if ( aux.app_status != null )
+                        {
+                            //skip
+                        }
+                        else{
+                          appointments_available.push(appointment_slot)
+                        }
+                     // appointments_available.find( x => x.start_time.substring(0,4) === appointment_slot.start_time )
+                     }
+                     else
+                     {
                       appointments_available.push(appointment_slot)
+                     }
+
+                      /*
+                      let found = appointment_id_filtered.find( x => x.start_date.substring(0,4) === appointment_slot.start_time.substring(0,4) )
+                        if (found != null)
+                        {
+                          console.log("----------> MATCH "+x.start_date);
+                        }
+                        else{
+                          console.log("---------->NO MATCH");
+                        }
+                        */
+     
                     }
 
              } // END FOR CYCLE CALENDARS
 
-  console.log("sort Calendar Slots")
   appointments_available.sort(function(b, a){ return (new Date('Thu, 01 Jan 1970 '+b.start_time) - new Date('Thu, 01 Jan 1970 '+a.start_time )) } ) 
                   
   console.log ("Calendar Cutter result ("+appointments_available.length+") Appointments to display :"+JSON.stringify(appointments_available));
