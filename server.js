@@ -2439,7 +2439,7 @@ const resultado = client.query(query_search, (err, result) => {
     res.status(200).send(JSON.stringify(result));
   client.end()
 })
-
+client.end()
  
 })
 
@@ -2471,7 +2471,7 @@ const resultado = client.query(query_search, (err, result) => {
     res.status(200).send(JSON.stringify(result));
   client.end()
 })
-
+client.end()
  
 })
 
@@ -2701,7 +2701,7 @@ async function get_calendars_available(json)
   //console.log ("QUERY GET CALENDAR = "+sql_calendars);
   const res = await client.query(sql_calendars) 
   return res.rows ;
-  await client.end() 
+  client.end() 
 }
 
 //called from Both
@@ -2727,7 +2727,7 @@ async function get_professional_appointment_day(ids,dates)
   //console.log("SQL QUERY: "+sql_apps_taken)
   const res = await client.query(sql_apps_taken)
   return res.rows;
-  await client.end() 
+  client.end() 
 }
 
 
@@ -2937,13 +2937,12 @@ async function get_calendars_available_professional(json)
   await client.connect()
     
   //END IF LOCATION
-  //const sql_calendars  = " SELECT * FROM (SELECT id as calendar_id , *  FROM professional_calendar WHERE "+specialty+" date_start <= '"+json.date+"' AND date_end >= '"+json.date+"'  AND start_time  >= '00:00:00' AND active = true ) C  LEFT JOIN  professional ON C.professional_id = professional.id ";
-  const sql_calendars  = "SELECT * FROM (SELECT name AS center_name, address AS center_address, * FROM (  SELECT name AS professional_name , calendar_id, professional_id, start_time, end_time, specialty1, duration, time_between, monday, tuesday, wednesday, thursday, friday, saturday, sunday, date_start, date_end , home_visit,  center_visit, video_call, status, home_visit_location1, home_visit_location2, home_visit_location3, home_visit_location4, home_visit_location5,  home_visit_location6, center_visit_center_id, phone AS professional_phone, color  FROM (SELECT id as calendar_id , *  FROM professional_calendar WHERE  active = true  AND date_start <= '"+json.date+"'  AND date_end >= '"+json.date+"'  AND start_time  >= '00:00:00' AND  professional_id = '"+json.professional_id+"' ) C  LEFT JOIN professional ON C.professional_id = professional.id )     K LEFT JOIN center ON  k.center_visit_center_id = center.id )J  " ; 
+   const sql_calendars  = "SELECT * FROM (SELECT name AS center_name, address AS center_address, * FROM (  SELECT name AS professional_name , calendar_id, professional_id, start_time, end_time, specialty1, duration, time_between, monday, tuesday, wednesday, thursday, friday, saturday, sunday, date_start, date_end , home_visit,  center_visit, video_call, status, home_visit_location1, home_visit_location2, home_visit_location3, home_visit_location4, home_visit_location5,  home_visit_location6, center_visit_center_id, phone AS professional_phone, color  FROM (SELECT id as calendar_id , *  FROM professional_calendar WHERE  active = true  AND date_start <= '"+json.date+"'  AND date_end >= '"+json.date+"'  AND start_time  >= '00:00:00' AND  professional_id = '"+json.professional_id+"' ) C  LEFT JOIN professional ON C.professional_id = professional.id )     K LEFT JOIN center ON  k.center_visit_center_id = center.id )J  " ; 
 
   //console.log ("QUERY GET CALENDAR = "+sql_calendars);
   const res = await client.query(sql_calendars) 
   return res.rows ;
-  await client.end() 
+  client.end() 
 }
 
 
