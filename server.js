@@ -1246,8 +1246,40 @@ var json_response = { result_status : 1 };
 //var res = null; 	
 // CHECK INPUT PARAMETERS TO IDENTIFY IF  REQUEST IS TO CREATE CENTER
 // CREATE DIRECTLY AGENDA 
+
+//INSERT APP TYPE  CENTER
+if (req.body.app_type == 1 )
+{
+  sql = " WITH ids AS (  INSERT INTO center ( name ,  address , phone1, phone2, comuna , type ) VALUES (  '"+req.body.center_name+"' , '"+req.body.center_address+"', '"+req.body.center_phone1+"' ,'"+req.body.center_phone2+"' ,"+req.body.center_comuna+" , "+req.body.app_type+"  ) RETURNING id as center_id ) INSERT INTO center_professional (professional_id, center_id) VALUES ('"+req.body.professional_id+"', (SELECT center_id from ids) ) RETURNING * ;  ";
+}
+//INSERT APP TYPE HOME VISIT
+if (req.body.app_type == 2 )
+{
+  let comuna1 = null ;
+  if (req.body.comunas_ids[0]!=null) { comuna1=req.body.comunas_ids[0] ;}
+  let comuna2 = null ;
+  if (req.body.comunas_ids[1]!=null) { comuna2=req.body.comunas_ids[1] ;}
+  let comuna3 = null ;
+  if (req.body.comunas_ids[2]!=null) { comuna3=req.body.comunas_ids[2] ;}
+  let comuna4 = null ;
+  if (req.body.comunas_ids[3]!=null) { comuna4=req.body.comunas_ids[3] ;}
+  let comuna5 = null ;
+  if (req.body.comunas_ids[4]!=null) { comuna5=req.body.comunas_ids[4] ;}
+  let comuna6 = null ;
+  if (req.body.comunas_ids[5]!=null) { comuna6=req.body.comunas_ids[5] ;}
+  
+  
+  sql = " WITH ids AS (  INSERT INTO center ( name ,  phone1, phone2,  type , home_comuna1, home_comuna2, home_comuna3, home_comuna4, home_comuna5, home_comuna6  ) VALUES (  '"+req.body.center_name+"' ,  '"+req.body.center_phone1+"' ,'"+req.body.center_phone2+"' , "+req.body.app_type+", "+comuna1+", "+comuna2+" , "+comuna3+" , "+comuna4+" , "+comuna5+" , "+comuna6+"    ) RETURNING id as center_id ) INSERT INTO center_professional (professional_id, center_id) VALUES ('"+req.body.professional_id+"', (SELECT center_id from ids) ) RETURNING * ;  ";
+}
+if (req.body.app_type == 3 )
+{
+  sql = " WITH ids AS (  INSERT INTO center ( name , phone1, phone2,  type ) VALUES (  '"+req.body.center_name+"' ,  '"+req.body.center_phone1+"' ,'"+req.body.center_phone2+"' , "+req.body.app_type+"  ) RETURNING id as center_id ) INSERT INTO center_professional (professional_id, center_id) VALUES ('"+req.body.professional_id+"', (SELECT center_id from ids) ) RETURNING * ;  ";
+}
+
+
+
+
 //const sql  = "INSERT INTO centers ( name ,  address , phone1, phone2 ) VALUES (  '"+req.body.center_name+"', '"+req.body.center_address+"' , '"+req.body.center_phone1+"', '"+req.body.center_phone2+"' ) RETURNING id " ;
-sql = " WITH ids AS (  INSERT INTO center ( name ,  address , phone1, phone2, comuna ) VALUES (  '"+req.body.center_name+"' , '"+req.body.center_address+"', '"+req.body.center_phone1+"' ,'"+req.body.center_phone2+"' ,'"+req.body.center_comuna+"' ) RETURNING id as center_id ) INSERT INTO center_professional (professional_id, center_id) VALUES ('"+req.body.professional_id+"', (SELECT center_id from ids) ) RETURNING * ;  ";
 
 console.log('create_center SQL:'+sql ) ;
 	client.query(sql, (err, result) => {
@@ -2059,6 +2091,7 @@ const resultado = client.query(SQL_VALUES, (err, result) => {
 //********************************************* 
 // PUBLIC POST create_center
 //********************************************* 
+/*
 app.route('/professional_create_center')
 .post(function (req, res) {
     console.log('professional_create_center CENTER CREATION INPUT:', req.body );
@@ -2148,6 +2181,7 @@ console.log('create_center SQL:'+sql ) ;
 
 })
  
+*/
 
 //********************************************* 
 // PUBLIC POST get Professioal Data by  agenda id
