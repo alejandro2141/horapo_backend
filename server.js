@@ -1037,7 +1037,10 @@ const client = new Client({
 
 client.connect()
 // ****** Run query to bring appointment
-const sql  = "SELECT * FROM professional_calendar WHERE professional_id='"+req.body.professional_id+"' ORDER BY id DESC " ;
+//const sql  = "SELECT * FROM professional_calendar WHERE professional_id='"+req.body.professional_id+"' ORDER BY id DESC " ;
+
+const sql  = "SELECT * FROM (SELECT *, id AS calendar_id, active as calendar_active FROM professional_calendar WHERE professional_id='"+req.body.professional_id+"' )j   LEFT JOIN  center ON   j.center_id = center.id  ORDER BY j.id DESC  " ;
+
 console.log('professional_get_centers: SQL :'+sql ) ;
 const resultado = client.query(sql, (err, result) => {
 
@@ -1250,7 +1253,7 @@ var json_response = { result_status : 1 };
 //INSERT APP TYPE  CENTER
 if (req.body.app_type == 1 )
 {
-  sql = " WITH ids AS (  INSERT INTO center ( name ,  address , phone1, phone2, comuna , type ) VALUES (  '"+req.body.center_name+"' , '"+req.body.center_address+"', '"+req.body.center_phone1+"' ,'"+req.body.center_phone2+"' ,"+req.body.center_comuna+" , "+req.body.app_type+"  ) RETURNING id as center_id ) INSERT INTO center_professional (professional_id, center_id) VALUES ('"+req.body.professional_id+"', (SELECT center_id from ids) ) RETURNING * ;  ";
+  sql = " WITH ids AS (  INSERT INTO center ( name ,  address , phone1, phone2, comuna , center_visit, home_visit, remote_care) VALUES (  '"+req.body.center_name+"' , '"+req.body.center_address+"', '"+req.body.center_phone1+"' ,'"+req.body.center_phone2+"' ,"+req.body.center_comuna+" , true, false, false ) RETURNING id as center_id ) INSERT INTO center_professional (professional_id, center_id) VALUES ('"+req.body.professional_id+"', (SELECT center_id from ids) ) RETURNING * ;  ";
 }
 //INSERT APP TYPE HOME VISIT
 if (req.body.app_type == 2 )
@@ -1269,18 +1272,15 @@ if (req.body.app_type == 2 )
   if (req.body.comunas_ids[5]!=null) { comuna6=req.body.comunas_ids[5] ;}
   
   
-  sql = " WITH ids AS (  INSERT INTO center ( name ,  phone1, phone2,  type , home_comuna1, home_comuna2, home_comuna3, home_comuna4, home_comuna5, home_comuna6  ) VALUES (  '"+req.body.center_name+"' ,  '"+req.body.center_phone1+"' ,'"+req.body.center_phone2+"' , "+req.body.app_type+", "+comuna1+", "+comuna2+" , "+comuna3+" , "+comuna4+" , "+comuna5+" , "+comuna6+"    ) RETURNING id as center_id ) INSERT INTO center_professional (professional_id, center_id) VALUES ('"+req.body.professional_id+"', (SELECT center_id from ids) ) RETURNING * ;  ";
+  sql = " WITH ids AS (  INSERT INTO center ( name ,  phone1, phone2,  center_visit, home_visit, remote_care , home_comuna1, home_comuna2, home_comuna3, home_comuna4, home_comuna5, home_comuna6  ) VALUES (  '"+req.body.center_name+"' ,  '"+req.body.center_phone1+"' ,'"+req.body.center_phone2+"' , false, true , false , "+comuna1+", "+comuna2+" , "+comuna3+" , "+comuna4+" , "+comuna5+" , "+comuna6+"    ) RETURNING id as center_id ) INSERT INTO center_professional (professional_id, center_id) VALUES ('"+req.body.professional_id+"', (SELECT center_id from ids) ) RETURNING * ;  ";
 }
 if (req.body.app_type == 3 )
 {
-  sql = " WITH ids AS (  INSERT INTO center ( name , phone1, phone2,  type ) VALUES (  '"+req.body.center_name+"' ,  '"+req.body.center_phone1+"' ,'"+req.body.center_phone2+"' , "+req.body.app_type+"  ) RETURNING id as center_id ) INSERT INTO center_professional (professional_id, center_id) VALUES ('"+req.body.professional_id+"', (SELECT center_id from ids) ) RETURNING * ;  ";
+  sql = " WITH ids AS (  INSERT INTO center ( name , phone1, phone2, center_visit, home_visit, remote_care  ) VALUES (  '"+req.body.center_name+"' ,  '"+req.body.center_phone1+"' ,'"+req.body.center_phone2+"' , false, false, true  ) RETURNING id as center_id ) INSERT INTO center_professional (professional_id, center_id) VALUES ('"+req.body.professional_id+"', (SELECT center_id from ids) ) RETURNING * ;  ";
 }
 
 
-
-
 //const sql  = "INSERT INTO centers ( name ,  address , phone1, phone2 ) VALUES (  '"+req.body.center_name+"', '"+req.body.center_address+"' , '"+req.body.center_phone1+"', '"+req.body.center_phone2+"' ) RETURNING id " ;
-
 console.log('create_center SQL:'+sql ) ;
 	client.query(sql, (err, result) => {
 	  if (err) {
@@ -2730,8 +2730,10 @@ async function get_calendars_available(json)
   }
   //END IF LOCATION
   //const sql_calendars  = " SELECT * FROM (SELECT id as calendar_id , *  FROM professional_calendar WHERE "+specialty+" date_start <= '"+json.date+"' AND date_end >= '"+json.date+"'  AND start_time  >= '00:00:00' AND active = true ) C  LEFT JOIN  professional ON C.professional_id = professional.id ";
-  const sql_calendars  = "SELECT * FROM (SELECT name AS center_name, address AS center_address, * FROM (  SELECT name AS professional_name , calendar_id, professional_id, start_time, end_time, specialty1, duration, time_between, monday, tuesday, wednesday, thursday, friday, saturday, sunday, date_start, date_end , home_visit,  center_visit, video_call, status, home_visit_location1, home_visit_location2, home_visit_location3, home_visit_location4, home_visit_location5,  home_visit_location6, center_visit_center_id, phone AS professional_phone  FROM (SELECT id as calendar_id , *  FROM professional_calendar WHERE  active = true "+specialty+"  AND date_start <= '"+json.date+"'  AND date_end >= '"+json.date+"'  AND start_time  >= '00:00:00'  "+app_type+" ) C  LEFT JOIN professional ON C.professional_id = professional.id )     K LEFT JOIN center ON  k.center_visit_center_id = center.id )J  "+sql_location+" " ; 
-
+  const sql_calendars  = "SELECT * FROM (SELECT name AS center_name, address AS center_address, * FROM (  SELECT name AS professional_name , calendar_id, professional_id, start_time, end_time, specialty1, duration, time_between, monday, tuesday, wednesday, thursday, friday, saturday, sunday, date_start, date_end ,  status,   center_id, phone AS professional_phone  FROM (SELECT id as calendar_id , *  FROM professional_calendar WHERE  active = true "+specialty+"  AND date_start <= '"+json.date+"'  AND date_end >= '"+json.date+"'  AND start_time  >= '00:00:00'  "+app_type+" ) C  LEFT JOIN professional ON C.professional_id = professional.id )     K LEFT JOIN center ON  k.center_id = center.id )J  "+sql_location+" " ; 
+  
+  console.log("get_calendars_available  SQL:"+sql_calendars) 
+  
   //console.log ("QUERY GET CALENDAR = "+sql_calendars);
   const res = await client.query(sql_calendars) 
   return res.rows ;
@@ -2971,8 +2973,9 @@ async function get_calendars_available_professional(json)
   await client.connect()
     
   //END IF LOCATION
-   const sql_calendars  = "SELECT * FROM (SELECT name AS center_name, address AS center_address, * FROM (  SELECT name AS professional_name , calendar_id, professional_id, start_time, end_time, specialty1, duration, time_between, monday, tuesday, wednesday, thursday, friday, saturday, sunday, date_start, date_end , home_visit,  center_visit, video_call, status, home_visit_location1, home_visit_location2, home_visit_location3, home_visit_location4, home_visit_location5,  home_visit_location6, center_visit_center_id, phone AS professional_phone, color  FROM (SELECT id as calendar_id , *  FROM professional_calendar WHERE  active = true  AND date_start <= '"+json.date+"'  AND date_end >= '"+json.date+"'  AND start_time  >= '00:00:00' AND  professional_id = '"+json.professional_id+"' ) C  LEFT JOIN professional ON C.professional_id = professional.id )     K LEFT JOIN center ON  k.center_visit_center_id = center.id )J  " ; 
+   const sql_calendars  = "SELECT * FROM (SELECT name AS center_name, address AS center_address, * FROM (  SELECT name AS professional_name , calendar_id, professional_id, start_time, end_time, specialty1, duration, time_between, monday, tuesday, wednesday, thursday, friday, saturday, sunday, date_start, date_end , status, center_id, phone AS professional_phone, color  FROM (SELECT id as calendar_id , *  FROM professional_calendar WHERE  active = true  AND date_start <= '"+json.date+"'  AND date_end >= '"+json.date+"'  AND start_time  >= '00:00:00' AND  professional_id = '"+json.professional_id+"' ) C  LEFT JOIN professional ON C.professional_id = professional.id )     K LEFT JOIN center ON  k.center_id = center.id )J  " ; 
 
+   console.log("get_calendars_available_professional SQL: "+sql_calendars);
   //console.log ("QUERY GET CALENDAR = "+sql_calendars);
   const res = await client.query(sql_calendars) 
   return res.rows ;
