@@ -890,6 +890,7 @@ form_start_time: '02:00',
   form_appointment_center_code: null,
   professional_id: 1
 */
+/*
 let sql_location = " " ;
 if (req.body.form_appointment_home_locations != null  )
 {
@@ -906,6 +907,7 @@ if (req.body.form_appointment_home_locations != null  )
     sql_location += ", '"+req.body.form_appointment_home_locations[2]+"' "
   }else { sql_location += ", null " }
 }
+*/
 
 let center_code = " null " ;
 if (req.body.form_appointment_center_code != null)
@@ -914,7 +916,7 @@ center_code = " '"+req.body.form_appointment_center_code+"' " ;
 }
 
 
-sql = "INSERT INTO professional_calendar (professional_id , start_time,  end_time, specialty1, duration, time_between, monday, tuesday, wednesday, thursday, friday, saturday , sunday, date_start, date_end,  home_visit, center_visit,  center_visit_center_id,  video_call, status , home_visit_location1 , home_visit_location2  , home_visit_location3  ) VALUES ( '"+req.body.professional_id+"',  '"+req.body.form_start_time+"' , '"+req.body.form_end_time+"', '"+req.body.form_specialty_id+"' , '"+req.body.form_app_duration+"' , '"+req.body.form_app_time_between+"' ,  '"+req.body.form_recurrency_mon+"' ,  '"+req.body.form_recurrency_tue+"'  ,  '"+req.body.form_recurrency_wed +"' ,  '"+req.body.form_recurrency_thu+"'  ,  '"+req.body.form_recurrency_fri+"'  , '"+req.body.form_recurrency_sat+"'  ,  '"+req.body.form_recurrency_sun+"'  ,   '"+req.body.form_calendar_start+"'  ,  '"+req.body.form_calendar_end+"'  ,  '"+req.body.form_appointment_home+"' , '"+req.body.form_appointment_center+"'  ,  "+req.body.form_appointment_center_code+" ,   '"+req.body.form_appointment_remote+"'  , '1'  "+sql_location+" )  " ;
+sql = "INSERT INTO professional_calendar (professional_id , start_time,  end_time, specialty1, duration, time_between, monday, tuesday, wednesday, thursday, friday, saturday , sunday, date_start, date_end,   center_id,  status  ) VALUES ( '"+req.body.professional_id+"',  '"+req.body.form_start_time+"' , '"+req.body.form_end_time+"', '"+req.body.form_specialty_id+"' , '"+req.body.form_app_duration+"' , '"+req.body.form_app_time_between+"' ,  '"+req.body.form_recurrency_mon+"' ,  '"+req.body.form_recurrency_tue+"'  ,  '"+req.body.form_recurrency_wed +"' ,  '"+req.body.form_recurrency_thu+"'  ,  '"+req.body.form_recurrency_fri+"'  , '"+req.body.form_recurrency_sat+"'  ,  '"+req.body.form_recurrency_sun+"'  ,   '"+req.body.form_calendar_start+"'  ,  '"+req.body.form_calendar_end+"'  ,   "+req.body.form_appointment_center_code+" ,    '1'  )  " ;
 console.log('create_calendar SQL:'+sql ) ;
 
   
@@ -2594,15 +2596,15 @@ async function get_appointments_available(json)
                           pattient_doc_id : calendars[i].pattient_doc_id ,
 
                           home_visit : calendars[i].home_visit ,
-                          home_visit_location1 : calendars[i].home_visit_location1 ,
-                          home_visit_location2 : calendars[i].home_visit_location2 ,
-                          home_visit_location3 : calendars[i].home_visit_location3 ,
-                          home_visit_location4 : calendars[i].home_visit_location4 ,
-                          home_visit_location5 : calendars[i].home_visit_location5 ,
-                          home_visit_location6 : calendars[i].home_visit_location6 ,
+                          home_visit_location1 : calendars[i].home_comuna1 ,
+                          home_visit_location2 : calendars[i].home_comuna2 ,
+                          home_visit_location3 : calendars[i].home_comuna3 ,
+                          home_visit_location4 : calendars[i].home_comuna4 ,
+                          home_visit_location5 : calendars[i].home_comuna5 ,
+                          home_visit_location6 : calendars[i].home_comuna6 ,
 
                           center_visit :calendars[i].center_visit ,
-                          center_id :calendars[i].center_visit_center_id ,
+                          center_id :calendars[i].center_id ,
                           center_name :calendars[i].center_name ,
                           center_address :calendars[i].center_address ,
                           status : calendars[i].status  ,
@@ -2698,11 +2700,15 @@ async function get_calendars_available(json)
   let app_type = " " ;
   if (json.type_home)
         {
-          app_type = "AND home_visit = 'true'  " ;
+          app_type = "home_visit = 'true'  " ;
         }
   if (json.type_center)
         {
-          app_type = "AND center_visit = 'true'  " ;
+          app_type = "center_visit = 'true'  " ;
+        }
+  if (json.type_remote)
+        {
+          app_type = "remote_care = 'true'  " ;
         }
   
    if (json.type_center && json.type_home)
@@ -2730,7 +2736,7 @@ async function get_calendars_available(json)
   }
   //END IF LOCATION
   //const sql_calendars  = " SELECT * FROM (SELECT id as calendar_id , *  FROM professional_calendar WHERE "+specialty+" date_start <= '"+json.date+"' AND date_end >= '"+json.date+"'  AND start_time  >= '00:00:00' AND active = true ) C  LEFT JOIN  professional ON C.professional_id = professional.id ";
-  const sql_calendars  = "SELECT * FROM (SELECT name AS center_name, address AS center_address, * FROM (  SELECT name AS professional_name , calendar_id, professional_id, start_time, end_time, specialty1, duration, time_between, monday, tuesday, wednesday, thursday, friday, saturday, sunday, date_start, date_end ,  status,   center_id, phone AS professional_phone  FROM (SELECT id as calendar_id , *  FROM professional_calendar WHERE  active = true "+specialty+"  AND date_start <= '"+json.date+"'  AND date_end >= '"+json.date+"'  AND start_time  >= '00:00:00'  "+app_type+" ) C  LEFT JOIN professional ON C.professional_id = professional.id )     K LEFT JOIN center ON  k.center_id = center.id )J  "+sql_location+" " ; 
+  const sql_calendars  = "SELECT * FROM (SELECT name AS center_name, address AS center_address, * FROM (  SELECT name AS professional_name , calendar_id, professional_id, start_time, end_time, specialty1, duration, time_between, monday, tuesday, wednesday, thursday, friday, saturday, sunday, date_start, date_end ,  status,   center_id, phone AS professional_phone  FROM (SELECT id as calendar_id , *  FROM professional_calendar WHERE  active = true "+specialty+"  AND date_start <= '"+json.date+"'  AND date_end >= '"+json.date+"'  AND start_time  >= '00:00:00'   ) C  LEFT JOIN professional ON C.professional_id = professional.id )     K LEFT JOIN center ON  k.center_id = center.id )J   " ; 
   
   console.log("get_calendars_available  SQL:"+sql_calendars) 
   
