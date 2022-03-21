@@ -2813,7 +2813,6 @@ async function get_professional_appointment_day(ids,dates)
 }
 
 
-
 //called from  professional_get_appointment_day2
 async function get_appointments_available_professional(json)
 {
@@ -2892,6 +2891,7 @@ async function get_appointments_available_professional(json)
             
                   home_visit : appointment_id_filtered[i].app_type_home ,
                   center_visit :appointment_id_filtered[i].app_type_center ,
+                  //remote_care :calendars[i].remote_care ,
             
                   center_id :appointment_id_filtered[i].center_id ,
               //    center_name :calendars[i].center_name ,
@@ -2951,6 +2951,9 @@ async function get_appointments_available_professional(json)
                           center_id :calendars[i].center_visit_center_id ,
                           center_name :calendars[i].center_name ,
                           center_address :calendars[i].center_address ,
+
+                   //       remote_care :calendars[i].remote_care ,
+
                           status : calendars[i].status  ,
                           //start_time : "0"+aux_date.getHours()+":0"+aux_date.getMinutes() , 
                           start_time :  aux_date.getHours().toString().padStart(2, '0')+":"+aux_date.getMinutes().toString().padStart(2, '0') , 
