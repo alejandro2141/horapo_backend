@@ -140,8 +140,8 @@ sql = sql + " FROM appointment  WHERE professional_id = '"+req.body.p_id+"'  AND
 		)
 */
 
-let query_reserve = "INSERT INTO appointment (  date , start_time,  duration,  center_id, confirmation_status, professional_id, patient_doc_id, patient_name,    patient_email, patient_phone1,  patient_age,  app_available, app_status, app_blocked, app_public,  location1, location2, location3, location4, location5, location6,   app_type_home, app_type_center, patient_notification_email_reserved , specialty_reserved , patient_address , calendar_id )  "  ; 
-query_reserve  += " VALUES ( '"+req.body.appointment_date+"' , '"+req.body.appointment_start_time+"' , '"+req.body.appointment_duration+"' ,  "+req.body.appointment_center_id+" , '0' , '"+req.body.appointment_professional_id+"' , '"+req.body.patient_doc_id+"' , '"+req.body.patient_name+"' , '"+req.body.patient_email+"' , '"+req.body.patient_phone+"' ,  '"+req.body.patient_age+"' ,'false' , '1' , '0' , '1', "+req.body.appointment_location1+" , "+req.body.appointment_location2+" ,"+req.body.appointment_location3+" ,"+req.body.appointment_location4+" ,"+req.body.appointment_location5+" ,"+req.body.appointment_location6+" , '"+req.body.appointment_type_home+"' , '"+req.body.appointment_type_center+"' , '1' , '"+req.body.specialty_reserved+"' , '"+req.body.patient_address+"'  , '"+req.body.appointment_calendar_id+"' 	) RETURNING * " ; 
+let query_reserve = "INSERT INTO appointment (  date , start_time,  duration,  center_id, confirmation_status, professional_id, patient_doc_id, patient_name,    patient_email, patient_phone1,  patient_age,  app_available, app_status, app_blocked, app_public,  location1, location2, location3, location4, location5, location6,   app_type_home, app_type_center,  app_type_remote, patient_notification_email_reserved , specialty_reserved , patient_address , calendar_id )  "  ; 
+query_reserve  += " VALUES ( '"+req.body.appointment_date+"' , '"+req.body.appointment_start_time+"' , '"+req.body.appointment_duration+"' ,  "+req.body.appointment_center_id+" , '0' , '"+req.body.appointment_professional_id+"' , '"+req.body.patient_doc_id+"' , '"+req.body.patient_name+"' , '"+req.body.patient_email+"' , '"+req.body.patient_phone+"' ,  '"+req.body.patient_age+"' ,'false' , '1' , '0' , '1', "+req.body.appointment_location1+" , "+req.body.appointment_location2+" ,"+req.body.appointment_location3+" ,"+req.body.appointment_location4+" ,"+req.body.appointment_location5+" ,"+req.body.appointment_location6+" , '"+req.body.appointment_type_home+"' , '"+req.body.appointment_type_center+"' , '"+req.body.appointment_type_remote+"' , '1' , '"+req.body.specialty_reserved+"' , '"+req.body.patient_address+"'  , '"+req.body.appointment_calendar_id+"' 	) RETURNING * " ; 
 
 
 //const query_update = "UPDATE appointment SET patient_name = '"+req.body.patient_name+"' ,  patient_doc_id = '"+req.body.patient_doc_id+"' , patient_email = '"+req.body.patient_email+"' , patient_phone1 ='"+req.body.patient_phone+"' , patient_insurance='"+req.body.patient_insurance+"' , app_available='FALSE'     WHERE id = '"+req.body.appointment_id+"'  RETURNING * ";
@@ -2647,6 +2647,9 @@ async function get_appointments_available(json)
                           center_id :calendars[i].center_id ,
                           center_name :calendars[i].center_name ,
                           center_address :calendars[i].center_address ,
+
+                          remote_care : calendars[i].remote_care ,
+
                           status : calendars[i].status  ,
                           //start_time : "0"+aux_date.getHours()+":0"+aux_date.getMinutes() , 
                           start_time :  aux_date.getHours().toString().padStart(2, '0')+":"+aux_date.getMinutes().toString().padStart(2, '0') , 
@@ -2806,7 +2809,7 @@ async function get_professional_appointment_day(ids,dates)
   }
 
   const sql_apps_taken  = "SELECT * FROM appointment WHERE date IN ("+aux_dates+")  and professional_id  IN ("+ids+") ;";
-  //console.log("SQL QUERY: "+sql_apps_taken)
+  console.log("SQL QUERY: "+sql_apps_taken)
   const res = await client.query(sql_apps_taken)
   return res.rows;
   client.end() 
@@ -2891,7 +2894,7 @@ async function get_appointments_available_professional(json)
             
                   home_visit : appointment_id_filtered[i].app_type_home ,
                   center_visit :appointment_id_filtered[i].app_type_center ,
-                  //remote_care :calendars[i].remote_care ,
+                  remote_care :appointment_id_filtered[i].app_type_remote ,
             
                   center_id :appointment_id_filtered[i].center_id ,
               //    center_name :calendars[i].center_name ,
@@ -2952,7 +2955,7 @@ async function get_appointments_available_professional(json)
                           center_name :calendars[i].center_name ,
                           center_address :calendars[i].center_address ,
 
-                   //       remote_care :calendars[i].remote_care ,
+                          remote_care :calendars[i].remote_care ,
 
                           status : calendars[i].status  ,
                           //start_time : "0"+aux_date.getHours()+":0"+aux_date.getMinutes() , 
