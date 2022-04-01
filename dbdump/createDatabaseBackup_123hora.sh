@@ -1,6 +1,5 @@
 #!/bin/bash
-sudo su postgres
-
+echo "REMEMEBER sudo su postgres TO CREATE BACKUP"
 timestamp=$(date +"%Y-%m-%d_%H-%M-%S")
 echo "BACKUP STARTING database 123HORA Backend  ".$timestamp
 
