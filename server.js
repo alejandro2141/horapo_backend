@@ -2473,6 +2473,8 @@ async function get_appointments_available(json)
                           home_visit_location5 : calendars[i].home_comuna5 ,
                           home_visit_location6 : calendars[i].home_comuna6 ,
 
+                          center_visit_location : calendars[i].comuna ,
+
                           center_visit :calendars[i].center_visit ,
                           center_id :calendars[i].center_id ,
                           center_name :calendars[i].center_name ,
@@ -2612,11 +2614,11 @@ async function get_calendars_available(json)
   if (json.location != null )
   { 
      sql_location = "AND center_id IN (SELECT id from center WHERE  comuna ="+json.location+") " ;
- }
+  }
 
   //END IF LOCATION
   //const sql_calendars  = " SELECT * FROM (SELECT id as calendar_id , *  FROM professional_calendar WHERE "+specialty+" date_start <= '"+json.date+"' AND date_end >= '"+json.date+"'  AND start_time  >= '00:00:00' AND active = true ) C  LEFT JOIN  professional ON C.professional_id = professional.id ";
-  const sql_calendars  = "SELECT * FROM (SELECT name AS center_name, address AS center_address, * FROM (  SELECT name AS professional_name , calendar_id, professional_id, start_time, end_time, specialty1, duration, time_between, monday, tuesday, wednesday, thursday, friday, saturday, sunday, date_start, date_end ,  status,   center_id, phone AS professional_phone  FROM (SELECT id as calendar_id , *  FROM professional_calendar WHERE  active = true  "+sql_location+" "+specialty+"  AND date_start <= '"+json.date+"'  AND date_end >= '"+json.date+"'  AND start_time  >= '00:00:00'  AND deleted_professional = false ) C  LEFT JOIN professional ON C.professional_id = professional.id )     K LEFT JOIN center ON  k.center_id = center.id "+sql_location+"  )J   " ; 
+  const sql_calendars  = "SELECT * FROM (SELECT name AS center_name, address AS center_address, * FROM (  SELECT name AS professional_name , calendar_id, professional_id, start_time, end_time, specialty1, duration, time_between, monday, tuesday, wednesday, thursday, friday, saturday, sunday, date_start, date_end ,  status,   center_id,   phone AS professional_phone  FROM (SELECT id as calendar_id , *  FROM professional_calendar WHERE  active = true  "+sql_location+" "+specialty+"  AND date_start <= '"+json.date+"'  AND date_end >= '"+json.date+"'  AND start_time  >= '00:00:00'  AND deleted_professional = false ) C  LEFT JOIN professional ON C.professional_id = professional.id )     K LEFT JOIN center ON  k.center_id = center.id "+sql_location+"  )J   " ; 
   
   console.log("get_calendars_available  SQL:"+sql_calendars) 
   
