@@ -1151,55 +1151,13 @@ app.route('/professional_get_appointments_day2')
 app.route('/professional_login')
 .post(function (req, res) {
 
-console.log('professionalLogin INPUT:', req.body );
- 
-// ****** Connect to postgre
-const { Pool, Client } = require('pg')
-const client = new Client({
-  user: 'conmeddb_user',
-  host: '127.0.0.1',
-  database: 'conmeddb02',
-  password: 'paranoid',
-  port: 5432,
-})
+  console.log ("professional_login REQUEST");
+  let json_response = access_login(req)
 
-client.connect()
-// ****** Run query to bring appointment
-//const sql  = "SELECT * FROM professional WHERE email='"+req.body.form_email+"'  AND pass='"+req.body.form_pass+"'";
-
-//const sql  = "SELECT * FROM (SELECT * FROM (SELECT * FROM professional WHERE email = '"+req.body.form_email+"')P LEFT JOIN account ON P.id = account.user_id) J WHERE j.pass = '"+req.body.form_pass+"' " ;
-//const sql = "INSERT INTO session (name, user_id,last_login , last_activity_time , user_type) RETURNING * SELECT   name, user_id , now() as last_login ,now() as last_activity_time, 1 as user_type  FROM (SELECT * FROM (SELECT * FROM professional WHERE email ='"+req.body.form_email+"' )P LEFT JOIN account ON P.id = account.user_id) J WHERE j.pass = '"+req.body.form_pass+"' RETURNING id" ;
-const sql = "INSERT INTO session (name, user_id,last_login , last_activity_time , user_type , first_time ) SELECT   name, user_id , now() as last_login ,now() as last_activity_time, 1 as user_type , first_time  FROM (SELECT * FROM (SELECT * FROM professional WHERE email ='"+req.body.form_email+"' )P LEFT JOIN account ON P.id = account.user_id) J WHERE j.pass = '"+req.body.form_pass+"'   RETURNING * ";
-
-console.log('professionalLogin SQL:'+sql ) ;
-var json_response = {  professional_id: null , result_code : 33 };
-const resultado = client.query(sql, (err, result) => {
-	
-	console.log("professionalLogin Result : "+JSON.stringify(result));
-  if (err) {
-      console.log('professionalLogin ERROR QUERY  = '+sql ) ;
-    }
-    
-  if(result.rowCount == 1 )
-  {
-  console.log ("professionalLogin LOGIN MATCH!!");
-  json_response = { professional_id: result.rows[0].user_id , 
-					result_code: 0 ,
-					professional_name: result.rows[0].name ,
-					token : result.rows[0].id,
-          first_time : result.rows[0].first_time,
-					};
-  }
-  else
-  {
-  console.log ("professionalLogin LOGIN NO MATCH!!");
-  }
+  json_response.then( v => {  console.log("professional_login RESPONSE: "+JSON.stringify(v)) ; return (res.status(200).send(JSON.stringify(v))) } )
   
-  res.status(200).send(JSON.stringify(json_response));
-  console.log('professionalLogin OUTPUT:'+JSON.stringify(json_response) ) ;
-  client.end()
-})
-
+  //res.status(200).send(JSON.stringify(json_response));
+  //console.log('professional_login RESPONSE  :'+JSON.stringify(json_response) ) ;
 
 })
  
@@ -2869,8 +2827,65 @@ async function get_calendars_available_professional(json)
    console.log("get_calendars_available_professional SQL: "+sql_calendars);
   //console.log ("QUERY GET CALENDAR = "+sql_calendars);
   const res = await client.query(sql_calendars) 
-  return res.rows ;
   client.end() 
+  return res.rows ;
+  
+}
+
+//LOGIN
+
+async function access_login(req)
+{
+  console.log("access_login REQUEST") ; 
+  //get login data
+  let login_data = await get_access_login(req)
+  console.log("access_login ESPONSE "+JSON.stringify(login_data)) ;
+  //get response centers 
+  let response_centers = await get_professional_centers(login_data.professional_id);
+  //add centers to login_data
+  login_data =  { ...login_data ,  centers : response_centers };
+  
+  return login_data
+}
+
+async function get_access_login(req)
+{
+  const { Client } = require('pg')
+  const client = new Client(conn_data)
+  await client.connect()
+    
+  const sql = "INSERT INTO session (name, user_id,last_login , last_activity_time , user_type , first_time ) SELECT   name, user_id , now() as last_login ,now() as last_activity_time, 1 as user_type , first_time  FROM (SELECT * FROM (SELECT * FROM professional WHERE email ='"+req.body.form_email+"' )P LEFT JOIN account ON P.id = account.user_id) J WHERE j.pass = '"+req.body.form_pass+"'   RETURNING * ";
+  console.log('professionalLogin SQL:'+sql ) ;
+  var json_response = {  professional_id: null , result_code : 33 };
+  const result = await client.query(sql) 
+
+  json_response = { 
+          professional_id: result.rows[0].user_id , 
+          result_code: 0 ,
+          professional_name: result.rows[0].name ,
+          token : result.rows[0].id,
+          first_time : result.rows[0].first_time,
+    };
+  return json_response ;
+
+}
+
+
+//called from Both
+async function get_professional_centers(id)
+{
+  const { Client } = require('pg')
+  const client = new Client(conn_data)
+  await client.connect()
+  //console.log("ids:"+ids+" dates:"+dates)
+  const sql_centers  = "SELECT * FROM center WHERE id IN  (SELECT center_id FROM center_professional where professional_id='"+id+"' ) AND center_deleted!='true'  ORDER BY id DESC  " ;
+
+ // const sql_apps_taken  = "SELECT * FROM appointment WHERE date IN ("+aux_dates+")  and professional_id  IN ("+ids+") ;";
+  console.log("SQL QUERY: "+sql_centers)
+  const res = await client.query(sql_centers)
+  client.end() 
+  return res.rows;
+  
 }
 
 
