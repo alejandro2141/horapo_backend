@@ -1,0 +1,2903 @@
+--
+-- PostgreSQL database cluster dump
+--
+
+SET default_transaction_read_only = off;
+
+SET client_encoding = 'UTF8';
+SET standard_conforming_strings = on;
+
+--
+-- Roles
+--
+
+CREATE ROLE conmeddb_user;
+ALTER ROLE conmeddb_user WITH NOSUPERUSER INHERIT NOCREATEROLE NOCREATEDB LOGIN NOREPLICATION NOBYPASSRLS PASSWORD 'md5be6fc1328122c29e68fe586887c400cc';
+CREATE ROLE postgres;
+ALTER ROLE postgres WITH SUPERUSER INHERIT CREATEROLE CREATEDB LOGIN REPLICATION BYPASSRLS PASSWORD 'md581b8b476018b2034ebf8cc2396b697cd';
+
+
+
+
+
+
+--
+-- Databases
+--
+
+--
+-- Database "template1" dump
+--
+
+\connect template1
+
+--
+-- PostgreSQL database dump
+--
+
+-- Dumped from database version 12.9 (Ubuntu 12.9-0ubuntu0.20.04.1)
+-- Dumped by pg_dump version 12.9 (Ubuntu 12.9-0ubuntu0.20.04.1)
+
+SET statement_timeout = 0;
+SET lock_timeout = 0;
+SET idle_in_transaction_session_timeout = 0;
+SET client_encoding = 'UTF8';
+SET standard_conforming_strings = on;
+SELECT pg_catalog.set_config('search_path', '', false);
+SET check_function_bodies = false;
+SET xmloption = content;
+SET client_min_messages = warning;
+SET row_security = off;
+
+--
+-- PostgreSQL database dump complete
+--
+
+--
+-- Database "conmeddb01" dump
+--
+
+--
+-- PostgreSQL database dump
+--
+
+-- Dumped from database version 12.9 (Ubuntu 12.9-0ubuntu0.20.04.1)
+-- Dumped by pg_dump version 12.9 (Ubuntu 12.9-0ubuntu0.20.04.1)
+
+SET statement_timeout = 0;
+SET lock_timeout = 0;
+SET idle_in_transaction_session_timeout = 0;
+SET client_encoding = 'UTF8';
+SET standard_conforming_strings = on;
+SELECT pg_catalog.set_config('search_path', '', false);
+SET check_function_bodies = false;
+SET xmloption = content;
+SET client_min_messages = warning;
+SET row_security = off;
+
+--
+-- Name: conmeddb01; Type: DATABASE; Schema: -; Owner: postgres
+--
+
+CREATE DATABASE conmeddb01 WITH TEMPLATE = template0 ENCODING = 'UTF8' LC_COLLATE = 'en_US.UTF-8' LC_CTYPE = 'en_US.UTF-8';
+
+
+ALTER DATABASE conmeddb01 OWNER TO postgres;
+
+\connect conmeddb01
+
+SET statement_timeout = 0;
+SET lock_timeout = 0;
+SET idle_in_transaction_session_timeout = 0;
+SET client_encoding = 'UTF8';
+SET standard_conforming_strings = on;
+SELECT pg_catalog.set_config('search_path', '', false);
+SET check_function_bodies = false;
+SET xmloption = content;
+SET client_min_messages = warning;
+SET row_security = off;
+
+SET default_tablespace = '';
+
+SET default_table_access_method = heap;
+
+--
+-- Name: appointments; Type: TABLE; Schema: public; Owner: conmeddb_user
+--
+
+CREATE TABLE public.appointments (
+    appointment_id integer NOT NULL,
+    appointment_date date,
+    appointment_start_time time with time zone,
+    appointment_specialty text,
+    appointment_is_public boolean DEFAULT true,
+    appointment_agenda_id bigint,
+    appointment_patient_name text,
+    reserve_patient_doc_id text,
+    reserve_patient_age text,
+    reserve_available boolean,
+    reserve_patient_email text,
+    reserve_patient_phone text,
+    reserve_patient_insurance integer,
+    end_time time with time zone,
+    duration integer,
+    reserve_status integer,
+    blocked boolean
+);
+
+
+ALTER TABLE public.appointments OWNER TO conmeddb_user;
+
+--
+-- Name: appointment2_id_seq; Type: SEQUENCE; Schema: public; Owner: conmeddb_user
+--
+
+CREATE SEQUENCE public.appointment2_id_seq
+    AS integer
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+
+ALTER TABLE public.appointment2_id_seq OWNER TO conmeddb_user;
+
+--
+-- Name: appointment2_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: conmeddb_user
+--
+
+ALTER SEQUENCE public.appointment2_id_seq OWNED BY public.appointments.appointment_id;
+
+
+--
+-- Name: appointment2_reserve_patient_phone_seq; Type: SEQUENCE; Schema: public; Owner: conmeddb_user
+--
+
+CREATE SEQUENCE public.appointment2_reserve_patient_phone_seq
+    AS integer
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+
+ALTER TABLE public.appointment2_reserve_patient_phone_seq OWNER TO conmeddb_user;
+
+--
+-- Name: appointment2_reserve_patient_phone_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: conmeddb_user
+--
+
+ALTER SEQUENCE public.appointment2_reserve_patient_phone_seq OWNED BY public.appointments.reserve_patient_phone;
+
+
+--
+-- Name: assistant_professional; Type: TABLE; Schema: public; Owner: conmeddb_user
+--
+
+CREATE TABLE public.assistant_professional (
+    id integer NOT NULL,
+    assistant_id integer,
+    professional_id integer
+);
+
+
+ALTER TABLE public.assistant_professional OWNER TO conmeddb_user;
+
+--
+-- Name: assistant_professional_id_seq; Type: SEQUENCE; Schema: public; Owner: conmeddb_user
+--
+
+CREATE SEQUENCE public.assistant_professional_id_seq
+    AS integer
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+
+ALTER TABLE public.assistant_professional_id_seq OWNER TO conmeddb_user;
+
+--
+-- Name: assistant_professional_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: conmeddb_user
+--
+
+ALTER SEQUENCE public.assistant_professional_id_seq OWNED BY public.assistant_professional.id;
+
+
+--
+-- Name: assistants; Type: TABLE; Schema: public; Owner: conmeddb_user
+--
+
+CREATE TABLE public.assistants (
+    id integer NOT NULL,
+    name text,
+    document_id text,
+    phone1 text,
+    phone2 text,
+    address1 text,
+    address2 text,
+    email text,
+    pass text,
+    country text
+);
+
+
+ALTER TABLE public.assistants OWNER TO conmeddb_user;
+
+--
+-- Name: assistants_id_seq; Type: SEQUENCE; Schema: public; Owner: conmeddb_user
+--
+
+CREATE SEQUENCE public.assistants_id_seq
+    AS integer
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+
+ALTER TABLE public.assistants_id_seq OWNER TO conmeddb_user;
+
+--
+-- Name: assistants_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: conmeddb_user
+--
+
+ALTER SEQUENCE public.assistants_id_seq OWNED BY public.assistants.id;
+
+
+--
+-- Name: bookings; Type: TABLE; Schema: public; Owner: conmeddb_user
+--
+
+CREATE TABLE public.bookings (
+    booking_id bigint NOT NULL,
+    booking_name text,
+    booking_phone text,
+    booking_email text,
+    booking_doc_id text,
+    booking_age integer,
+    booking_insurance integer
+);
+
+
+ALTER TABLE public.bookings OWNER TO conmeddb_user;
+
+--
+-- Name: bookings_booking_id_seq; Type: SEQUENCE; Schema: public; Owner: conmeddb_user
+--
+
+CREATE SEQUENCE public.bookings_booking_id_seq
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+
+ALTER TABLE public.bookings_booking_id_seq OWNER TO conmeddb_user;
+
+--
+-- Name: bookings_booking_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: conmeddb_user
+--
+
+ALTER SEQUENCE public.bookings_booking_id_seq OWNED BY public.bookings.booking_id;
+
+
+--
+-- Name: center_professional; Type: TABLE; Schema: public; Owner: conmeddb_user
+--
+
+CREATE TABLE public.center_professional (
+    id integer NOT NULL,
+    center_id bigint,
+    professional_id bigint
+);
+
+
+ALTER TABLE public.center_professional OWNER TO conmeddb_user;
+
+--
+-- Name: center_professional_id_seq; Type: SEQUENCE; Schema: public; Owner: conmeddb_user
+--
+
+CREATE SEQUENCE public.center_professional_id_seq
+    AS integer
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+
+ALTER TABLE public.center_professional_id_seq OWNER TO conmeddb_user;
+
+--
+-- Name: center_professional_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: conmeddb_user
+--
+
+ALTER SEQUENCE public.center_professional_id_seq OWNED BY public.center_professional.id;
+
+
+--
+-- Name: centers; Type: TABLE; Schema: public; Owner: conmeddb_user
+--
+
+CREATE TABLE public.centers (
+    id integer NOT NULL,
+    name text,
+    address text,
+    phone1 text,
+    phone2 text,
+    verified boolean,
+    status integer
+);
+
+
+ALTER TABLE public.centers OWNER TO conmeddb_user;
+
+--
+-- Name: centers_id_seq; Type: SEQUENCE; Schema: public; Owner: conmeddb_user
+--
+
+CREATE SEQUENCE public.centers_id_seq
+    AS integer
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+
+ALTER TABLE public.centers_id_seq OWNER TO conmeddb_user;
+
+--
+-- Name: centers_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: conmeddb_user
+--
+
+ALTER SEQUENCE public.centers_id_seq OWNED BY public.centers.id;
+
+
+--
+-- Name: professionals; Type: TABLE; Schema: public; Owner: conmeddb_user
+--
+
+CREATE TABLE public.professionals (
+    id integer NOT NULL,
+    name text,
+    document_id text,
+    phone1 text,
+    phone2 text,
+    address1 text,
+    address2 text,
+    email text,
+    pass text,
+    country text
+);
+
+
+ALTER TABLE public.professionals OWNER TO conmeddb_user;
+
+--
+-- Name: professionals_id_seq; Type: SEQUENCE; Schema: public; Owner: conmeddb_user
+--
+
+CREATE SEQUENCE public.professionals_id_seq
+    AS integer
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+
+ALTER TABLE public.professionals_id_seq OWNER TO conmeddb_user;
+
+--
+-- Name: professionals_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: conmeddb_user
+--
+
+ALTER SEQUENCE public.professionals_id_seq OWNED BY public.professionals.id;
+
+
+--
+-- Name: specialties; Type: TABLE; Schema: public; Owner: conmeddb_user
+--
+
+CREATE TABLE public.specialties (
+    id integer NOT NULL,
+    specialty_name text NOT NULL,
+    specialty_description text
+);
+
+
+ALTER TABLE public.specialties OWNER TO conmeddb_user;
+
+--
+-- Name: specialties_id_seq; Type: SEQUENCE; Schema: public; Owner: conmeddb_user
+--
+
+CREATE SEQUENCE public.specialties_id_seq
+    AS integer
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+
+ALTER TABLE public.specialties_id_seq OWNER TO conmeddb_user;
+
+--
+-- Name: specialties_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: conmeddb_user
+--
+
+ALTER SEQUENCE public.specialties_id_seq OWNED BY public.specialties.id;
+
+
+--
+-- Name: users; Type: TABLE; Schema: public; Owner: conmeddb_user
+--
+
+CREATE TABLE public.users (
+    id integer NOT NULL,
+    username text,
+    password text,
+    email text,
+    phone text,
+    role_assistant boolean,
+    user_id integer,
+    user_type integer
+);
+
+
+ALTER TABLE public.users OWNER TO conmeddb_user;
+
+--
+-- Name: users_id_seq; Type: SEQUENCE; Schema: public; Owner: conmeddb_user
+--
+
+CREATE SEQUENCE public.users_id_seq
+    AS integer
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+
+ALTER TABLE public.users_id_seq OWNER TO conmeddb_user;
+
+--
+-- Name: users_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: conmeddb_user
+--
+
+ALTER SEQUENCE public.users_id_seq OWNED BY public.users.id;
+
+
+--
+-- Name: appointments appointment_id; Type: DEFAULT; Schema: public; Owner: conmeddb_user
+--
+
+ALTER TABLE ONLY public.appointments ALTER COLUMN appointment_id SET DEFAULT nextval('public.appointment2_id_seq'::regclass);
+
+
+--
+-- Name: assistant_professional id; Type: DEFAULT; Schema: public; Owner: conmeddb_user
+--
+
+ALTER TABLE ONLY public.assistant_professional ALTER COLUMN id SET DEFAULT nextval('public.assistant_professional_id_seq'::regclass);
+
+
+--
+-- Name: assistants id; Type: DEFAULT; Schema: public; Owner: conmeddb_user
+--
+
+ALTER TABLE ONLY public.assistants ALTER COLUMN id SET DEFAULT nextval('public.assistants_id_seq'::regclass);
+
+
+--
+-- Name: bookings booking_id; Type: DEFAULT; Schema: public; Owner: conmeddb_user
+--
+
+ALTER TABLE ONLY public.bookings ALTER COLUMN booking_id SET DEFAULT nextval('public.bookings_booking_id_seq'::regclass);
+
+
+--
+-- Name: center_professional id; Type: DEFAULT; Schema: public; Owner: conmeddb_user
+--
+
+ALTER TABLE ONLY public.center_professional ALTER COLUMN id SET DEFAULT nextval('public.center_professional_id_seq'::regclass);
+
+
+--
+-- Name: centers id; Type: DEFAULT; Schema: public; Owner: conmeddb_user
+--
+
+ALTER TABLE ONLY public.centers ALTER COLUMN id SET DEFAULT nextval('public.centers_id_seq'::regclass);
+
+
+--
+-- Name: professionals id; Type: DEFAULT; Schema: public; Owner: conmeddb_user
+--
+
+ALTER TABLE ONLY public.professionals ALTER COLUMN id SET DEFAULT nextval('public.professionals_id_seq'::regclass);
+
+
+--
+-- Name: specialties id; Type: DEFAULT; Schema: public; Owner: conmeddb_user
+--
+
+ALTER TABLE ONLY public.specialties ALTER COLUMN id SET DEFAULT nextval('public.specialties_id_seq'::regclass);
+
+
+--
+-- Name: users id; Type: DEFAULT; Schema: public; Owner: conmeddb_user
+--
+
+ALTER TABLE ONLY public.users ALTER COLUMN id SET DEFAULT nextval('public.users_id_seq'::regclass);
+
+
+--
+-- Data for Name: appointments; Type: TABLE DATA; Schema: public; Owner: conmeddb_user
+--
+
+COPY public.appointments (appointment_id, appointment_date, appointment_start_time, appointment_specialty, appointment_is_public, appointment_agenda_id, appointment_patient_name, reserve_patient_doc_id, reserve_patient_age, reserve_available, reserve_patient_email, reserve_patient_phone, reserve_patient_insurance, end_time, duration, reserve_status, blocked) FROM stdin;
+105	2021-04-20	00:30:00-04	Pediatria	t	77	niñogonzales apellido	303003300	\N	f	soyniñopediatria@email.com	88784744	1	01:00:00-04	30	\N	\N
+107	2021-04-20	00:15:00-04	Oftalmologia	t	77	\N	\N	\N	t	\N	\N	\N	00:30:00-04	15	\N	\N
+108	2021-04-20	00:30:00-04	Oftalmologia	t	77	\N	\N	\N	t	\N	\N	\N	00:45:00-04	15	\N	\N
+109	2021-04-20	00:45:00-04	Oftalmologia	t	77	\N	\N	\N	t	\N	\N	\N	01:00:00-04	15	\N	\N
+110	2021-04-20	01:00:00-04	Oftalmologia	t	77	\N	\N	\N	t	\N	\N	\N	01:15:00-04	15	\N	\N
+111	2021-04-20	01:15:00-04	Oftalmologia	t	77	\N	\N	\N	t	\N	\N	\N	01:30:00-04	15	\N	\N
+112	2021-04-20	01:30:00-04	Oftalmologia	t	77	\N	\N	\N	t	\N	\N	\N	01:45:00-04	15	\N	\N
+113	2021-04-20	01:45:00-04	Oftalmologia	t	77	\N	\N	\N	t	\N	\N	\N	02:00:00-04	15	\N	\N
+114	2021-04-20	02:00:00-04	Oftalmologia	t	77	\N	\N	\N	t	\N	\N	\N	02:15:00-04	15	\N	\N
+106	2021-04-20	00:00:00-04	Oftalmologia	t	77	Aajsj	6667	\N	f	Hdhdhd	7666	3	00:15:00-04	15	\N	\N
+104	2021-04-20	00:00:00-04	Oftalmologia	t	77	aaaaaaaaaaaaa	13333333333333333	\N	f	aaaaaaaaa@aaaaaaaaaaaa.cl	444444444444444	2	00:30:00-04	30	1	t
+115	2021-04-20	02:15:00-04	Oftalmologia	t	77	Alejandeo	Eyeyeh	\N	f	Bdjddjj	7667	1	02:30:00-04	15	\N	\N
+116	2021-04-21	01:00:00-04	Urologia	t	76	\N	\N	\N	t	\N	\N	\N	01:30:00-04	30	\N	\N
+\.
+
+
+--
+-- Data for Name: assistant_professional; Type: TABLE DATA; Schema: public; Owner: conmeddb_user
+--
+
+COPY public.assistant_professional (id, assistant_id, professional_id) FROM stdin;
+2	2	2
+1	1	2
+\.
+
+
+--
+-- Data for Name: assistants; Type: TABLE DATA; Schema: public; Owner: conmeddb_user
+--
+
+COPY public.assistants (id, name, document_id, phone1, phone2, address1, address2, email, pass, country) FROM stdin;
+1	Rosita Asistente del Doc	13909371-3	7774729	7354333	Pasaje3, la cisterna, Santiago RM Chile		rosita	rosita	cl
+2	Julia Recepcionista del doc	1399999-2	54345345	1123123	Los Manantiales 132, Renca, Santiago, RM, Chile 		julia	julia	cl
+\.
+
+
+--
+-- Data for Name: bookings; Type: TABLE DATA; Schema: public; Owner: conmeddb_user
+--
+
+COPY public.bookings (booking_id, booking_name, booking_phone, booking_email, booking_doc_id, booking_age, booking_insurance) FROM stdin;
+\.
+
+
+--
+-- Data for Name: center_professional; Type: TABLE DATA; Schema: public; Owner: conmeddb_user
+--
+
+COPY public.center_professional (id, center_id, professional_id) FROM stdin;
+1	1	1
+2	2	1
+3	1	1
+4	1	1
+5	82	1
+6	83	99
+7	84	2
+8	85	2
+9	86	2
+10	87	2
+11	88	2
+12	89	2
+13	90	2
+14	91	2
+15	92	2
+16	93	2
+17	94	2
+18	95	2
+19	96	2
+20	97	2
+21	98	2
+22	99	2
+23	100	2
+24	101	2
+25	102	2
+26	103	2
+27	104	2
+28	105	2
+29	106	2
+30	107	2
+31	108	2
+32	109	2
+33	110	2
+34	111	2
+35	112	2
+36	113	2
+37	114	2
+38	115	2
+39	116	2
+40	117	2
+41	118	2
+42	119	2
+43	120	2
+44	121	2
+45	122	2
+46	123	2
+47	124	2
+48	125	2
+49	126	2
+50	127	2
+51	128	2
+52	129	2
+53	130	2
+54	131	2
+55	132	2
+56	133	2
+57	134	2
+58	135	2
+59	136	2
+60	137	2
+61	138	2
+62	139	2
+63	140	2
+64	141	2
+65	142	2
+66	143	2
+67	144	2
+68	145	2
+69	146	2
+70	147	2
+71	148	2
+72	149	1
+73	150	2
+74	151	2
+75	152	2
+76	153	2
+77	154	2
+78	155	2
+\.
+
+
+--
+-- Data for Name: centers; Type: TABLE DATA; Schema: public; Owner: conmeddb_user
+--
+
+COPY public.centers (id, name, address, phone1, phone2, verified, status) FROM stdin;
+1	Urologos Asociados	Avenida los Dominicos 1535, Oficina 1503, Providencia Santiago Chile. 	7778787	1231231233	\N	\N
+2	Centro de Salud Privado	Avenida Gran Avenida, 2361, Oficina 9123, San Miguel, RM Chile	12121221	232332323	\N	\N
+83	aaaaaa	bbbbbb	33333333333333	undefined	\N	\N
+84	vvvvvv	bbbbbbbbbb	999999999999999	undefined	\N	\N
+85	vvvvvv	bbbbbbbbbb	999999999999999	undefined	\N	\N
+86	vvvvvv	bbbbbbbbbb	999999999999999	undefined	\N	\N
+87	rrrrrrrrr	ttttt	777777777777	undefined	\N	\N
+88	aaaa	eeeeeee	55555	undefined	\N	\N
+89	aaaa	eeeeeee	55555	undefined	\N	\N
+90	palqueleenombre	avenidapalquelee	69000069	undefined	\N	\N
+91	queqeno	uennaneno	00019991	undefined	\N	\N
+92	wwwwwwwwwwww	eeeeeeeeeeee	999999999999	undefined	\N	\N
+93	hhhhhh	oooooooooo	00000000000	undefined	\N	\N
+94	estoesunnuvocentroNombre	Avenicad las condes 9876,Providencia, Santiago RM Chile	56565656	undefined	\N	\N
+95	aaa	bbb	66666	undefined	\N	\N
+96	null	null	null	undefined	\N	\N
+97	rrr	eee	www	undefined	\N	\N
+98	rrr	eee	www	undefined	\N	\N
+99	rrr	eee	www	undefined	\N	\N
+100	asd	asd	asd	undefined	\N	\N
+101	rtrtr	rtrtrt	rtrtrt	undefined	\N	\N
+102	rtrtr	rtrtrt	rtrtrt	undefined	\N	\N
+103	ooo	oooo	oooooo	undefined	\N	\N
+104	ooo	oooo	oooooo	undefined	\N	\N
+105	ooo	oooo	oooooo	undefined	\N	\N
+106	ooo	oooo	oooooo	undefined	\N	\N
+107	ooo	oooo	oooooo	undefined	\N	\N
+108	ooo	oooo	oooooo	undefined	\N	\N
+109	ooo	oooo	oooooo	undefined	\N	\N
+110	ooo	oooo	oooooo	undefined	\N	\N
+111	ooo	oooo	oooooo	undefined	\N	\N
+112	TTT	TTT	TTT	undefined	\N	\N
+113	yyyy	yyy	yyy	undefined	\N	\N
+114	iiiii	iiiiii	iiiiiiiiiiii	undefined	\N	\N
+115	pppp	ppppp	pppppp	undefined	\N	\N
+116	aaaaaaaa	aaaaaaaaaaa	aaaaaaaaaaa	undefined	\N	\N
+117	aaaaaaaa	aaaaaaaaaaa	aaaaaaaaaaa	undefined	\N	\N
+118	null	null	null	undefined	\N	\N
+119	aaaa	null	null	undefined	\N	\N
+120	aaaa	null	null	undefined	\N	\N
+121	bbb	bbb	bbbb	undefined	\N	\N
+122	null	null	null	undefined	\N	\N
+123	null	null	null	undefined	\N	\N
+124	null	null	null	undefined	\N	\N
+125	aaa	aaa	aaa	undefined	\N	\N
+126	aaa	eee	fff	undefined	\N	\N
+127	tttt	aasdf	asdf	undefined	\N	\N
+128	tt	tt	tt	undefined	\N	\N
+129	tt	tt	tt	undefined	\N	\N
+130	bbbb	bbbb	bbbb	undefined	\N	\N
+131	bbbb	bbbb	bbbb	undefined	\N	\N
+132	bbbb	bbbb	bbbb	undefined	\N	\N
+133	bbbb	bbbb	bbbb	undefined	\N	\N
+134	gggg	ggggggg	gggggggg	undefined	\N	\N
+135	gggg	ggggggg	gggggggg	undefined	\N	\N
+136	null	null	null	undefined	\N	\N
+137	yyy	yyyy	yyyyyyyy	undefined	\N	\N
+138	null	null	null	undefined	\N	\N
+139	null	null	null	undefined	\N	\N
+140	null	null	null	undefined	\N	\N
+141	null	null	null	undefined	\N	\N
+142	BBBB	BBBBBBBB	BBBBBB	undefined	\N	\N
+143	AAA	AAA	AAA	undefined	\N	\N
+144	ccc	ccc	cccc	undefined	\N	\N
+145	aa	aaa	aaaaa	undefined	\N	\N
+146	ttt	ttttt	ttttttttt	undefined	\N	\N
+147	null	null	null	undefined	\N	\N
+148	Centro de Salud Las carmelitas	Av Providencia 123, oficina 1212, Providencia RM Santiago Chile. 	7354333	undefined	\N	\N
+149	Clinica Davila	Av Recoleta 1505, Recoleta Santiago RM,  Edificio H, Piso 6 oficina 234	121212	undefined	\N	\N
+150	Cento de salud Emergencias Independencia	Avenida Independencia 1212, oficina 56623, Independencia RM. 	777765656	undefined	\N	\N
+151	asdf	32423	556767	undefined	\N	\N
+152	Clinica Urgencia Recoleta.	Av Recoleta 1231, oficina 213, Recoleta Santiago Chile	4324324	undefined	\N	\N
+153	Consulta Privada	Tristan Cornejo 957, Independencia. 	75397200	undefined	\N	\N
+154	Hogar	Virtual	77774455	undefined	\N	\N
+155	Clinica davila	Recoleta 2334, edificio H	6667766	undefined	\N	\N
+\.
+
+
+--
+-- Data for Name: professionals; Type: TABLE DATA; Schema: public; Owner: conmeddb_user
+--
+
+COPY public.professionals (id, name, document_id, phone1, phone2, address1, address2, email, pass, country) FROM stdin;
+1	Dr Chapatin Gonalez Sanito SinDolor	13909371-2	7778987	123123123	MancoCapac 1670 Independencia Santiago RM. 		bbb	bbb	
+2	Doggy House Medico	11111-9	345345345		Los Maitenes de Nebrasca 1212, Dpto 3030, RM Santiago Chile. 		aaa	aaa	
+\.
+
+
+--
+-- Data for Name: specialties; Type: TABLE DATA; Schema: public; Owner: conmeddb_user
+--
+
+COPY public.specialties (id, specialty_name, specialty_description) FROM stdin;
+1	oftalmologia	especialidad ocular
+2	geriatria	especialidad ancianos
+3	pediatria	especialidad niños
+\.
+
+
+--
+-- Data for Name: users; Type: TABLE DATA; Schema: public; Owner: conmeddb_user
+--
+
+COPY public.users (id, username, password, email, phone, role_assistant, user_id, user_type) FROM stdin;
+1	Rosita de los Rosales Rosas Rojas	abc	rosita@nada.cl	56 9 75397201	t	\N	\N
+2	Pedro Asistente de Salud 	ppp	alejandro2141@gmail.com	56 9 7354333	f	\N	\N
+3	aaa	aaa	aaa	777	\N	3	\N
+4	Queen la Mujer que Cura	bbb	bbb	777888777	f	4	3
+\.
+
+
+--
+-- Name: appointment2_id_seq; Type: SEQUENCE SET; Schema: public; Owner: conmeddb_user
+--
+
+SELECT pg_catalog.setval('public.appointment2_id_seq', 116, true);
+
+
+--
+-- Name: appointment2_reserve_patient_phone_seq; Type: SEQUENCE SET; Schema: public; Owner: conmeddb_user
+--
+
+SELECT pg_catalog.setval('public.appointment2_reserve_patient_phone_seq', 2, true);
+
+
+--
+-- Name: assistant_professional_id_seq; Type: SEQUENCE SET; Schema: public; Owner: conmeddb_user
+--
+
+SELECT pg_catalog.setval('public.assistant_professional_id_seq', 2, true);
+
+
+--
+-- Name: assistants_id_seq; Type: SEQUENCE SET; Schema: public; Owner: conmeddb_user
+--
+
+SELECT pg_catalog.setval('public.assistants_id_seq', 2, true);
+
+
+--
+-- Name: bookings_booking_id_seq; Type: SEQUENCE SET; Schema: public; Owner: conmeddb_user
+--
+
+SELECT pg_catalog.setval('public.bookings_booking_id_seq', 1, false);
+
+
+--
+-- Name: center_professional_id_seq; Type: SEQUENCE SET; Schema: public; Owner: conmeddb_user
+--
+
+SELECT pg_catalog.setval('public.center_professional_id_seq', 78, true);
+
+
+--
+-- Name: centers_id_seq; Type: SEQUENCE SET; Schema: public; Owner: conmeddb_user
+--
+
+SELECT pg_catalog.setval('public.centers_id_seq', 155, true);
+
+
+--
+-- Name: professionals_id_seq; Type: SEQUENCE SET; Schema: public; Owner: conmeddb_user
+--
+
+SELECT pg_catalog.setval('public.professionals_id_seq', 2, true);
+
+
+--
+-- Name: specialties_id_seq; Type: SEQUENCE SET; Schema: public; Owner: conmeddb_user
+--
+
+SELECT pg_catalog.setval('public.specialties_id_seq', 3, true);
+
+
+--
+-- Name: users_id_seq; Type: SEQUENCE SET; Schema: public; Owner: conmeddb_user
+--
+
+SELECT pg_catalog.setval('public.users_id_seq', 4, true);
+
+
+--
+-- Name: appointments appointment2_pkey; Type: CONSTRAINT; Schema: public; Owner: conmeddb_user
+--
+
+ALTER TABLE ONLY public.appointments
+    ADD CONSTRAINT appointment2_pkey PRIMARY KEY (appointment_id);
+
+
+--
+-- Name: assistant_professional assistant_professional_pkey; Type: CONSTRAINT; Schema: public; Owner: conmeddb_user
+--
+
+ALTER TABLE ONLY public.assistant_professional
+    ADD CONSTRAINT assistant_professional_pkey PRIMARY KEY (id);
+
+
+--
+-- Name: assistants assistants_pkey; Type: CONSTRAINT; Schema: public; Owner: conmeddb_user
+--
+
+ALTER TABLE ONLY public.assistants
+    ADD CONSTRAINT assistants_pkey PRIMARY KEY (id);
+
+
+--
+-- Name: centers centers_pkey; Type: CONSTRAINT; Schema: public; Owner: conmeddb_user
+--
+
+ALTER TABLE ONLY public.centers
+    ADD CONSTRAINT centers_pkey PRIMARY KEY (id);
+
+
+--
+-- Name: professionals professionals_pkey; Type: CONSTRAINT; Schema: public; Owner: conmeddb_user
+--
+
+ALTER TABLE ONLY public.professionals
+    ADD CONSTRAINT professionals_pkey PRIMARY KEY (id);
+
+
+--
+-- Name: specialties specialties_pkey; Type: CONSTRAINT; Schema: public; Owner: conmeddb_user
+--
+
+ALTER TABLE ONLY public.specialties
+    ADD CONSTRAINT specialties_pkey PRIMARY KEY (id);
+
+
+--
+-- Name: users users_pkey; Type: CONSTRAINT; Schema: public; Owner: conmeddb_user
+--
+
+ALTER TABLE ONLY public.users
+    ADD CONSTRAINT users_pkey PRIMARY KEY (id);
+
+
+--
+-- Name: DATABASE conmeddb01; Type: ACL; Schema: -; Owner: postgres
+--
+
+GRANT ALL ON DATABASE conmeddb01 TO conmeddb_user;
+
+
+--
+-- PostgreSQL database dump complete
+--
+
+--
+-- Database "conmeddb02" dump
+--
+
+--
+-- PostgreSQL database dump
+--
+
+-- Dumped from database version 12.9 (Ubuntu 12.9-0ubuntu0.20.04.1)
+-- Dumped by pg_dump version 12.9 (Ubuntu 12.9-0ubuntu0.20.04.1)
+
+SET statement_timeout = 0;
+SET lock_timeout = 0;
+SET idle_in_transaction_session_timeout = 0;
+SET client_encoding = 'UTF8';
+SET standard_conforming_strings = on;
+SELECT pg_catalog.set_config('search_path', '', false);
+SET check_function_bodies = false;
+SET xmloption = content;
+SET client_min_messages = warning;
+SET row_security = off;
+
+--
+-- Name: conmeddb02; Type: DATABASE; Schema: -; Owner: postgres
+--
+
+CREATE DATABASE conmeddb02 WITH TEMPLATE = template0 ENCODING = 'UTF8' LC_COLLATE = 'en_US.UTF-8' LC_CTYPE = 'en_US.UTF-8';
+
+
+ALTER DATABASE conmeddb02 OWNER TO postgres;
+
+\connect conmeddb02
+
+SET statement_timeout = 0;
+SET lock_timeout = 0;
+SET idle_in_transaction_session_timeout = 0;
+SET client_encoding = 'UTF8';
+SET standard_conforming_strings = on;
+SELECT pg_catalog.set_config('search_path', '', false);
+SET check_function_bodies = false;
+SET xmloption = content;
+SET client_min_messages = warning;
+SET row_security = off;
+
+SET default_tablespace = '';
+
+SET default_table_access_method = heap;
+
+--
+-- Name: account; Type: TABLE; Schema: public; Owner: conmeddb_user
+--
+
+CREATE TABLE public.account (
+    id integer NOT NULL,
+    user_id integer,
+    pass character varying,
+    active character(254)
+);
+
+
+ALTER TABLE public.account OWNER TO conmeddb_user;
+
+--
+-- Name: account_id_seq; Type: SEQUENCE; Schema: public; Owner: conmeddb_user
+--
+
+ALTER TABLE public.account ALTER COLUMN id ADD GENERATED BY DEFAULT AS IDENTITY (
+    SEQUENCE NAME public.account_id_seq
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1
+);
+
+
+--
+-- Name: appointment; Type: TABLE; Schema: public; Owner: conmeddb_user
+--
+
+CREATE TABLE public.appointment (
+    id integer NOT NULL,
+    date date,
+    start_time time without time zone,
+    end_time time without time zone,
+    duration integer,
+    specialty integer,
+    center_id integer,
+    confirmation_status integer DEFAULT 0,
+    professional_id integer,
+    patient_doc_id text,
+    patient_name text,
+    patient_email text,
+    patient_phone1 text,
+    patient_phone2 text,
+    patient_insurance integer,
+    app_available boolean,
+    app_status integer,
+    app_blocked integer,
+    app_public boolean DEFAULT true,
+    available_public_search boolean,
+    specialty1 integer,
+    specialty2 integer,
+    specialty3 integer,
+    specialty5 integer,
+    specialty4 integer,
+    location1 integer,
+    location2 integer,
+    location3 integer,
+    location4 integer,
+    location5 integer,
+    location6 integer,
+    location7 integer,
+    location8 integer,
+    app_type_home boolean,
+    app_type_center boolean,
+    app_type_remote boolean,
+    patient_notification_email_reserved integer DEFAULT 0,
+    specialty_reserved integer,
+    patient_address text,
+    patient_age integer,
+    calendar_id bigint
+);
+
+
+ALTER TABLE public.appointment OWNER TO conmeddb_user;
+
+--
+-- Name: COLUMN appointment.specialty_reserved; Type: COMMENT; Schema: public; Owner: conmeddb_user
+--
+
+COMMENT ON COLUMN public.appointment.specialty_reserved IS 'The final specialty was reserved by patient';
+
+
+--
+-- Name: appointment_id_seq; Type: SEQUENCE; Schema: public; Owner: conmeddb_user
+--
+
+ALTER TABLE public.appointment ALTER COLUMN id ADD GENERATED BY DEFAULT AS IDENTITY (
+    SEQUENCE NAME public.appointment_id_seq
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1
+);
+
+
+--
+-- Name: assistant; Type: TABLE; Schema: public; Owner: conmeddb_user
+--
+
+CREATE TABLE public.assistant (
+    id integer NOT NULL,
+    assistant_document_id character varying,
+    assistant_name character varying,
+    assistant_email character varying,
+    assistant_address character varying,
+    assistant_phone character varying,
+    assistant_active character(254),
+    assistant_deleted boolean DEFAULT false
+);
+
+
+ALTER TABLE public.assistant OWNER TO conmeddb_user;
+
+--
+-- Name: assistant_center; Type: TABLE; Schema: public; Owner: conmeddb_user
+--
+
+CREATE TABLE public.assistant_center (
+    id integer NOT NULL,
+    assistant_id integer NOT NULL,
+    center_id integer NOT NULL
+);
+
+
+ALTER TABLE public.assistant_center OWNER TO conmeddb_user;
+
+--
+-- Name: assistant_center_id_seq; Type: SEQUENCE; Schema: public; Owner: conmeddb_user
+--
+
+ALTER TABLE public.assistant_center ALTER COLUMN id ADD GENERATED BY DEFAULT AS IDENTITY (
+    SEQUENCE NAME public.assistant_center_id_seq
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1
+);
+
+
+--
+-- Name: assistant_id_seq; Type: SEQUENCE; Schema: public; Owner: conmeddb_user
+--
+
+ALTER TABLE public.assistant ALTER COLUMN id ADD GENERATED BY DEFAULT AS IDENTITY (
+    SEQUENCE NAME public.assistant_id_seq
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1
+);
+
+
+--
+-- Name: assistant_professional; Type: TABLE; Schema: public; Owner: conmeddb_user
+--
+
+CREATE TABLE public.assistant_professional (
+    id integer NOT NULL,
+    professional_id integer NOT NULL,
+    assistant_id integer
+);
+
+
+ALTER TABLE public.assistant_professional OWNER TO conmeddb_user;
+
+--
+-- Name: assistant_professional_id_seq; Type: SEQUENCE; Schema: public; Owner: conmeddb_user
+--
+
+ALTER TABLE public.assistant_professional ALTER COLUMN id ADD GENERATED BY DEFAULT AS IDENTITY (
+    SEQUENCE NAME public.assistant_professional_id_seq
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1
+);
+
+
+--
+-- Name: booking; Type: TABLE; Schema: public; Owner: conmeddb_user
+--
+
+CREATE TABLE public.booking (
+    id integer NOT NULL,
+    patient_id integer,
+    appointment_id integer
+);
+
+
+ALTER TABLE public.booking OWNER TO conmeddb_user;
+
+--
+-- Name: center; Type: TABLE; Schema: public; Owner: conmeddb_user
+--
+
+CREATE TABLE public.center (
+    id integer NOT NULL,
+    name character varying,
+    address character varying,
+    phone1 character varying,
+    phone2 character varying,
+    active character(254),
+    country integer,
+    comuna integer,
+    region integer,
+    center_deleted boolean DEFAULT false,
+    center_color text,
+    url_map text,
+    type bigint,
+    home_comuna1 integer,
+    home_comuna2 integer,
+    home_comuna3 integer,
+    home_comuna4 integer,
+    home_comuna5 integer,
+    home_comuna6 integer,
+    home_visit boolean,
+    center_visit boolean,
+    remote_care boolean
+);
+
+
+ALTER TABLE public.center OWNER TO conmeddb_user;
+
+--
+-- Name: center_id_seq; Type: SEQUENCE; Schema: public; Owner: conmeddb_user
+--
+
+ALTER TABLE public.center ALTER COLUMN id ADD GENERATED BY DEFAULT AS IDENTITY (
+    SEQUENCE NAME public.center_id_seq
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1
+);
+
+
+--
+-- Name: center_professional; Type: TABLE; Schema: public; Owner: conmeddb_user
+--
+
+CREATE TABLE public.center_professional (
+    id integer NOT NULL,
+    professional_id integer NOT NULL,
+    center_id integer NOT NULL
+);
+
+
+ALTER TABLE public.center_professional OWNER TO conmeddb_user;
+
+--
+-- Name: center_professional_id_seq; Type: SEQUENCE; Schema: public; Owner: conmeddb_user
+--
+
+ALTER TABLE public.center_professional ALTER COLUMN id ADD GENERATED BY DEFAULT AS IDENTITY (
+    SEQUENCE NAME public.center_professional_id_seq
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1
+);
+
+
+--
+-- Name: comuna; Type: TABLE; Schema: public; Owner: conmeddb_user
+--
+
+CREATE TABLE public.comuna (
+    id integer NOT NULL,
+    name text,
+    description text
+);
+
+
+ALTER TABLE public.comuna OWNER TO conmeddb_user;
+
+--
+-- Name: comuna_id_seq; Type: SEQUENCE; Schema: public; Owner: conmeddb_user
+--
+
+ALTER TABLE public.comuna ALTER COLUMN id ADD GENERATED ALWAYS AS IDENTITY (
+    SEQUENCE NAME public.comuna_id_seq
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1
+);
+
+
+--
+-- Name: insurance; Type: TABLE; Schema: public; Owner: conmeddb_user
+--
+
+CREATE TABLE public.insurance (
+    id integer NOT NULL,
+    name character varying,
+    description character varying
+);
+
+
+ALTER TABLE public.insurance OWNER TO conmeddb_user;
+
+--
+-- Name: insurance_id_seq; Type: SEQUENCE; Schema: public; Owner: conmeddb_user
+--
+
+ALTER TABLE public.insurance ALTER COLUMN id ADD GENERATED BY DEFAULT AS IDENTITY (
+    SEQUENCE NAME public.insurance_id_seq
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1
+);
+
+
+--
+-- Name: patient; Type: TABLE; Schema: public; Owner: conmeddb_user
+--
+
+CREATE TABLE public.patient (
+    id integer NOT NULL,
+    doc_id character varying,
+    name character varying,
+    email character varying,
+    phone1 character varying,
+    phone2 character varying,
+    insurance integer
+);
+
+
+ALTER TABLE public.patient OWNER TO conmeddb_user;
+
+--
+-- Name: patient_recover_appointments; Type: TABLE; Schema: public; Owner: conmeddb_user
+--
+
+CREATE TABLE public.patient_recover_appointments (
+    email text NOT NULL
+);
+
+
+ALTER TABLE public.patient_recover_appointments OWNER TO conmeddb_user;
+
+--
+-- Name: professional; Type: TABLE; Schema: public; Owner: conmeddb_user
+--
+
+CREATE TABLE public.professional (
+    id integer NOT NULL,
+    document_number character varying,
+    name character varying,
+    license_number character varying,
+    email character varying,
+    address character varying,
+    phone character varying,
+    active character(254),
+    first_time boolean DEFAULT true
+);
+
+
+ALTER TABLE public.professional OWNER TO conmeddb_user;
+
+--
+-- Name: professional_calendar; Type: TABLE; Schema: public; Owner: conmeddb_user
+--
+
+CREATE TABLE public.professional_calendar (
+    id bigint NOT NULL,
+    professional_id bigint,
+    start_time time with time zone,
+    end_time time with time zone,
+    specialty1 integer,
+    specialty2 integer,
+    specialty3 integer,
+    specialty4 integer,
+    specialty5 integer,
+    duration integer,
+    time_between integer,
+    monday boolean,
+    tuesday boolean,
+    wednesday boolean,
+    thursday boolean,
+    friday boolean,
+    saturday boolean,
+    sunday boolean,
+    date_start date,
+    date_end date,
+    status integer,
+    active boolean,
+    center_id integer,
+    color text,
+    deleted_professional boolean DEFAULT false
+);
+
+
+ALTER TABLE public.professional_calendar OWNER TO conmeddb_user;
+
+--
+-- Name: professional_calendar_id_seq; Type: SEQUENCE; Schema: public; Owner: conmeddb_user
+--
+
+ALTER TABLE public.professional_calendar ALTER COLUMN id ADD GENERATED ALWAYS AS IDENTITY (
+    SEQUENCE NAME public.professional_calendar_id_seq
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1
+);
+
+
+--
+-- Name: professional_id_seq; Type: SEQUENCE; Schema: public; Owner: conmeddb_user
+--
+
+ALTER TABLE public.professional ALTER COLUMN id ADD GENERATED BY DEFAULT AS IDENTITY (
+    SEQUENCE NAME public.professional_id_seq
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1
+    CYCLE
+);
+
+
+--
+-- Name: professional_register; Type: TABLE; Schema: public; Owner: conmeddb_user
+--
+
+CREATE TABLE public.professional_register (
+    name text,
+    last_name1 text,
+    last_name2 text,
+    email text,
+    doc_id text NOT NULL,
+    passwd text,
+    personal_address text,
+    personal_phone text,
+    specialty text
+);
+
+
+ALTER TABLE public.professional_register OWNER TO conmeddb_user;
+
+--
+-- Name: professional_specialty; Type: TABLE; Schema: public; Owner: conmeddb_user
+--
+
+CREATE TABLE public.professional_specialty (
+    id bigint NOT NULL,
+    professional_id bigint NOT NULL,
+    specialty_id bigint NOT NULL
+);
+
+
+ALTER TABLE public.professional_specialty OWNER TO conmeddb_user;
+
+--
+-- Name: professional_specialty_id_seq; Type: SEQUENCE; Schema: public; Owner: conmeddb_user
+--
+
+ALTER TABLE public.professional_specialty ALTER COLUMN id ADD GENERATED ALWAYS AS IDENTITY (
+    SEQUENCE NAME public.professional_specialty_id_seq
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1
+);
+
+
+--
+-- Name: session; Type: TABLE; Schema: public; Owner: conmeddb_user
+--
+
+CREATE TABLE public.session (
+    id bigint NOT NULL,
+    user_id bigint NOT NULL,
+    expiration_time integer,
+    status integer,
+    name text,
+    last_login timestamp with time zone,
+    last_activity_time timestamp with time zone,
+    user_type integer,
+    first_time boolean
+);
+
+
+ALTER TABLE public.session OWNER TO conmeddb_user;
+
+--
+-- Name: session_id_seq; Type: SEQUENCE; Schema: public; Owner: conmeddb_user
+--
+
+CREATE SEQUENCE public.session_id_seq
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+
+ALTER TABLE public.session_id_seq OWNER TO conmeddb_user;
+
+--
+-- Name: session_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: conmeddb_user
+--
+
+ALTER SEQUENCE public.session_id_seq OWNED BY public.session.id;
+
+
+--
+-- Name: specialty; Type: TABLE; Schema: public; Owner: conmeddb_user
+--
+
+CREATE TABLE public.specialty (
+    id integer NOT NULL,
+    name character varying,
+    description character varying
+);
+
+
+ALTER TABLE public.specialty OWNER TO conmeddb_user;
+
+--
+-- Name: specialty_id_seq; Type: SEQUENCE; Schema: public; Owner: conmeddb_user
+--
+
+ALTER TABLE public.specialty ALTER COLUMN id ADD GENERATED BY DEFAULT AS IDENTITY (
+    SEQUENCE NAME public.specialty_id_seq
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1
+);
+
+
+--
+-- Name: session id; Type: DEFAULT; Schema: public; Owner: conmeddb_user
+--
+
+ALTER TABLE ONLY public.session ALTER COLUMN id SET DEFAULT nextval('public.session_id_seq'::regclass);
+
+
+--
+-- Data for Name: account; Type: TABLE DATA; Schema: public; Owner: conmeddb_user
+--
+
+COPY public.account (id, user_id, pass, active) FROM stdin;
+1	1	a	true                                                                                                                                                                                                                                                          
+2	2	b	true                                                                                                                                                                                                                                                          
+\.
+
+
+--
+-- Data for Name: appointment; Type: TABLE DATA; Schema: public; Owner: conmeddb_user
+--
+
+COPY public.appointment (id, date, start_time, end_time, duration, specialty, center_id, confirmation_status, professional_id, patient_doc_id, patient_name, patient_email, patient_phone1, patient_phone2, patient_insurance, app_available, app_status, app_blocked, app_public, available_public_search, specialty1, specialty2, specialty3, specialty5, specialty4, location1, location2, location3, location4, location5, location6, location7, location8, app_type_home, app_type_center, app_type_remote, patient_notification_email_reserved, specialty_reserved, patient_address, patient_age, calendar_id) FROM stdin;
+1680	2022-04-28	06:00:00	\N	15	\N	137	0	2	13123123	Juan ALejandro MOrales	lala@nada.com	32123	\N	\N	f	1	0	t	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	f	t	f	1	146	null	423	114
+\.
+
+
+--
+-- Data for Name: assistant; Type: TABLE DATA; Schema: public; Owner: conmeddb_user
+--
+
+COPY public.assistant (id, assistant_document_id, assistant_name, assistant_email, assistant_address, assistant_phone, assistant_active, assistant_deleted) FROM stdin;
+29	13909312	Rosita Parson	Llalala@nadq.cl	\N	6734949	false                                                                                                                                                                                                                                                         	t
+42	111111111-9	Juana La Asistente	nada@nada.cl	\N	444444	false                                                                                                                                                                                                                                                         	t
+43	12231-9	Señora Delfina Secretaria	delfina@nada.cl	\N	4445556	1                                                                                                                                                                                                                                                             	\N
+44	12231-9	Señora Delfina Secretaria	delfina@nada.cl	\N	4445556	1                                                                                                                                                                                                                                                             	\N
+45	12231-9	Señora Delfina Secretaria	delfina@nada.cl	\N	4445556	1                                                                                                                                                                                                                                                             	f
+46	139093712	Dellia Rosales del Rio	delia@nada.cl	\N	888999000	false                                                                                                                                                                                                                                                         	t
+47	33333333	Rosita Le Mansh	nada@nadanada.cl	\N	33333	false                                                                                                                                                                                                                                                         	t
+48	1111-1	Rosita Del Rosario Gutierrez	Rositanada@email.com	\N	66789393	1                                                                                                                                                                                                                                                             	f
+\.
+
+
+--
+-- Data for Name: assistant_center; Type: TABLE DATA; Schema: public; Owner: conmeddb_user
+--
+
+COPY public.assistant_center (id, assistant_id, center_id) FROM stdin;
+\.
+
+
+--
+-- Data for Name: assistant_professional; Type: TABLE DATA; Schema: public; Owner: conmeddb_user
+--
+
+COPY public.assistant_professional (id, professional_id, assistant_id) FROM stdin;
+27	1	29
+40	1	42
+41	1	43
+42	1	44
+43	1	45
+44	1	46
+45	1	47
+46	1	48
+\.
+
+
+--
+-- Data for Name: booking; Type: TABLE DATA; Schema: public; Owner: conmeddb_user
+--
+
+COPY public.booking (id, patient_id, appointment_id) FROM stdin;
+\.
+
+
+--
+-- Data for Name: center; Type: TABLE DATA; Schema: public; Owner: conmeddb_user
+--
+
+COPY public.center (id, name, address, phone1, phone2, active, country, comuna, region, center_deleted, center_color, url_map, type, home_comuna1, home_comuna2, home_comuna3, home_comuna4, home_comuna5, home_comuna6, home_visit, center_visit, remote_care) FROM stdin;
+137	nutri nutriologos SA	Avenida EInstein 12123	23123	123123	\N	\N	1662	\N	f	#BEFFBE	\N	\N	\N	\N	\N	\N	\N	\N	f	t	f
+132	Nutricionistas los gorditos	Avenida INdependencia 123312	544535	3456654	0                                                                                                                                                                                                                                                             	\N	1511	\N	t	#EFFFB4	\N	\N	\N	\N	\N	\N	\N	\N	f	t	f
+133	Kinesiologos asociados	avenida los kine  Recoleta 1233	544535	3456654	0                                                                                                                                                                                                                                                             	\N	1662	\N	t	#EFFFB4	\N	\N	\N	\N	\N	\N	\N	\N	f	t	f
+134	Nutriicionistas Flacos	\N	544535	3456654	0                                                                                                                                                                                                                                                             	\N	\N	\N	t	\N	\N	\N	1662	1511	\N	\N	\N	\N	t	f	f
+135	telecasa atencion	\N	null	null	0                                                                                                                                                                                                                                                             	\N	\N	\N	t	#FCC8C8	\N	\N	\N	\N	\N	\N	\N	\N	f	f	t
+136	Consulta psicologos providencia	avenida providencia 122312	332311	4332423	0                                                                                                                                                                                                                                                             	\N	1628	\N	t	#C0BEFF	\N	\N	\N	\N	\N	\N	\N	\N	f	t	f
+139	eeee	tttt	555	6666	\N	\N	1510	\N	f	#F6E6FF	\N	\N	\N	\N	\N	\N	\N	\N	f	t	f
+138	aaaffffffff	ffffffffff	4444443	3333333333	0                                                                                                                                                                                                                                                             	\N	1662	\N	t	#C0BEFF	\N	\N	\N	\N	\N	\N	\N	\N	f	t	f
+140	gggg	\N	null	null	\N	\N	\N	\N	f	#E6F5FF	\N	\N	\N	\N	\N	\N	\N	\N	f	f	t
+141	gggg	\N	null	null	\N	\N	\N	\N	f	#F6E6FF	\N	\N	\N	\N	\N	\N	\N	\N	f	f	t
+142	gggg	\N	null	null	\N	\N	\N	\N	f	#EEFFE6	\N	\N	\N	\N	\N	\N	\N	\N	f	f	t
+143	gggg	\N	null	null	\N	\N	\N	\N	f	#FFE6EE	\N	\N	\N	\N	\N	\N	\N	\N	f	f	t
+144	gggg	\N	null	null	\N	\N	\N	\N	f	#E6F5FF	\N	\N	\N	\N	\N	\N	\N	\N	f	f	t
+\.
+
+
+--
+-- Data for Name: center_professional; Type: TABLE DATA; Schema: public; Owner: conmeddb_user
+--
+
+COPY public.center_professional (id, professional_id, center_id) FROM stdin;
+133	1	132
+134	1	133
+135	1	134
+136	1	135
+137	1	136
+138	2	137
+139	1	138
+140	1	139
+141	1	140
+142	1	141
+143	1	142
+144	1	143
+145	1	144
+\.
+
+
+--
+-- Data for Name: comuna; Type: TABLE DATA; Schema: public; Owner: conmeddb_user
+--
+
+COPY public.comuna (id, name, description) FROM stdin;
+1401	Algarrobo	\N
+1402	Alhue	\N
+1403	Alto Biobio	\N
+1404	Alto Del Carmen	\N
+1405	Alto Hospicio	\N
+1406	Ancud	\N
+1407	Andacollo	\N
+1408	Angol	\N
+1409	Antofagasta	\N
+1410	Antuco	\N
+1411	Arauco	\N
+1412	Arica	\N
+1413	Aysen	\N
+1414	Buin	\N
+1415	Bulnes	\N
+1416	Cabildo	\N
+1417	Cabo De Hornos	\N
+1418	Cabrero	\N
+1419	Calama	\N
+1420	Calbuco	\N
+1421	Caldera	\N
+1422	Calera De Tango	\N
+1423	Calle Larga	\N
+1424	Camarones	\N
+1425	Camina	\N
+1426	Canela	\N
+1427	Canete	\N
+1428	Carahue	\N
+1429	Cartagena	\N
+1430	Casablanca	\N
+1431	Castro	\N
+1432	Catemu	\N
+1433	Cauquenes	\N
+1434	Cerrillos	\N
+1435	Cerro Navia	\N
+1436	Chaiten	\N
+1437	Chanaral	\N
+1438	Chanco	\N
+1439	Chepica	\N
+1440	Chiguayante	\N
+1441	Chile Chico	\N
+1442	Chillan	\N
+1443	Chillan Viejo	\N
+1444	Chimbarongo	\N
+1445	Cholchol	\N
+1446	Chonchi	\N
+1447	Cisnes	\N
+1448	Cobquecura	\N
+1449	Cochamo	\N
+1450	Cochrane	\N
+1451	Codegua	\N
+1452	Coelemu	\N
+1453	Coihueco	\N
+1454	Coinco	\N
+1455	Colbun	\N
+1456	Colchane	\N
+1457	Colina	\N
+1458	Collipulli	\N
+1459	Coltauco	\N
+1460	Combarbala	\N
+1461	Concepcion	\N
+1462	Conchali	\N
+1463	Concon	\N
+1464	Constitucion	\N
+1465	Contulmo	\N
+1466	Copiapo	\N
+1467	Coquimbo	\N
+1468	Coronel	\N
+1469	Corral	\N
+1470	Coyhaique	\N
+1471	Cunco	\N
+1472	Curacautin	\N
+1473	Curacavi	\N
+1474	Curaco De Velez	\N
+1475	Curanilahue	\N
+1476	Curarrehue	\N
+1477	Curepto	\N
+1478	Curico	\N
+1479	Dalcahue	\N
+1480	Diego De Almagro	\N
+1481	Donihue	\N
+1482	El Bosque	\N
+1483	El Carmen	\N
+1484	El Monte	\N
+1485	El Quisco	\N
+1486	El Tabo	\N
+1487	Empedrado	\N
+1488	Ercilla	\N
+1489	Estacion Central	\N
+1490	Florida	\N
+1491	Freire	\N
+1492	Freirina	\N
+1493	Fresia	\N
+1494	Frutillar	\N
+1495	Futaleufu	\N
+1496	Futrono	\N
+1497	Galvarino	\N
+1498	General Lagos	\N
+1499	Gorbea	\N
+1500	Graneros	\N
+1501	Guaitecas	\N
+1502	Hijuelas	\N
+1503	Hualaihue	\N
+1504	Hualane	\N
+1505	Hualpen	\N
+1506	Hualqui	\N
+1507	Huara	\N
+1508	Huasco	\N
+1509	Huechuraba	\N
+1510	Illapel	\N
+1511	Independencia	\N
+1512	Iquique	\N
+1513	Isla De Maipo	\N
+1514	Isla De Pascua	\N
+1515	Juan Fernandez	\N
+1516	La Calera	\N
+1517	La Cisterna	\N
+1518	La Cruz	\N
+1519	La Estrella	\N
+1520	La Florida	\N
+1521	La Granja	\N
+1522	La Higuera	\N
+1523	La Ligua	\N
+1524	La Pintana	\N
+1525	La Reina	\N
+1526	La Serena	\N
+1527	La Union	\N
+1528	Lago Ranco	\N
+1529	Lago Verde	\N
+1530	Laguna Blanca	\N
+1531	Laja	\N
+1532	Lampa	\N
+1533	Lanco	\N
+1534	Las Cabras	\N
+1535	Las Condes	\N
+1536	Lautaro	\N
+1537	Lebu	\N
+1538	Licanten	\N
+1539	Limache	\N
+1540	Linares	\N
+1541	Litueche	\N
+1542	Llanquihue	\N
+1543	Llay-Llay	\N
+1544	Lo Barnechea	\N
+1545	Lo Espejo	\N
+1546	Lo Prado	\N
+1547	Lolol	\N
+1548	Loncoche	\N
+1549	Longavi	\N
+1550	Lonquimayv	\N
+1551	Los Alamos	\N
+1552	Los Andes	\N
+1553	Los Angeles	\N
+1554	Los Lagos	\N
+1555	Los Muermos	\N
+1556	Los Sauces	\N
+1557	Los Vilos	\N
+1558	Lota	\N
+1559	Lumaco	\N
+1560	Machali	\N
+1561	Macul	\N
+1562	Mafil	\N
+1563	Maipu	\N
+1564	Malloa	\N
+1565	Marchigue	\N
+1566	Maria Elena	\N
+1567	Maria Pinto	\N
+1568	Mariquina	\N
+1569	Maule	\N
+1570	Maullin	\N
+1571	Mejillones	\N
+1572	Melipeuco	\N
+1573	Melipilla	\N
+1574	Molina	\N
+1575	Monte Patria	\N
+1576	Mulchen	\N
+1577	Nacimiento	\N
+1578	Nancagua	\N
+1579	Natales	\N
+1580	Navidad	\N
+1581	Negrete	\N
+1582	Ninhue	\N
+1583	Niquen	\N
+1584	Nogales	\N
+1585	Nueva Imperial	\N
+1586	Nunoa	\N
+1587	Ohiggins	\N
+1588	Olivar	\N
+1589	Ollague	\N
+1590	Olmue	\N
+1591	Osorno	\N
+1592	Ovalle	\N
+1593	Padre Hurtado	\N
+1594	Padre Las Casas	\N
+1595	Paihuano	\N
+1596	Paillaco	\N
+1597	Paine	\N
+1598	Palena	\N
+1599	Palmilla	\N
+1600	Panguipulli	\N
+1601	Panquehue	\N
+1602	Papudo	\N
+1603	Paredones	\N
+1604	Parral	\N
+1605	Pedro Aguirre Cerda	\N
+1606	Pelarco	\N
+1607	Pelluhue	\N
+1608	Pemuco	\N
+1609	Penaflor	\N
+1610	Penalolen	\N
+1611	Pencahue	\N
+1612	Penco	\N
+1613	Peralillo	\N
+1614	Perquenco	\N
+1615	Petorca	\N
+1616	Peumo	\N
+1617	Pica	\N
+1618	Pichidegua	\N
+1619	Pichilemu	\N
+1620	Pinto	\N
+1621	Pirque	\N
+1622	Pitrufquen	\N
+1623	Placilla	\N
+1624	Portezuelo	\N
+1625	Porvenir	\N
+1626	Pozo Almonte	\N
+1627	Primavera	\N
+1628	Providencia	\N
+1629	Puchuncavi	\N
+1630	Pucon	\N
+1631	Pudahuel	\N
+1632	Puente Alto	\N
+1633	Puerto Montt	\N
+1634	Puerto Octay	\N
+1635	Puerto Varas	\N
+1636	Pumanque	\N
+1637	Punitaqui	\N
+1638	Punta Arenas	\N
+1639	Puqueldon	\N
+1640	Puren	\N
+1641	Purranque	\N
+1642	Putaendo	\N
+1643	Putre	\N
+1644	Puyehue	\N
+1645	Queilen	\N
+1646	Quellon	\N
+1647	Quemchi	\N
+1648	Quilaco	\N
+1649	Quilicura	\N
+1650	Quilleco	\N
+1651	Quillon	\N
+1652	Quillota	\N
+1653	Quilpue	\N
+1654	Quinchao	\N
+1655	Quinta De Tilcoco	\N
+1656	Quinta Normal	\N
+1657	Quintero	\N
+1658	Quirihue	\N
+1659	Rancagua	\N
+1660	Ranquil	\N
+1661	Rauco	\N
+1662	Recoleta	\N
+1663	Renaico	\N
+1664	Renca	\N
+1665	Rengo	\N
+1666	Requinoa	\N
+1667	Retiro	\N
+1668	Rinconada	\N
+1669	Rio Bueno	\N
+1670	Rio Claro	\N
+1671	Rio Hurtado	\N
+1672	Rio Ibanez	\N
+1673	Rio Negro	\N
+1674	Rio Verde	\N
+1675	Romeral	\N
+1676	Saavedra	\N
+1677	Sagrada Familia	\N
+1678	Salamanca	\N
+1679	San Antonio	\N
+1680	San Bernardo	\N
+1681	San Carlos	\N
+1682	San Clemente	\N
+1683	San Esteban	\N
+1684	San Fabian	\N
+1685	San Felipe	\N
+1686	San Fernando	\N
+1687	San Francisco De Mostazal	\N
+1688	San Gregorio	\N
+1689	San Ignacio	\N
+1690	San Javier	\N
+1691	San Joaquin	\N
+1692	San Jose De Maipo	\N
+1693	San Juan De La Costa	\N
+1694	San Miguel	\N
+1695	San Nicolas	\N
+1696	San Pablo	\N
+1697	San Pedro	\N
+1698	San Pedro De Atacama	\N
+1699	San Pedro De La Paz	\N
+1700	San Rafael	\N
+1701	San Ramon	\N
+1702	San Rosendo	\N
+1703	San Vicente	\N
+1704	Santa Barbara	\N
+1705	Santa Cruz	\N
+1706	Santa Juana	\N
+1707	Santa Maria	\N
+1708	Santiago	\N
+1709	Santiago Oeste	\N
+1710	Santiago Sur	\N
+1711	Santo Domingo	\N
+1712	Sierra Gorda	\N
+1713	Talagante	\N
+1714	Talca	\N
+1715	Talcahuano	\N
+1716	Taltal	\N
+1717	Temuco	\N
+1718	Teno	\N
+1719	Teodoro Schmidt	\N
+1720	Tierra Amarilla	\N
+1721	Til-Til	\N
+1722	Timaukel	\N
+1723	Tirua	\N
+1724	Tocopilla	\N
+1725	Tolten	\N
+1726	Tome	\N
+1727	Torres Del Paine	\N
+1728	Tortel	\N
+1729	Traiguen	\N
+1730	Trehuaco	\N
+1731	Tucapel	\N
+1732	Valdivia	\N
+1733	Vallenar	\N
+1734	Valparaiso	\N
+1735	Vichuquen	\N
+1736	Victoria	\N
+1737	Vicuna	\N
+1738	Vilcun	\N
+1739	Villa Alegre	\N
+1740	Villa Alemana	\N
+1741	Villarrica	\N
+1742	Vina Del Mar	\N
+1743	Vitacura	\N
+1744	Yerbas Buenas	\N
+1745	Yumbel	\N
+1746	Yungay	\N
+1747	Zapallar	\N
+\.
+
+
+--
+-- Data for Name: insurance; Type: TABLE DATA; Schema: public; Owner: conmeddb_user
+--
+
+COPY public.insurance (id, name, description) FROM stdin;
+40	Rio Blanco	\N
+41	San Lorenzo	\N
+42	Vida Tres	\N
+33	Colmena Golden Cross	\N
+34	Consalud	\N
+35	Cruz blanca	\N
+36	Cruz del Norte	\N
+37	Nueva Masvida	\N
+38	Fundacion	\N
+39	Fusat	\N
+30	Particular	\N
+31	Banmedica	\N
+32	Chuquicamata	\N
+29	Fonasa	\N
+\.
+
+
+--
+-- Data for Name: patient; Type: TABLE DATA; Schema: public; Owner: conmeddb_user
+--
+
+COPY public.patient (id, doc_id, name, email, phone1, phone2, insurance) FROM stdin;
+\.
+
+
+--
+-- Data for Name: patient_recover_appointments; Type: TABLE DATA; Schema: public; Owner: conmeddb_user
+--
+
+COPY public.patient_recover_appointments (email) FROM stdin;
+alejandro2141@gmail.com
+\.
+
+
+--
+-- Data for Name: professional; Type: TABLE DATA; Schema: public; Owner: conmeddb_user
+--
+
+COPY public.professional (id, document_number, name, license_number, email, address, phone, active, first_time) FROM stdin;
+2	13540377-5	Maria Jesus Alfonso Toro	sin definir	b	Avenida Gran Avenida, 1009, Piso 8, Oficina 803	56931888367	true                                                                                                                                                                                                                                                          	f
+1	888888-8	Juanito Cura Los Dolores Pies	Licen132123	a	Av Las condes 823123	5555555	true                                                                                                                                                                                                                                                          	f
+\.
+
+
+--
+-- Data for Name: professional_calendar; Type: TABLE DATA; Schema: public; Owner: conmeddb_user
+--
+
+COPY public.professional_calendar (id, professional_id, start_time, end_time, specialty1, specialty2, specialty3, specialty4, specialty5, duration, time_between, monday, tuesday, wednesday, thursday, friday, saturday, sunday, date_start, date_end, status, active, center_id, color, deleted_professional) FROM stdin;
+114	2	05:00:00-04	06:00:00-04	146	\N	\N	\N	\N	15	5	t	f	t	f	f	f	t	2022-04-27	2022-05-07	1	t	137	\N	f
+111	1	01:00:00-04	02:00:00-04	144	\N	\N	\N	\N	15	15	t	f	t	f	f	f	t	2022-04-27	2022-04-29	1	f	133	\N	t
+112	1	02:00:00-04	03:00:00-04	149	\N	\N	\N	\N	30	0	t	f	f	f	f	t	t	2022-04-28	2022-04-28	1	f	136	\N	t
+113	1	04:00:00-04	05:00:00-04	147	\N	\N	\N	\N	15	5	t	f	t	f	t	f	t	2022-04-28	2022-04-29	1	f	135	\N	t
+115	1	01:00:00-04	02:00:00-04	147	\N	\N	\N	\N	10	10	t	t	f	f	f	f	f	2022-04-28	2022-04-28	1	t	144	\N	f
+\.
+
+
+--
+-- Data for Name: professional_register; Type: TABLE DATA; Schema: public; Owner: conmeddb_user
+--
+
+COPY public.professional_register (name, last_name1, last_name2, email, doc_id, passwd, personal_address, personal_phone, specialty) FROM stdin;
+2222222	222222	2222222	12321@aaaaaaaa23	null	123123123	2222222	22222	22222
+Juan Alejandro	null	Miranda	alejandro2141@gmail.com	13909371-2	paranoid	Tristan Cornejo 957, Independencia	975397200	terapias alternativas, reiki
+\.
+
+
+--
+-- Data for Name: professional_specialty; Type: TABLE DATA; Schema: public; Owner: conmeddb_user
+--
+
+COPY public.professional_specialty (id, professional_id, specialty_id) FROM stdin;
+10	1	149
+9	1	144
+11	2	146
+12	2	153
+15	1	147
+16	1	153
+17	1	152
+\.
+
+
+--
+-- Data for Name: session; Type: TABLE DATA; Schema: public; Owner: conmeddb_user
+--
+
+COPY public.session (id, user_id, expiration_time, status, name, last_login, last_activity_time, user_type, first_time) FROM stdin;
+2276	2	\N	\N	Maria Jesus Alfonso Toro	2022-02-03 16:59:30.114793-03	2022-02-03 16:59:30.114793-03	1	f
+2277	2	\N	\N	Maria Jesus Alfonso Toro	2022-02-03 17:07:43.589422-03	2022-02-03 17:07:43.589422-03	1	f
+2278	2	\N	\N	Maria Jesus Alfonso Toro	2022-02-03 17:09:21.695317-03	2022-02-03 17:09:21.695317-03	1	f
+2279	2	\N	\N	Maria Jesus Alfonso Toro	2022-02-03 17:09:39.742962-03	2022-02-03 17:09:39.742962-03	1	f
+2280	2	\N	\N	Maria Jesus Alfonso Toro	2022-02-03 17:16:15.429003-03	2022-02-03 17:16:15.429003-03	1	f
+2281	2	\N	\N	Maria Jesus Alfonso Toro	2022-02-03 17:18:19.833181-03	2022-02-03 17:18:19.833181-03	1	f
+2282	2	\N	\N	Maria Jesus Alfonso Toro	2022-02-03 17:19:37.848949-03	2022-02-03 17:19:37.848949-03	1	f
+2283	1	\N	\N	Juanito Cura Los Dolores Pies	2022-02-03 17:22:38.346347-03	2022-02-03 17:22:38.346347-03	1	f
+2284	1	\N	\N	Juanito Cura Los Dolores Pies	2022-02-03 17:23:55.31453-03	2022-02-03 17:23:55.31453-03	1	f
+2285	1	\N	\N	Juanito Cura Los Dolores Pies	2022-02-03 17:26:37.296662-03	2022-02-03 17:26:37.296662-03	1	f
+2286	2	\N	\N	Maria Jesus Alfonso Toro	2022-02-03 17:29:26.394003-03	2022-02-03 17:29:26.394003-03	1	f
+2287	1	\N	\N	Juanito Cura Los Dolores Pies	2022-02-03 17:32:12.060969-03	2022-02-03 17:32:12.060969-03	1	f
+2288	1	\N	\N	Juanito Cura Los Dolores Pies	2022-02-03 17:50:00.933581-03	2022-02-03 17:50:00.933581-03	1	f
+2289	2	\N	\N	Maria Jesus Alfonso Toro	2022-02-03 17:50:15.979498-03	2022-02-03 17:50:15.979498-03	1	f
+2290	1	\N	\N	Juanito Cura Los Dolores Pies	2022-02-03 17:56:12.242472-03	2022-02-03 17:56:12.242472-03	1	f
+2291	2	\N	\N	Maria Jesus Alfonso Toro	2022-02-03 17:56:48.975204-03	2022-02-03 17:56:48.975204-03	1	f
+2292	1	\N	\N	Juanito Cura Los Dolores Pies	2022-02-03 17:57:43.674087-03	2022-02-03 17:57:43.674087-03	1	f
+2293	1	\N	\N	Juanito Cura Los Dolores Pies	2022-02-03 18:00:32.426625-03	2022-02-03 18:00:32.426625-03	1	f
+2294	1	\N	\N	Juanito Cura Los Dolores Pies	2022-02-03 18:05:08.896123-03	2022-02-03 18:05:08.896123-03	1	f
+2295	1	\N	\N	Juanito Cura Los Dolores Pies	2022-02-03 18:13:34.845546-03	2022-02-03 18:13:34.845546-03	1	f
+2296	1	\N	\N	Juanito Cura Los Dolores Pies	2022-02-03 18:18:02.394128-03	2022-02-03 18:18:02.394128-03	1	f
+2297	1	\N	\N	Juanito Cura Los Dolores Pies	2022-02-03 18:21:40.086122-03	2022-02-03 18:21:40.086122-03	1	f
+2298	1	\N	\N	Juanito Cura Los Dolores Pies	2022-02-03 18:22:39.433926-03	2022-02-03 18:22:39.433926-03	1	f
+2299	2	\N	\N	Maria Jesus Alfonso Toro	2022-02-04 10:43:51.941087-03	2022-02-04 10:43:51.941087-03	1	f
+2300	1	\N	\N	Juanito Cura Los Dolores Pies	2022-02-04 17:21:58.376378-03	2022-02-04 17:21:58.376378-03	1	f
+2301	1	\N	\N	Juanito Cura Los Dolores Pies	2022-02-07 12:51:57.259092-03	2022-02-07 12:51:57.259092-03	1	f
+2302	2	\N	\N	Maria Jesus Alfonso Toro	2022-02-07 12:55:57.907829-03	2022-02-07 12:55:57.907829-03	1	f
+2303	1	\N	\N	Juanito Cura Los Dolores Pies	2022-02-07 16:38:08.719532-03	2022-02-07 16:38:08.719532-03	1	f
+2304	1	\N	\N	Juanito Cura Los Dolores Pies	2022-02-07 20:35:41.434832-03	2022-02-07 20:35:41.434832-03	1	f
+2305	1	\N	\N	Juanito Cura Los Dolores Pies	2022-02-08 12:04:59.506928-03	2022-02-08 12:04:59.506928-03	1	f
+2306	1	\N	\N	Juanito Cura Los Dolores Pies	2022-02-09 19:27:16.839074-03	2022-02-09 19:27:16.839074-03	1	f
+2307	1	\N	\N	Juanito Cura Los Dolores Pies	2022-02-09 20:09:46.129253-03	2022-02-09 20:09:46.129253-03	1	f
+2308	2	\N	\N	Maria Jesus Alfonso Toro	2022-02-10 17:39:52.131762-03	2022-02-10 17:39:52.131762-03	1	f
+2309	1	\N	\N	Juanito Cura Los Dolores Pies	2022-02-10 18:02:32.015416-03	2022-02-10 18:02:32.015416-03	1	f
+2310	2	\N	\N	Maria Jesus Alfonso Toro	2022-02-10 18:57:07.8589-03	2022-02-10 18:57:07.8589-03	1	f
+2311	1	\N	\N	Juanito Cura Los Dolores Pies	2022-02-11 15:06:55.923681-03	2022-02-11 15:06:55.923681-03	1	f
+2312	1	\N	\N	Juanito Cura Los Dolores Pies	2022-02-28 15:25:01.930858-03	2022-02-28 15:25:01.930858-03	1	f
+2313	1	\N	\N	Juanito Cura Los Dolores Pies	2022-02-28 16:36:48.118107-03	2022-02-28 16:36:48.118107-03	1	f
+2314	1	\N	\N	Juanito Cura Los Dolores Pies	2022-02-28 16:49:18.831964-03	2022-02-28 16:49:18.831964-03	1	f
+2315	1	\N	\N	Juanito Cura Los Dolores Pies	2022-02-28 16:49:40.677872-03	2022-02-28 16:49:40.677872-03	1	f
+2316	1	\N	\N	Juanito Cura Los Dolores Pies	2022-02-28 16:59:17.088613-03	2022-02-28 16:59:17.088613-03	1	f
+2317	1	\N	\N	Juanito Cura Los Dolores Pies	2022-02-28 17:53:54.247407-03	2022-02-28 17:53:54.247407-03	1	f
+2318	1	\N	\N	Juanito Cura Los Dolores Pies	2022-02-28 18:32:34.589186-03	2022-02-28 18:32:34.589186-03	1	f
+2319	1	\N	\N	Juanito Cura Los Dolores Pies	2022-02-28 18:33:19.218347-03	2022-02-28 18:33:19.218347-03	1	f
+2320	1	\N	\N	Juanito Cura Los Dolores Pies	2022-02-28 18:33:54.324982-03	2022-02-28 18:33:54.324982-03	1	f
+2321	1	\N	\N	Juanito Cura Los Dolores Pies	2022-02-28 18:40:37.387506-03	2022-02-28 18:40:37.387506-03	1	f
+2322	1	\N	\N	Juanito Cura Los Dolores Pies	2022-02-28 18:57:35.434455-03	2022-02-28 18:57:35.434455-03	1	f
+2323	1	\N	\N	Juanito Cura Los Dolores Pies	2022-03-01 18:22:43.974891-03	2022-03-01 18:22:43.974891-03	1	f
+2324	1	\N	\N	Juanito Cura Los Dolores Pies	2022-03-01 18:34:19.962963-03	2022-03-01 18:34:19.962963-03	1	f
+2325	1	\N	\N	Juanito Cura Los Dolores Pies	2022-03-01 19:13:51.338447-03	2022-03-01 19:13:51.338447-03	1	f
+2326	1	\N	\N	Juanito Cura Los Dolores Pies	2022-03-01 19:14:45.511969-03	2022-03-01 19:14:45.511969-03	1	f
+2327	1	\N	\N	Juanito Cura Los Dolores Pies	2022-03-01 19:15:31.482657-03	2022-03-01 19:15:31.482657-03	1	f
+2328	1	\N	\N	Juanito Cura Los Dolores Pies	2022-03-01 19:35:35.341151-03	2022-03-01 19:35:35.341151-03	1	f
+2329	1	\N	\N	Juanito Cura Los Dolores Pies	2022-03-01 19:39:59.811188-03	2022-03-01 19:39:59.811188-03	1	f
+2330	1	\N	\N	Juanito Cura Los Dolores Pies	2022-03-01 20:06:06.642318-03	2022-03-01 20:06:06.642318-03	1	f
+2331	1	\N	\N	Juanito Cura Los Dolores Pies	2022-03-01 20:08:46.369614-03	2022-03-01 20:08:46.369614-03	1	f
+2332	1	\N	\N	Juanito Cura Los Dolores Pies	2022-03-01 20:18:31.031823-03	2022-03-01 20:18:31.031823-03	1	f
+2333	1	\N	\N	Juanito Cura Los Dolores Pies	2022-03-01 20:35:34.447528-03	2022-03-01 20:35:34.447528-03	1	f
+2334	1	\N	\N	Juanito Cura Los Dolores Pies	2022-03-01 20:50:31.94606-03	2022-03-01 20:50:31.94606-03	1	f
+2335	1	\N	\N	Juanito Cura Los Dolores Pies	2022-03-01 20:54:26.016413-03	2022-03-01 20:54:26.016413-03	1	f
+2336	1	\N	\N	Juanito Cura Los Dolores Pies	2022-03-01 20:57:36.083554-03	2022-03-01 20:57:36.083554-03	1	f
+2337	1	\N	\N	Juanito Cura Los Dolores Pies	2022-03-02 10:43:04.33237-03	2022-03-02 10:43:04.33237-03	1	f
+2338	1	\N	\N	Juanito Cura Los Dolores Pies	2022-03-02 11:53:28.933581-03	2022-03-02 11:53:28.933581-03	1	f
+2339	1	\N	\N	Juanito Cura Los Dolores Pies	2022-03-02 14:28:38.445324-03	2022-03-02 14:28:38.445324-03	1	f
+2340	1	\N	\N	Juanito Cura Los Dolores Pies	2022-03-02 14:33:25.659242-03	2022-03-02 14:33:25.659242-03	1	f
+2341	1	\N	\N	Juanito Cura Los Dolores Pies	2022-03-02 14:48:35.518373-03	2022-03-02 14:48:35.518373-03	1	f
+2342	1	\N	\N	Juanito Cura Los Dolores Pies	2022-03-02 14:55:03.784035-03	2022-03-02 14:55:03.784035-03	1	f
+2343	1	\N	\N	Juanito Cura Los Dolores Pies	2022-03-02 15:03:40.428799-03	2022-03-02 15:03:40.428799-03	1	f
+2344	1	\N	\N	Juanito Cura Los Dolores Pies	2022-03-02 15:06:26.766305-03	2022-03-02 15:06:26.766305-03	1	f
+2345	1	\N	\N	Juanito Cura Los Dolores Pies	2022-03-02 15:19:31.529817-03	2022-03-02 15:19:31.529817-03	1	f
+2346	1	\N	\N	Juanito Cura Los Dolores Pies	2022-03-02 15:54:01.62707-03	2022-03-02 15:54:01.62707-03	1	f
+2347	1	\N	\N	Juanito Cura Los Dolores Pies	2022-03-02 15:58:04.497971-03	2022-03-02 15:58:04.497971-03	1	f
+2348	1	\N	\N	Juanito Cura Los Dolores Pies	2022-03-02 16:02:42.130395-03	2022-03-02 16:02:42.130395-03	1	f
+2349	1	\N	\N	Juanito Cura Los Dolores Pies	2022-03-02 16:19:48.662605-03	2022-03-02 16:19:48.662605-03	1	f
+2350	1	\N	\N	Juanito Cura Los Dolores Pies	2022-03-02 16:20:00.938259-03	2022-03-02 16:20:00.938259-03	1	f
+2351	1	\N	\N	Juanito Cura Los Dolores Pies	2022-03-02 16:20:46.458121-03	2022-03-02 16:20:46.458121-03	1	f
+2352	1	\N	\N	Juanito Cura Los Dolores Pies	2022-03-02 16:50:13.326842-03	2022-03-02 16:50:13.326842-03	1	f
+2353	1	\N	\N	Juanito Cura Los Dolores Pies	2022-03-02 17:17:22.222939-03	2022-03-02 17:17:22.222939-03	1	f
+2354	1	\N	\N	Juanito Cura Los Dolores Pies	2022-03-02 17:21:56.322273-03	2022-03-02 17:21:56.322273-03	1	f
+2355	1	\N	\N	Juanito Cura Los Dolores Pies	2022-03-02 17:31:28.149385-03	2022-03-02 17:31:28.149385-03	1	f
+2356	1	\N	\N	Juanito Cura Los Dolores Pies	2022-03-02 17:42:09.734292-03	2022-03-02 17:42:09.734292-03	1	f
+2357	1	\N	\N	Juanito Cura Los Dolores Pies	2022-03-02 18:53:30.551329-03	2022-03-02 18:53:30.551329-03	1	f
+2358	1	\N	\N	Juanito Cura Los Dolores Pies	2022-03-02 19:17:06.527842-03	2022-03-02 19:17:06.527842-03	1	f
+2359	1	\N	\N	Juanito Cura Los Dolores Pies	2022-03-02 19:23:13.838489-03	2022-03-02 19:23:13.838489-03	1	f
+2360	2	\N	\N	Maria Jesus Alfonso Toro	2022-03-02 20:04:01.712116-03	2022-03-02 20:04:01.712116-03	1	f
+2361	1	\N	\N	Juanito Cura Los Dolores Pies	2022-03-02 20:43:57.182476-03	2022-03-02 20:43:57.182476-03	1	f
+2362	1	\N	\N	Juanito Cura Los Dolores Pies	2022-03-02 20:44:17.782778-03	2022-03-02 20:44:17.782778-03	1	f
+2363	1	\N	\N	Juanito Cura Los Dolores Pies	2022-03-02 20:47:56.131338-03	2022-03-02 20:47:56.131338-03	1	f
+2364	1	\N	\N	Juanito Cura Los Dolores Pies	2022-03-03 15:36:04.508563-03	2022-03-03 15:36:04.508563-03	1	f
+2365	1	\N	\N	Juanito Cura Los Dolores Pies	2022-03-03 17:04:37.212497-03	2022-03-03 17:04:37.212497-03	1	f
+2366	1	\N	\N	Juanito Cura Los Dolores Pies	2022-03-03 18:33:23.080181-03	2022-03-03 18:33:23.080181-03	1	f
+2367	1	\N	\N	Juanito Cura Los Dolores Pies	2022-03-03 18:34:15.602903-03	2022-03-03 18:34:15.602903-03	1	f
+2368	1	\N	\N	Juanito Cura Los Dolores Pies	2022-03-03 19:12:31.521454-03	2022-03-03 19:12:31.521454-03	1	f
+2369	1	\N	\N	Juanito Cura Los Dolores Pies	2022-03-03 19:12:55.030309-03	2022-03-03 19:12:55.030309-03	1	f
+2370	1	\N	\N	Juanito Cura Los Dolores Pies	2022-03-03 19:23:03.122413-03	2022-03-03 19:23:03.122413-03	1	f
+2371	1	\N	\N	Juanito Cura Los Dolores Pies	2022-03-03 19:56:02.526657-03	2022-03-03 19:56:02.526657-03	1	f
+2372	1	\N	\N	Juanito Cura Los Dolores Pies	2022-03-03 19:57:11.79992-03	2022-03-03 19:57:11.79992-03	1	f
+2373	1	\N	\N	Juanito Cura Los Dolores Pies	2022-03-03 19:59:12.221315-03	2022-03-03 19:59:12.221315-03	1	f
+2374	1	\N	\N	Juanito Cura Los Dolores Pies	2022-03-03 20:02:15.784399-03	2022-03-03 20:02:15.784399-03	1	f
+2375	1	\N	\N	Juanito Cura Los Dolores Pies	2022-03-03 20:32:17.707491-03	2022-03-03 20:32:17.707491-03	1	f
+2376	1	\N	\N	Juanito Cura Los Dolores Pies	2022-03-07 17:27:17.73782-03	2022-03-07 17:27:17.73782-03	1	f
+2377	1	\N	\N	Juanito Cura Los Dolores Pies	2022-03-07 17:51:04.163944-03	2022-03-07 17:51:04.163944-03	1	f
+2378	1	\N	\N	Juanito Cura Los Dolores Pies	2022-03-07 18:14:13.263887-03	2022-03-07 18:14:13.263887-03	1	f
+2379	1	\N	\N	Juanito Cura Los Dolores Pies	2022-03-07 18:18:57.962933-03	2022-03-07 18:18:57.962933-03	1	f
+2380	1	\N	\N	Juanito Cura Los Dolores Pies	2022-03-07 18:25:48.92638-03	2022-03-07 18:25:48.92638-03	1	f
+2381	1	\N	\N	Juanito Cura Los Dolores Pies	2022-03-07 18:28:08.693734-03	2022-03-07 18:28:08.693734-03	1	f
+2382	1	\N	\N	Juanito Cura Los Dolores Pies	2022-03-07 18:29:13.911921-03	2022-03-07 18:29:13.911921-03	1	f
+2383	1	\N	\N	Juanito Cura Los Dolores Pies	2022-03-07 18:51:24.039991-03	2022-03-07 18:51:24.039991-03	1	f
+2384	1	\N	\N	Juanito Cura Los Dolores Pies	2022-03-07 18:54:31.57346-03	2022-03-07 18:54:31.57346-03	1	f
+2385	1	\N	\N	Juanito Cura Los Dolores Pies	2022-03-07 18:56:37.970867-03	2022-03-07 18:56:37.970867-03	1	f
+2386	1	\N	\N	Juanito Cura Los Dolores Pies	2022-03-07 19:12:20.483071-03	2022-03-07 19:12:20.483071-03	1	f
+2387	1	\N	\N	Juanito Cura Los Dolores Pies	2022-03-07 19:16:50.20898-03	2022-03-07 19:16:50.20898-03	1	f
+2388	1	\N	\N	Juanito Cura Los Dolores Pies	2022-03-07 19:53:37.993821-03	2022-03-07 19:53:37.993821-03	1	f
+2389	1	\N	\N	Juanito Cura Los Dolores Pies	2022-03-07 19:54:36.382399-03	2022-03-07 19:54:36.382399-03	1	f
+2390	1	\N	\N	Juanito Cura Los Dolores Pies	2022-03-07 20:02:53.074046-03	2022-03-07 20:02:53.074046-03	1	f
+2391	1	\N	\N	Juanito Cura Los Dolores Pies	2022-03-07 20:05:10.812178-03	2022-03-07 20:05:10.812178-03	1	f
+2392	1	\N	\N	Juanito Cura Los Dolores Pies	2022-03-07 20:07:42.953986-03	2022-03-07 20:07:42.953986-03	1	f
+2393	1	\N	\N	Juanito Cura Los Dolores Pies	2022-03-07 20:08:22.812335-03	2022-03-07 20:08:22.812335-03	1	f
+2394	1	\N	\N	Juanito Cura Los Dolores Pies	2022-03-07 20:11:25.694816-03	2022-03-07 20:11:25.694816-03	1	f
+2395	1	\N	\N	Juanito Cura Los Dolores Pies	2022-03-07 20:15:01.52202-03	2022-03-07 20:15:01.52202-03	1	f
+2396	1	\N	\N	Juanito Cura Los Dolores Pies	2022-03-07 20:17:11.976987-03	2022-03-07 20:17:11.976987-03	1	f
+2397	1	\N	\N	Juanito Cura Los Dolores Pies	2022-03-07 20:18:30.240121-03	2022-03-07 20:18:30.240121-03	1	f
+2398	1	\N	\N	Juanito Cura Los Dolores Pies	2022-03-07 20:32:34.189568-03	2022-03-07 20:32:34.189568-03	1	f
+2399	1	\N	\N	Juanito Cura Los Dolores Pies	2022-03-07 20:41:26.317286-03	2022-03-07 20:41:26.317286-03	1	f
+2400	1	\N	\N	Juanito Cura Los Dolores Pies	2022-03-08 15:27:18.697024-03	2022-03-08 15:27:18.697024-03	1	f
+2401	1	\N	\N	Juanito Cura Los Dolores Pies	2022-03-08 15:47:33.015126-03	2022-03-08 15:47:33.015126-03	1	f
+2402	1	\N	\N	Juanito Cura Los Dolores Pies	2022-03-08 15:56:18.583898-03	2022-03-08 15:56:18.583898-03	1	f
+2403	1	\N	\N	Juanito Cura Los Dolores Pies	2022-03-08 16:12:45.971728-03	2022-03-08 16:12:45.971728-03	1	f
+2404	1	\N	\N	Juanito Cura Los Dolores Pies	2022-03-08 16:13:28.385137-03	2022-03-08 16:13:28.385137-03	1	f
+2405	1	\N	\N	Juanito Cura Los Dolores Pies	2022-03-08 16:17:22.539239-03	2022-03-08 16:17:22.539239-03	1	f
+2406	1	\N	\N	Juanito Cura Los Dolores Pies	2022-03-08 16:24:55.73618-03	2022-03-08 16:24:55.73618-03	1	f
+2407	1	\N	\N	Juanito Cura Los Dolores Pies	2022-03-08 16:25:56.511959-03	2022-03-08 16:25:56.511959-03	1	f
+2408	1	\N	\N	Juanito Cura Los Dolores Pies	2022-03-08 16:30:14.729355-03	2022-03-08 16:30:14.729355-03	1	f
+2409	1	\N	\N	Juanito Cura Los Dolores Pies	2022-03-08 16:37:13.649402-03	2022-03-08 16:37:13.649402-03	1	f
+2410	1	\N	\N	Juanito Cura Los Dolores Pies	2022-03-08 17:14:57.3368-03	2022-03-08 17:14:57.3368-03	1	f
+2411	1	\N	\N	Juanito Cura Los Dolores Pies	2022-03-08 17:15:18.341003-03	2022-03-08 17:15:18.341003-03	1	f
+2412	1	\N	\N	Juanito Cura Los Dolores Pies	2022-03-08 17:16:21.956212-03	2022-03-08 17:16:21.956212-03	1	f
+2413	1	\N	\N	Juanito Cura Los Dolores Pies	2022-03-08 17:17:27.11265-03	2022-03-08 17:17:27.11265-03	1	f
+2414	1	\N	\N	Juanito Cura Los Dolores Pies	2022-03-08 17:17:45.441601-03	2022-03-08 17:17:45.441601-03	1	f
+2415	1	\N	\N	Juanito Cura Los Dolores Pies	2022-03-08 17:18:29.321449-03	2022-03-08 17:18:29.321449-03	1	f
+2416	1	\N	\N	Juanito Cura Los Dolores Pies	2022-03-08 17:19:59.347551-03	2022-03-08 17:19:59.347551-03	1	f
+2417	1	\N	\N	Juanito Cura Los Dolores Pies	2022-03-08 17:20:24.993161-03	2022-03-08 17:20:24.993161-03	1	f
+2418	1	\N	\N	Juanito Cura Los Dolores Pies	2022-03-08 17:24:29.919665-03	2022-03-08 17:24:29.919665-03	1	f
+2419	1	\N	\N	Juanito Cura Los Dolores Pies	2022-03-08 18:16:44.560935-03	2022-03-08 18:16:44.560935-03	1	f
+2420	1	\N	\N	Juanito Cura Los Dolores Pies	2022-03-08 18:19:05.692922-03	2022-03-08 18:19:05.692922-03	1	f
+2421	1	\N	\N	Juanito Cura Los Dolores Pies	2022-03-08 18:19:37.018555-03	2022-03-08 18:19:37.018555-03	1	f
+2422	1	\N	\N	Juanito Cura Los Dolores Pies	2022-03-08 18:37:08.186391-03	2022-03-08 18:37:08.186391-03	1	f
+2423	1	\N	\N	Juanito Cura Los Dolores Pies	2022-03-08 18:46:11.691826-03	2022-03-08 18:46:11.691826-03	1	f
+2424	1	\N	\N	Juanito Cura Los Dolores Pies	2022-03-08 18:50:06.165515-03	2022-03-08 18:50:06.165515-03	1	f
+2425	1	\N	\N	Juanito Cura Los Dolores Pies	2022-03-08 18:50:53.802691-03	2022-03-08 18:50:53.802691-03	1	f
+2426	1	\N	\N	Juanito Cura Los Dolores Pies	2022-03-08 18:52:29.836434-03	2022-03-08 18:52:29.836434-03	1	f
+2427	1	\N	\N	Juanito Cura Los Dolores Pies	2022-03-08 19:02:48.323003-03	2022-03-08 19:02:48.323003-03	1	f
+2428	1	\N	\N	Juanito Cura Los Dolores Pies	2022-03-08 19:05:47.24044-03	2022-03-08 19:05:47.24044-03	1	f
+2429	1	\N	\N	Juanito Cura Los Dolores Pies	2022-03-08 19:08:11.613244-03	2022-03-08 19:08:11.613244-03	1	f
+2430	1	\N	\N	Juanito Cura Los Dolores Pies	2022-03-08 19:10:07.834558-03	2022-03-08 19:10:07.834558-03	1	f
+2431	1	\N	\N	Juanito Cura Los Dolores Pies	2022-03-08 19:13:01.989143-03	2022-03-08 19:13:01.989143-03	1	f
+2432	1	\N	\N	Juanito Cura Los Dolores Pies	2022-03-08 19:13:45.612854-03	2022-03-08 19:13:45.612854-03	1	f
+2433	1	\N	\N	Juanito Cura Los Dolores Pies	2022-03-08 19:14:37.931477-03	2022-03-08 19:14:37.931477-03	1	f
+2434	1	\N	\N	Juanito Cura Los Dolores Pies	2022-03-08 19:14:54.472989-03	2022-03-08 19:14:54.472989-03	1	f
+2435	1	\N	\N	Juanito Cura Los Dolores Pies	2022-03-08 19:17:41.048807-03	2022-03-08 19:17:41.048807-03	1	f
+2436	1	\N	\N	Juanito Cura Los Dolores Pies	2022-03-08 19:20:30.863841-03	2022-03-08 19:20:30.863841-03	1	f
+2437	1	\N	\N	Juanito Cura Los Dolores Pies	2022-03-08 19:21:27.547296-03	2022-03-08 19:21:27.547296-03	1	f
+2438	1	\N	\N	Juanito Cura Los Dolores Pies	2022-03-08 19:33:34.91824-03	2022-03-08 19:33:34.91824-03	1	f
+2439	1	\N	\N	Juanito Cura Los Dolores Pies	2022-03-08 19:34:29.296759-03	2022-03-08 19:34:29.296759-03	1	f
+2440	1	\N	\N	Juanito Cura Los Dolores Pies	2022-03-08 19:34:47.525456-03	2022-03-08 19:34:47.525456-03	1	f
+2441	1	\N	\N	Juanito Cura Los Dolores Pies	2022-03-08 19:45:16.198262-03	2022-03-08 19:45:16.198262-03	1	f
+2442	1	\N	\N	Juanito Cura Los Dolores Pies	2022-03-08 19:45:38.083927-03	2022-03-08 19:45:38.083927-03	1	f
+2443	1	\N	\N	Juanito Cura Los Dolores Pies	2022-03-08 19:48:28.466521-03	2022-03-08 19:48:28.466521-03	1	f
+2444	1	\N	\N	Juanito Cura Los Dolores Pies	2022-03-08 19:57:25.000511-03	2022-03-08 19:57:25.000511-03	1	f
+2445	1	\N	\N	Juanito Cura Los Dolores Pies	2022-03-09 12:13:24.594049-03	2022-03-09 12:13:24.594049-03	1	f
+2446	1	\N	\N	Juanito Cura Los Dolores Pies	2022-03-09 12:26:06.939415-03	2022-03-09 12:26:06.939415-03	1	f
+2447	1	\N	\N	Juanito Cura Los Dolores Pies	2022-03-09 12:32:29.972949-03	2022-03-09 12:32:29.972949-03	1	f
+2448	1	\N	\N	Juanito Cura Los Dolores Pies	2022-03-09 12:53:34.834975-03	2022-03-09 12:53:34.834975-03	1	f
+2449	1	\N	\N	Juanito Cura Los Dolores Pies	2022-03-09 13:01:21.844874-03	2022-03-09 13:01:21.844874-03	1	f
+2450	1	\N	\N	Juanito Cura Los Dolores Pies	2022-03-09 13:03:45.911021-03	2022-03-09 13:03:45.911021-03	1	f
+2451	1	\N	\N	Juanito Cura Los Dolores Pies	2022-03-09 13:06:19.259129-03	2022-03-09 13:06:19.259129-03	1	f
+2452	1	\N	\N	Juanito Cura Los Dolores Pies	2022-03-09 13:18:11.517631-03	2022-03-09 13:18:11.517631-03	1	f
+2453	1	\N	\N	Juanito Cura Los Dolores Pies	2022-03-09 13:21:33.02567-03	2022-03-09 13:21:33.02567-03	1	f
+2454	1	\N	\N	Juanito Cura Los Dolores Pies	2022-03-09 17:24:44.849711-03	2022-03-09 17:24:44.849711-03	1	f
+2455	1	\N	\N	Juanito Cura Los Dolores Pies	2022-03-09 18:20:52.125845-03	2022-03-09 18:20:52.125845-03	1	f
+2456	1	\N	\N	Juanito Cura Los Dolores Pies	2022-03-09 18:24:07.244064-03	2022-03-09 18:24:07.244064-03	1	f
+2457	1	\N	\N	Juanito Cura Los Dolores Pies	2022-03-09 18:26:03.101406-03	2022-03-09 18:26:03.101406-03	1	f
+2458	1	\N	\N	Juanito Cura Los Dolores Pies	2022-03-09 18:26:42.599039-03	2022-03-09 18:26:42.599039-03	1	f
+2459	1	\N	\N	Juanito Cura Los Dolores Pies	2022-03-09 18:49:40.92288-03	2022-03-09 18:49:40.92288-03	1	f
+2460	1	\N	\N	Juanito Cura Los Dolores Pies	2022-03-09 18:53:46.341186-03	2022-03-09 18:53:46.341186-03	1	f
+2461	1	\N	\N	Juanito Cura Los Dolores Pies	2022-03-09 18:55:10.756155-03	2022-03-09 18:55:10.756155-03	1	f
+2462	1	\N	\N	Juanito Cura Los Dolores Pies	2022-03-09 18:55:56.910837-03	2022-03-09 18:55:56.910837-03	1	f
+2463	1	\N	\N	Juanito Cura Los Dolores Pies	2022-03-09 18:59:02.12093-03	2022-03-09 18:59:02.12093-03	1	f
+2464	1	\N	\N	Juanito Cura Los Dolores Pies	2022-03-09 19:01:24.916601-03	2022-03-09 19:01:24.916601-03	1	f
+2465	1	\N	\N	Juanito Cura Los Dolores Pies	2022-03-09 19:01:30.88608-03	2022-03-09 19:01:30.88608-03	1	f
+2466	1	\N	\N	Juanito Cura Los Dolores Pies	2022-03-09 19:42:42.350689-03	2022-03-09 19:42:42.350689-03	1	f
+2467	1	\N	\N	Juanito Cura Los Dolores Pies	2022-03-09 19:43:23.398045-03	2022-03-09 19:43:23.398045-03	1	f
+2468	1	\N	\N	Juanito Cura Los Dolores Pies	2022-03-09 20:02:33.285035-03	2022-03-09 20:02:33.285035-03	1	f
+2469	1	\N	\N	Juanito Cura Los Dolores Pies	2022-03-09 20:29:34.905886-03	2022-03-09 20:29:34.905886-03	1	f
+2470	1	\N	\N	Juanito Cura Los Dolores Pies	2022-03-09 20:33:18.239152-03	2022-03-09 20:33:18.239152-03	1	f
+2471	1	\N	\N	Juanito Cura Los Dolores Pies	2022-03-09 20:41:50.435994-03	2022-03-09 20:41:50.435994-03	1	f
+2472	1	\N	\N	Juanito Cura Los Dolores Pies	2022-03-09 20:42:31.145412-03	2022-03-09 20:42:31.145412-03	1	f
+2473	1	\N	\N	Juanito Cura Los Dolores Pies	2022-03-09 20:49:20.898318-03	2022-03-09 20:49:20.898318-03	1	f
+2474	1	\N	\N	Juanito Cura Los Dolores Pies	2022-03-09 20:50:22.467506-03	2022-03-09 20:50:22.467506-03	1	f
+2475	1	\N	\N	Juanito Cura Los Dolores Pies	2022-03-09 20:51:50.282052-03	2022-03-09 20:51:50.282052-03	1	f
+2476	1	\N	\N	Juanito Cura Los Dolores Pies	2022-03-09 20:55:43.116088-03	2022-03-09 20:55:43.116088-03	1	f
+2477	1	\N	\N	Juanito Cura Los Dolores Pies	2022-03-09 21:00:43.336767-03	2022-03-09 21:00:43.336767-03	1	f
+2478	1	\N	\N	Juanito Cura Los Dolores Pies	2022-03-09 21:03:45.613637-03	2022-03-09 21:03:45.613637-03	1	f
+2479	1	\N	\N	Juanito Cura Los Dolores Pies	2022-03-09 21:14:04.696276-03	2022-03-09 21:14:04.696276-03	1	f
+2480	1	\N	\N	Juanito Cura Los Dolores Pies	2022-03-09 21:16:48.748003-03	2022-03-09 21:16:48.748003-03	1	f
+2481	1	\N	\N	Juanito Cura Los Dolores Pies	2022-03-09 21:19:17.27967-03	2022-03-09 21:19:17.27967-03	1	f
+2482	1	\N	\N	Juanito Cura Los Dolores Pies	2022-03-09 21:26:46.792181-03	2022-03-09 21:26:46.792181-03	1	f
+2483	1	\N	\N	Juanito Cura Los Dolores Pies	2022-03-09 21:28:03.462403-03	2022-03-09 21:28:03.462403-03	1	f
+2484	1	\N	\N	Juanito Cura Los Dolores Pies	2022-03-10 12:47:00.959671-03	2022-03-10 12:47:00.959671-03	1	f
+2485	1	\N	\N	Juanito Cura Los Dolores Pies	2022-03-10 13:01:55.367897-03	2022-03-10 13:01:55.367897-03	1	f
+2486	1	\N	\N	Juanito Cura Los Dolores Pies	2022-03-10 13:02:13.451163-03	2022-03-10 13:02:13.451163-03	1	f
+2487	1	\N	\N	Juanito Cura Los Dolores Pies	2022-03-10 13:10:38.686822-03	2022-03-10 13:10:38.686822-03	1	f
+2488	1	\N	\N	Juanito Cura Los Dolores Pies	2022-03-10 14:46:06.243212-03	2022-03-10 14:46:06.243212-03	1	f
+2489	1	\N	\N	Juanito Cura Los Dolores Pies	2022-03-10 14:56:29.064452-03	2022-03-10 14:56:29.064452-03	1	f
+2490	1	\N	\N	Juanito Cura Los Dolores Pies	2022-03-10 14:57:19.201741-03	2022-03-10 14:57:19.201741-03	1	f
+2491	1	\N	\N	Juanito Cura Los Dolores Pies	2022-03-10 14:59:02.830992-03	2022-03-10 14:59:02.830992-03	1	f
+2492	1	\N	\N	Juanito Cura Los Dolores Pies	2022-03-10 15:11:16.124601-03	2022-03-10 15:11:16.124601-03	1	f
+2493	1	\N	\N	Juanito Cura Los Dolores Pies	2022-03-10 15:37:59.827162-03	2022-03-10 15:37:59.827162-03	1	f
+2494	1	\N	\N	Juanito Cura Los Dolores Pies	2022-03-10 16:34:12.939451-03	2022-03-10 16:34:12.939451-03	1	f
+2495	1	\N	\N	Juanito Cura Los Dolores Pies	2022-03-10 16:49:23.644746-03	2022-03-10 16:49:23.644746-03	1	f
+2496	1	\N	\N	Juanito Cura Los Dolores Pies	2022-03-10 17:00:20.512691-03	2022-03-10 17:00:20.512691-03	1	f
+2497	1	\N	\N	Juanito Cura Los Dolores Pies	2022-03-10 17:27:30.004142-03	2022-03-10 17:27:30.004142-03	1	f
+2498	1	\N	\N	Juanito Cura Los Dolores Pies	2022-03-10 17:29:39.942465-03	2022-03-10 17:29:39.942465-03	1	f
+2499	1	\N	\N	Juanito Cura Los Dolores Pies	2022-03-10 17:31:24.282002-03	2022-03-10 17:31:24.282002-03	1	f
+2500	1	\N	\N	Juanito Cura Los Dolores Pies	2022-03-10 17:34:30.396151-03	2022-03-10 17:34:30.396151-03	1	f
+2501	1	\N	\N	Juanito Cura Los Dolores Pies	2022-03-10 17:46:58.562315-03	2022-03-10 17:46:58.562315-03	1	f
+2502	1	\N	\N	Juanito Cura Los Dolores Pies	2022-03-10 17:47:29.483245-03	2022-03-10 17:47:29.483245-03	1	f
+2503	1	\N	\N	Juanito Cura Los Dolores Pies	2022-03-10 18:15:00.819568-03	2022-03-10 18:15:00.819568-03	1	f
+2504	1	\N	\N	Juanito Cura Los Dolores Pies	2022-03-10 18:34:28.785995-03	2022-03-10 18:34:28.785995-03	1	f
+2505	1	\N	\N	Juanito Cura Los Dolores Pies	2022-03-10 18:41:08.908384-03	2022-03-10 18:41:08.908384-03	1	f
+2506	1	\N	\N	Juanito Cura Los Dolores Pies	2022-03-10 18:43:56.304048-03	2022-03-10 18:43:56.304048-03	1	f
+2507	1	\N	\N	Juanito Cura Los Dolores Pies	2022-03-10 21:10:21.159599-03	2022-03-10 21:10:21.159599-03	1	f
+2508	1	\N	\N	Juanito Cura Los Dolores Pies	2022-03-11 15:43:18.969062-03	2022-03-11 15:43:18.969062-03	1	f
+2509	1	\N	\N	Juanito Cura Los Dolores Pies	2022-03-11 16:08:43.987064-03	2022-03-11 16:08:43.987064-03	1	f
+2510	1	\N	\N	Juanito Cura Los Dolores Pies	2022-03-11 17:25:32.605198-03	2022-03-11 17:25:32.605198-03	1	f
+2511	1	\N	\N	Juanito Cura Los Dolores Pies	2022-03-11 17:27:31.949885-03	2022-03-11 17:27:31.949885-03	1	f
+2512	1	\N	\N	Juanito Cura Los Dolores Pies	2022-03-11 17:34:27.320284-03	2022-03-11 17:34:27.320284-03	1	f
+2513	1	\N	\N	Juanito Cura Los Dolores Pies	2022-03-11 17:42:25.763106-03	2022-03-11 17:42:25.763106-03	1	f
+2514	1	\N	\N	Juanito Cura Los Dolores Pies	2022-03-11 17:44:24.778869-03	2022-03-11 17:44:24.778869-03	1	f
+2515	1	\N	\N	Juanito Cura Los Dolores Pies	2022-03-11 17:45:51.068956-03	2022-03-11 17:45:51.068956-03	1	f
+2516	1	\N	\N	Juanito Cura Los Dolores Pies	2022-03-11 18:32:03.899661-03	2022-03-11 18:32:03.899661-03	1	f
+2517	1	\N	\N	Juanito Cura Los Dolores Pies	2022-03-11 18:32:22.504847-03	2022-03-11 18:32:22.504847-03	1	f
+2518	1	\N	\N	Juanito Cura Los Dolores Pies	2022-03-12 16:43:55.506491-03	2022-03-12 16:43:55.506491-03	1	f
+2519	1	\N	\N	Juanito Cura Los Dolores Pies	2022-03-12 16:56:17.34678-03	2022-03-12 16:56:17.34678-03	1	f
+2520	1	\N	\N	Juanito Cura Los Dolores Pies	2022-03-12 17:13:31.073606-03	2022-03-12 17:13:31.073606-03	1	f
+2521	1	\N	\N	Juanito Cura Los Dolores Pies	2022-03-14 10:10:10.732752-03	2022-03-14 10:10:10.732752-03	1	f
+2522	1	\N	\N	Juanito Cura Los Dolores Pies	2022-03-14 10:13:07.994045-03	2022-03-14 10:13:07.994045-03	1	f
+2523	1	\N	\N	Juanito Cura Los Dolores Pies	2022-03-15 16:01:14.77041-03	2022-03-15 16:01:14.77041-03	1	f
+2524	1	\N	\N	Juanito Cura Los Dolores Pies	2022-03-15 18:16:19.290577-03	2022-03-15 18:16:19.290577-03	1	f
+2525	1	\N	\N	Juanito Cura Los Dolores Pies	2022-03-15 18:40:03.061232-03	2022-03-15 18:40:03.061232-03	1	f
+2526	1	\N	\N	Juanito Cura Los Dolores Pies	2022-03-15 19:07:11.734115-03	2022-03-15 19:07:11.734115-03	1	f
+2527	1	\N	\N	Juanito Cura Los Dolores Pies	2022-03-15 19:07:56.592447-03	2022-03-15 19:07:56.592447-03	1	f
+2528	1	\N	\N	Juanito Cura Los Dolores Pies	2022-03-15 19:18:05.284605-03	2022-03-15 19:18:05.284605-03	1	f
+2529	1	\N	\N	Juanito Cura Los Dolores Pies	2022-03-16 15:27:40.877314-03	2022-03-16 15:27:40.877314-03	1	f
+2530	1	\N	\N	Juanito Cura Los Dolores Pies	2022-03-16 18:52:06.363372-03	2022-03-16 18:52:06.363372-03	1	f
+2531	1	\N	\N	Juanito Cura Los Dolores Pies	2022-03-16 19:15:17.424575-03	2022-03-16 19:15:17.424575-03	1	f
+2532	1	\N	\N	Juanito Cura Los Dolores Pies	2022-03-16 19:18:42.284647-03	2022-03-16 19:18:42.284647-03	1	f
+2533	1	\N	\N	Juanito Cura Los Dolores Pies	2022-03-16 19:44:01.921646-03	2022-03-16 19:44:01.921646-03	1	f
+2534	1	\N	\N	Juanito Cura Los Dolores Pies	2022-03-16 19:55:44.526073-03	2022-03-16 19:55:44.526073-03	1	f
+2535	1	\N	\N	Juanito Cura Los Dolores Pies	2022-03-16 19:57:39.501676-03	2022-03-16 19:57:39.501676-03	1	f
+2536	1	\N	\N	Juanito Cura Los Dolores Pies	2022-03-16 19:58:24.802715-03	2022-03-16 19:58:24.802715-03	1	f
+2537	1	\N	\N	Juanito Cura Los Dolores Pies	2022-03-16 20:04:13.336765-03	2022-03-16 20:04:13.336765-03	1	f
+2538	1	\N	\N	Juanito Cura Los Dolores Pies	2022-03-16 20:10:37.224625-03	2022-03-16 20:10:37.224625-03	1	f
+2539	1	\N	\N	Juanito Cura Los Dolores Pies	2022-03-16 20:20:27.8901-03	2022-03-16 20:20:27.8901-03	1	f
+2540	1	\N	\N	Juanito Cura Los Dolores Pies	2022-03-17 15:52:15.851818-03	2022-03-17 15:52:15.851818-03	1	f
+2541	1	\N	\N	Juanito Cura Los Dolores Pies	2022-03-17 17:13:45.554149-03	2022-03-17 17:13:45.554149-03	1	f
+2542	1	\N	\N	Juanito Cura Los Dolores Pies	2022-03-17 17:24:55.453287-03	2022-03-17 17:24:55.453287-03	1	f
+2543	1	\N	\N	Juanito Cura Los Dolores Pies	2022-03-17 17:29:54.05951-03	2022-03-17 17:29:54.05951-03	1	f
+2544	1	\N	\N	Juanito Cura Los Dolores Pies	2022-03-17 18:46:54.243375-03	2022-03-17 18:46:54.243375-03	1	f
+2545	1	\N	\N	Juanito Cura Los Dolores Pies	2022-03-17 18:47:27.096893-03	2022-03-17 18:47:27.096893-03	1	f
+2546	1	\N	\N	Juanito Cura Los Dolores Pies	2022-03-17 18:49:40.204879-03	2022-03-17 18:49:40.204879-03	1	f
+2547	1	\N	\N	Juanito Cura Los Dolores Pies	2022-03-17 19:15:02.408849-03	2022-03-17 19:15:02.408849-03	1	f
+2548	1	\N	\N	Juanito Cura Los Dolores Pies	2022-03-17 20:25:53.623303-03	2022-03-17 20:25:53.623303-03	1	f
+2549	1	\N	\N	Juanito Cura Los Dolores Pies	2022-03-17 20:31:42.415917-03	2022-03-17 20:31:42.415917-03	1	f
+2550	1	\N	\N	Juanito Cura Los Dolores Pies	2022-03-17 20:32:01.342055-03	2022-03-17 20:32:01.342055-03	1	f
+2551	1	\N	\N	Juanito Cura Los Dolores Pies	2022-03-17 20:58:18.480385-03	2022-03-17 20:58:18.480385-03	1	f
+2552	1	\N	\N	Juanito Cura Los Dolores Pies	2022-03-17 20:59:53.219198-03	2022-03-17 20:59:53.219198-03	1	f
+2553	1	\N	\N	Juanito Cura Los Dolores Pies	2022-03-17 21:02:04.69041-03	2022-03-17 21:02:04.69041-03	1	f
+2554	1	\N	\N	Juanito Cura Los Dolores Pies	2022-03-17 21:03:41.72706-03	2022-03-17 21:03:41.72706-03	1	f
+2555	1	\N	\N	Juanito Cura Los Dolores Pies	2022-03-17 21:05:08.558692-03	2022-03-17 21:05:08.558692-03	1	f
+2556	1	\N	\N	Juanito Cura Los Dolores Pies	2022-03-17 21:09:03.875585-03	2022-03-17 21:09:03.875585-03	1	f
+2557	1	\N	\N	Juanito Cura Los Dolores Pies	2022-03-20 18:09:19.537067-03	2022-03-20 18:09:19.537067-03	1	f
+2558	1	\N	\N	Juanito Cura Los Dolores Pies	2022-03-20 18:12:40.745644-03	2022-03-20 18:12:40.745644-03	1	f
+2559	1	\N	\N	Juanito Cura Los Dolores Pies	2022-03-20 18:23:15.038561-03	2022-03-20 18:23:15.038561-03	1	f
+2560	1	\N	\N	Juanito Cura Los Dolores Pies	2022-03-20 18:34:51.569866-03	2022-03-20 18:34:51.569866-03	1	f
+2561	1	\N	\N	Juanito Cura Los Dolores Pies	2022-03-20 18:37:51.501862-03	2022-03-20 18:37:51.501862-03	1	f
+2562	1	\N	\N	Juanito Cura Los Dolores Pies	2022-03-20 18:58:27.906-03	2022-03-20 18:58:27.906-03	1	f
+2563	1	\N	\N	Juanito Cura Los Dolores Pies	2022-03-21 17:37:28.301422-03	2022-03-21 17:37:28.301422-03	1	f
+2564	1	\N	\N	Juanito Cura Los Dolores Pies	2022-03-21 18:05:19.839726-03	2022-03-21 18:05:19.839726-03	1	f
+2565	1	\N	\N	Juanito Cura Los Dolores Pies	2022-03-22 10:38:04.469749-03	2022-03-22 10:38:04.469749-03	1	f
+2566	1	\N	\N	Juanito Cura Los Dolores Pies	2022-03-22 10:40:52.868332-03	2022-03-22 10:40:52.868332-03	1	f
+2567	1	\N	\N	Juanito Cura Los Dolores Pies	2022-03-22 10:43:16.179989-03	2022-03-22 10:43:16.179989-03	1	f
+2568	1	\N	\N	Juanito Cura Los Dolores Pies	2022-03-22 10:45:24.485827-03	2022-03-22 10:45:24.485827-03	1	f
+2569	1	\N	\N	Juanito Cura Los Dolores Pies	2022-03-22 12:24:04.790913-03	2022-03-22 12:24:04.790913-03	1	f
+2570	1	\N	\N	Juanito Cura Los Dolores Pies	2022-03-22 13:23:35.531527-03	2022-03-22 13:23:35.531527-03	1	f
+2571	1	\N	\N	Juanito Cura Los Dolores Pies	2022-03-22 15:37:00.89454-03	2022-03-22 15:37:00.89454-03	1	f
+2572	1	\N	\N	Juanito Cura Los Dolores Pies	2022-03-22 15:55:46.833898-03	2022-03-22 15:55:46.833898-03	1	f
+2573	1	\N	\N	Juanito Cura Los Dolores Pies	2022-03-22 16:05:59.066197-03	2022-03-22 16:05:59.066197-03	1	f
+2574	1	\N	\N	Juanito Cura Los Dolores Pies	2022-03-22 16:12:05.416642-03	2022-03-22 16:12:05.416642-03	1	f
+2575	1	\N	\N	Juanito Cura Los Dolores Pies	2022-03-22 16:32:11.4766-03	2022-03-22 16:32:11.4766-03	1	f
+2576	1	\N	\N	Juanito Cura Los Dolores Pies	2022-03-22 16:45:23.800542-03	2022-03-22 16:45:23.800542-03	1	f
+2577	1	\N	\N	Juanito Cura Los Dolores Pies	2022-03-22 17:05:55.382131-03	2022-03-22 17:05:55.382131-03	1	f
+2578	1	\N	\N	Juanito Cura Los Dolores Pies	2022-03-22 17:22:57.680358-03	2022-03-22 17:22:57.680358-03	1	f
+2579	1	\N	\N	Juanito Cura Los Dolores Pies	2022-03-22 18:16:18.682007-03	2022-03-22 18:16:18.682007-03	1	f
+2580	1	\N	\N	Juanito Cura Los Dolores Pies	2022-03-22 19:02:35.373563-03	2022-03-22 19:02:35.373563-03	1	f
+2581	1	\N	\N	Juanito Cura Los Dolores Pies	2022-03-22 19:03:02.725643-03	2022-03-22 19:03:02.725643-03	1	f
+2582	1	\N	\N	Juanito Cura Los Dolores Pies	2022-03-22 19:05:36.624137-03	2022-03-22 19:05:36.624137-03	1	f
+2583	1	\N	\N	Juanito Cura Los Dolores Pies	2022-03-22 19:25:04.178501-03	2022-03-22 19:25:04.178501-03	1	f
+2584	1	\N	\N	Juanito Cura Los Dolores Pies	2022-03-28 17:58:05.707527-03	2022-03-28 17:58:05.707527-03	1	f
+2585	1	\N	\N	Juanito Cura Los Dolores Pies	2022-03-29 17:52:06.945901-03	2022-03-29 17:52:06.945901-03	1	f
+2586	1	\N	\N	Juanito Cura Los Dolores Pies	2022-03-29 18:02:37.560523-03	2022-03-29 18:02:37.560523-03	1	f
+2587	1	\N	\N	Juanito Cura Los Dolores Pies	2022-03-29 18:10:07.564895-03	2022-03-29 18:10:07.564895-03	1	f
+2588	1	\N	\N	Juanito Cura Los Dolores Pies	2022-03-29 18:16:43.341477-03	2022-03-29 18:16:43.341477-03	1	f
+2589	1	\N	\N	Juanito Cura Los Dolores Pies	2022-03-29 18:17:54.461543-03	2022-03-29 18:17:54.461543-03	1	f
+2590	1	\N	\N	Juanito Cura Los Dolores Pies	2022-03-29 18:18:24.644962-03	2022-03-29 18:18:24.644962-03	1	f
+2591	1	\N	\N	Juanito Cura Los Dolores Pies	2022-03-29 18:18:57.419388-03	2022-03-29 18:18:57.419388-03	1	f
+2592	1	\N	\N	Juanito Cura Los Dolores Pies	2022-03-29 18:19:32.051787-03	2022-03-29 18:19:32.051787-03	1	f
+2593	1	\N	\N	Juanito Cura Los Dolores Pies	2022-03-29 18:20:21.516662-03	2022-03-29 18:20:21.516662-03	1	f
+2594	1	\N	\N	Juanito Cura Los Dolores Pies	2022-03-29 18:26:03.203929-03	2022-03-29 18:26:03.203929-03	1	f
+2595	1	\N	\N	Juanito Cura Los Dolores Pies	2022-03-29 18:28:50.333027-03	2022-03-29 18:28:50.333027-03	1	f
+2596	1	\N	\N	Juanito Cura Los Dolores Pies	2022-03-29 18:29:37.221875-03	2022-03-29 18:29:37.221875-03	1	f
+2597	1	\N	\N	Juanito Cura Los Dolores Pies	2022-03-29 18:33:33.204606-03	2022-03-29 18:33:33.204606-03	1	f
+2598	1	\N	\N	Juanito Cura Los Dolores Pies	2022-03-29 18:52:25.344146-03	2022-03-29 18:52:25.344146-03	1	f
+2599	1	\N	\N	Juanito Cura Los Dolores Pies	2022-03-29 18:53:13.921841-03	2022-03-29 18:53:13.921841-03	1	f
+2600	1	\N	\N	Juanito Cura Los Dolores Pies	2022-03-29 18:53:21.561533-03	2022-03-29 18:53:21.561533-03	1	f
+2601	1	\N	\N	Juanito Cura Los Dolores Pies	2022-03-29 18:59:10.940234-03	2022-03-29 18:59:10.940234-03	1	f
+2602	1	\N	\N	Juanito Cura Los Dolores Pies	2022-03-29 19:02:42.685498-03	2022-03-29 19:02:42.685498-03	1	f
+2603	1	\N	\N	Juanito Cura Los Dolores Pies	2022-03-29 19:05:00.104567-03	2022-03-29 19:05:00.104567-03	1	f
+2604	1	\N	\N	Juanito Cura Los Dolores Pies	2022-03-29 19:06:36.529629-03	2022-03-29 19:06:36.529629-03	1	f
+2605	1	\N	\N	Juanito Cura Los Dolores Pies	2022-03-29 19:15:46.263464-03	2022-03-29 19:15:46.263464-03	1	f
+2606	1	\N	\N	Juanito Cura Los Dolores Pies	2022-03-29 19:16:21.186113-03	2022-03-29 19:16:21.186113-03	1	f
+2607	1	\N	\N	Juanito Cura Los Dolores Pies	2022-03-29 19:19:23.422626-03	2022-03-29 19:19:23.422626-03	1	f
+2608	1	\N	\N	Juanito Cura Los Dolores Pies	2022-03-29 19:22:32.955001-03	2022-03-29 19:22:32.955001-03	1	f
+2609	1	\N	\N	Juanito Cura Los Dolores Pies	2022-03-31 13:46:02.076861-03	2022-03-31 13:46:02.076861-03	1	f
+2610	1	\N	\N	Juanito Cura Los Dolores Pies	2022-03-31 13:54:54.928057-03	2022-03-31 13:54:54.928057-03	1	f
+2611	1	\N	\N	Juanito Cura Los Dolores Pies	2022-03-31 13:55:51.452744-03	2022-03-31 13:55:51.452744-03	1	f
+2612	1	\N	\N	Juanito Cura Los Dolores Pies	2022-03-31 13:58:05.272623-03	2022-03-31 13:58:05.272623-03	1	f
+2613	1	\N	\N	Juanito Cura Los Dolores Pies	2022-03-31 14:06:36.594058-03	2022-03-31 14:06:36.594058-03	1	f
+2614	1	\N	\N	Juanito Cura Los Dolores Pies	2022-03-31 14:09:35.313141-03	2022-03-31 14:09:35.313141-03	1	f
+2615	1	\N	\N	Juanito Cura Los Dolores Pies	2022-03-31 14:10:14.768226-03	2022-03-31 14:10:14.768226-03	1	f
+2616	1	\N	\N	Juanito Cura Los Dolores Pies	2022-03-31 14:12:44.897815-03	2022-03-31 14:12:44.897815-03	1	f
+2617	1	\N	\N	Juanito Cura Los Dolores Pies	2022-03-31 14:12:59.626405-03	2022-03-31 14:12:59.626405-03	1	f
+2618	1	\N	\N	Juanito Cura Los Dolores Pies	2022-03-31 16:23:17.658211-03	2022-03-31 16:23:17.658211-03	1	f
+2619	1	\N	\N	Juanito Cura Los Dolores Pies	2022-03-31 16:24:24.902208-03	2022-03-31 16:24:24.902208-03	1	f
+2620	1	\N	\N	Juanito Cura Los Dolores Pies	2022-03-31 16:32:11.321543-03	2022-03-31 16:32:11.321543-03	1	f
+2621	1	\N	\N	Juanito Cura Los Dolores Pies	2022-03-31 16:32:16.548795-03	2022-03-31 16:32:16.548795-03	1	f
+2622	1	\N	\N	Juanito Cura Los Dolores Pies	2022-03-31 16:41:17.725159-03	2022-03-31 16:41:17.725159-03	1	f
+2623	1	\N	\N	Juanito Cura Los Dolores Pies	2022-03-31 16:41:36.258102-03	2022-03-31 16:41:36.258102-03	1	f
+2624	1	\N	\N	Juanito Cura Los Dolores Pies	2022-03-31 18:14:22.533004-03	2022-03-31 18:14:22.533004-03	1	f
+2625	1	\N	\N	Juanito Cura Los Dolores Pies	2022-03-31 18:15:31.540011-03	2022-03-31 18:15:31.540011-03	1	f
+2626	1	\N	\N	Juanito Cura Los Dolores Pies	2022-03-31 18:18:12.522259-03	2022-03-31 18:18:12.522259-03	1	f
+2627	1	\N	\N	Juanito Cura Los Dolores Pies	2022-03-31 18:19:10.674346-03	2022-03-31 18:19:10.674346-03	1	f
+2628	1	\N	\N	Juanito Cura Los Dolores Pies	2022-03-31 18:20:54.882996-03	2022-03-31 18:20:54.882996-03	1	f
+2629	1	\N	\N	Juanito Cura Los Dolores Pies	2022-03-31 18:21:41.522561-03	2022-03-31 18:21:41.522561-03	1	f
+2630	1	\N	\N	Juanito Cura Los Dolores Pies	2022-03-31 18:22:33.33139-03	2022-03-31 18:22:33.33139-03	1	f
+2631	1	\N	\N	Juanito Cura Los Dolores Pies	2022-03-31 18:23:41.34722-03	2022-03-31 18:23:41.34722-03	1	f
+2632	1	\N	\N	Juanito Cura Los Dolores Pies	2022-03-31 18:26:16.116878-03	2022-03-31 18:26:16.116878-03	1	f
+2633	1	\N	\N	Juanito Cura Los Dolores Pies	2022-03-31 18:26:58.031323-03	2022-03-31 18:26:58.031323-03	1	f
+2634	1	\N	\N	Juanito Cura Los Dolores Pies	2022-03-31 18:29:23.69757-03	2022-03-31 18:29:23.69757-03	1	f
+2635	1	\N	\N	Juanito Cura Los Dolores Pies	2022-03-31 18:30:43.93168-03	2022-03-31 18:30:43.93168-03	1	f
+2636	1	\N	\N	Juanito Cura Los Dolores Pies	2022-03-31 18:32:20.061426-03	2022-03-31 18:32:20.061426-03	1	f
+2637	1	\N	\N	Juanito Cura Los Dolores Pies	2022-03-31 18:33:51.217583-03	2022-03-31 18:33:51.217583-03	1	f
+2638	1	\N	\N	Juanito Cura Los Dolores Pies	2022-03-31 18:35:32.265671-03	2022-03-31 18:35:32.265671-03	1	f
+2639	1	\N	\N	Juanito Cura Los Dolores Pies	2022-03-31 18:36:44.911335-03	2022-03-31 18:36:44.911335-03	1	f
+2640	1	\N	\N	Juanito Cura Los Dolores Pies	2022-03-31 18:37:55.519471-03	2022-03-31 18:37:55.519471-03	1	f
+2641	1	\N	\N	Juanito Cura Los Dolores Pies	2022-03-31 18:39:25.087226-03	2022-03-31 18:39:25.087226-03	1	f
+2642	1	\N	\N	Juanito Cura Los Dolores Pies	2022-03-31 18:41:58.87542-03	2022-03-31 18:41:58.87542-03	1	f
+2643	1	\N	\N	Juanito Cura Los Dolores Pies	2022-03-31 18:43:26.977867-03	2022-03-31 18:43:26.977867-03	1	f
+2644	1	\N	\N	Juanito Cura Los Dolores Pies	2022-03-31 18:45:54.787723-03	2022-03-31 18:45:54.787723-03	1	f
+2645	1	\N	\N	Juanito Cura Los Dolores Pies	2022-03-31 18:46:52.871607-03	2022-03-31 18:46:52.871607-03	1	f
+2646	1	\N	\N	Juanito Cura Los Dolores Pies	2022-03-31 18:47:48.730429-03	2022-03-31 18:47:48.730429-03	1	f
+2647	1	\N	\N	Juanito Cura Los Dolores Pies	2022-03-31 18:48:47.630538-03	2022-03-31 18:48:47.630538-03	1	f
+2648	1	\N	\N	Juanito Cura Los Dolores Pies	2022-04-01 10:39:42.50592-03	2022-04-01 10:39:42.50592-03	1	f
+2649	1	\N	\N	Juanito Cura Los Dolores Pies	2022-04-01 10:41:22.609838-03	2022-04-01 10:41:22.609838-03	1	f
+2650	1	\N	\N	Juanito Cura Los Dolores Pies	2022-04-01 10:43:24.924255-03	2022-04-01 10:43:24.924255-03	1	f
+2651	1	\N	\N	Juanito Cura Los Dolores Pies	2022-04-01 10:45:15.759946-03	2022-04-01 10:45:15.759946-03	1	f
+2652	1	\N	\N	Juanito Cura Los Dolores Pies	2022-04-01 10:46:08.786887-03	2022-04-01 10:46:08.786887-03	1	f
+2653	1	\N	\N	Juanito Cura Los Dolores Pies	2022-04-01 10:46:52.509025-03	2022-04-01 10:46:52.509025-03	1	f
+2654	1	\N	\N	Juanito Cura Los Dolores Pies	2022-04-01 10:50:52.006375-03	2022-04-01 10:50:52.006375-03	1	f
+2655	1	\N	\N	Juanito Cura Los Dolores Pies	2022-04-01 10:51:29.758381-03	2022-04-01 10:51:29.758381-03	1	f
+2656	1	\N	\N	Juanito Cura Los Dolores Pies	2022-04-01 10:52:14.987398-03	2022-04-01 10:52:14.987398-03	1	f
+2657	1	\N	\N	Juanito Cura Los Dolores Pies	2022-04-01 10:53:11.46116-03	2022-04-01 10:53:11.46116-03	1	f
+2658	1	\N	\N	Juanito Cura Los Dolores Pies	2022-04-01 10:57:31.374367-03	2022-04-01 10:57:31.374367-03	1	f
+2659	1	\N	\N	Juanito Cura Los Dolores Pies	2022-04-01 11:02:16.49137-03	2022-04-01 11:02:16.49137-03	1	f
+2660	1	\N	\N	Juanito Cura Los Dolores Pies	2022-04-01 11:03:19.357627-03	2022-04-01 11:03:19.357627-03	1	f
+2661	1	\N	\N	Juanito Cura Los Dolores Pies	2022-04-01 11:22:32.459861-03	2022-04-01 11:22:32.459861-03	1	f
+2662	1	\N	\N	Juanito Cura Los Dolores Pies	2022-04-01 11:25:41.506451-03	2022-04-01 11:25:41.506451-03	1	f
+2663	1	\N	\N	Juanito Cura Los Dolores Pies	2022-04-01 12:50:05.952055-03	2022-04-01 12:50:05.952055-03	1	f
+2664	1	\N	\N	Juanito Cura Los Dolores Pies	2022-04-01 12:51:24.842972-03	2022-04-01 12:51:24.842972-03	1	f
+2665	1	\N	\N	Juanito Cura Los Dolores Pies	2022-04-01 12:52:29.001654-03	2022-04-01 12:52:29.001654-03	1	f
+2666	1	\N	\N	Juanito Cura Los Dolores Pies	2022-04-01 12:53:49.907488-03	2022-04-01 12:53:49.907488-03	1	f
+2667	1	\N	\N	Juanito Cura Los Dolores Pies	2022-04-01 12:55:28.049709-03	2022-04-01 12:55:28.049709-03	1	f
+2668	1	\N	\N	Juanito Cura Los Dolores Pies	2022-04-01 12:56:25.632856-03	2022-04-01 12:56:25.632856-03	1	f
+2669	1	\N	\N	Juanito Cura Los Dolores Pies	2022-04-01 12:57:19.739787-03	2022-04-01 12:57:19.739787-03	1	f
+2670	1	\N	\N	Juanito Cura Los Dolores Pies	2022-04-01 12:58:13.536667-03	2022-04-01 12:58:13.536667-03	1	f
+2671	1	\N	\N	Juanito Cura Los Dolores Pies	2022-04-01 12:59:46.591178-03	2022-04-01 12:59:46.591178-03	1	f
+2672	1	\N	\N	Juanito Cura Los Dolores Pies	2022-04-01 12:59:56.220873-03	2022-04-01 12:59:56.220873-03	1	f
+2673	1	\N	\N	Juanito Cura Los Dolores Pies	2022-04-01 13:19:41.621857-03	2022-04-01 13:19:41.621857-03	1	f
+2674	1	\N	\N	Juanito Cura Los Dolores Pies	2022-04-01 13:19:58.99988-03	2022-04-01 13:19:58.99988-03	1	f
+2675	1	\N	\N	Juanito Cura Los Dolores Pies	2022-04-01 13:21:21.613325-03	2022-04-01 13:21:21.613325-03	1	f
+2676	1	\N	\N	Juanito Cura Los Dolores Pies	2022-04-01 13:25:41.033473-03	2022-04-01 13:25:41.033473-03	1	f
+2677	1	\N	\N	Juanito Cura Los Dolores Pies	2022-04-01 13:26:40.751452-03	2022-04-01 13:26:40.751452-03	1	f
+2678	1	\N	\N	Juanito Cura Los Dolores Pies	2022-04-01 13:29:22.194676-03	2022-04-01 13:29:22.194676-03	1	f
+2679	1	\N	\N	Juanito Cura Los Dolores Pies	2022-04-01 15:23:16.572536-03	2022-04-01 15:23:16.572536-03	1	f
+2680	1	\N	\N	Juanito Cura Los Dolores Pies	2022-04-01 15:34:18.627682-03	2022-04-01 15:34:18.627682-03	1	f
+2681	1	\N	\N	Juanito Cura Los Dolores Pies	2022-04-01 15:40:33.787838-03	2022-04-01 15:40:33.787838-03	1	f
+2682	1	\N	\N	Juanito Cura Los Dolores Pies	2022-04-01 17:07:34.054909-03	2022-04-01 17:07:34.054909-03	1	f
+2683	1	\N	\N	Juanito Cura Los Dolores Pies	2022-04-04 15:48:22.075091-04	2022-04-04 15:48:22.075091-04	1	f
+2684	1	\N	\N	Juanito Cura Los Dolores Pies	2022-04-04 15:59:21.121955-04	2022-04-04 15:59:21.121955-04	1	f
+2685	1	\N	\N	Juanito Cura Los Dolores Pies	2022-04-06 14:02:30.06154-04	2022-04-06 14:02:30.06154-04	1	f
+2686	1	\N	\N	Juanito Cura Los Dolores Pies	2022-04-25 18:10:00.091989-04	2022-04-25 18:10:00.091989-04	1	f
+2687	1	\N	\N	Juanito Cura Los Dolores Pies	2022-04-25 18:16:58.24821-04	2022-04-25 18:16:58.24821-04	1	f
+2688	1	\N	\N	Juanito Cura Los Dolores Pies	2022-04-26 10:37:43.865461-04	2022-04-26 10:37:43.865461-04	1	f
+2689	1	\N	\N	Juanito Cura Los Dolores Pies	2022-04-26 10:45:08.483427-04	2022-04-26 10:45:08.483427-04	1	f
+2690	1	\N	\N	Juanito Cura Los Dolores Pies	2022-04-26 10:45:46.429802-04	2022-04-26 10:45:46.429802-04	1	f
+2691	1	\N	\N	Juanito Cura Los Dolores Pies	2022-04-26 10:46:56.110496-04	2022-04-26 10:46:56.110496-04	1	f
+2692	1	\N	\N	Juanito Cura Los Dolores Pies	2022-04-26 10:51:56.653229-04	2022-04-26 10:51:56.653229-04	1	f
+2693	1	\N	\N	Juanito Cura Los Dolores Pies	2022-04-26 11:00:11.715909-04	2022-04-26 11:00:11.715909-04	1	f
+2694	1	\N	\N	Juanito Cura Los Dolores Pies	2022-04-26 11:06:34.739042-04	2022-04-26 11:06:34.739042-04	1	f
+2695	1	\N	\N	Juanito Cura Los Dolores Pies	2022-04-26 11:09:56.725033-04	2022-04-26 11:09:56.725033-04	1	f
+2696	1	\N	\N	Juanito Cura Los Dolores Pies	2022-04-26 11:12:45.105019-04	2022-04-26 11:12:45.105019-04	1	f
+2697	1	\N	\N	Juanito Cura Los Dolores Pies	2022-04-26 11:43:17.105413-04	2022-04-26 11:43:17.105413-04	1	f
+2698	1	\N	\N	Juanito Cura Los Dolores Pies	2022-04-26 12:33:22.694452-04	2022-04-26 12:33:22.694452-04	1	f
+2699	1	\N	\N	Juanito Cura Los Dolores Pies	2022-04-26 13:39:19.245636-04	2022-04-26 13:39:19.245636-04	1	f
+2700	1	\N	\N	Juanito Cura Los Dolores Pies	2022-04-26 16:53:02.393038-04	2022-04-26 16:53:02.393038-04	1	f
+2701	1	\N	\N	Juanito Cura Los Dolores Pies	2022-04-26 16:57:03.373038-04	2022-04-26 16:57:03.373038-04	1	f
+2702	1	\N	\N	Juanito Cura Los Dolores Pies	2022-04-26 17:30:39.608942-04	2022-04-26 17:30:39.608942-04	1	f
+2703	1	\N	\N	Juanito Cura Los Dolores Pies	2022-04-26 17:30:42.992022-04	2022-04-26 17:30:42.992022-04	1	f
+2704	1	\N	\N	Juanito Cura Los Dolores Pies	2022-04-26 17:31:11.323985-04	2022-04-26 17:31:11.323985-04	1	f
+2705	1	\N	\N	Juanito Cura Los Dolores Pies	2022-04-26 18:12:33.389104-04	2022-04-26 18:12:33.389104-04	1	f
+2706	1	\N	\N	Juanito Cura Los Dolores Pies	2022-04-26 18:26:51.178851-04	2022-04-26 18:26:51.178851-04	1	f
+2707	1	\N	\N	Juanito Cura Los Dolores Pies	2022-04-26 18:35:11.293418-04	2022-04-26 18:35:11.293418-04	1	f
+2708	1	\N	\N	Juanito Cura Los Dolores Pies	2022-04-26 19:09:17.011709-04	2022-04-26 19:09:17.011709-04	1	f
+2709	1	\N	\N	Juanito Cura Los Dolores Pies	2022-04-26 19:10:19.987855-04	2022-04-26 19:10:19.987855-04	1	f
+2710	1	\N	\N	Juanito Cura Los Dolores Pies	2022-04-26 19:10:24.742141-04	2022-04-26 19:10:24.742141-04	1	f
+2711	1	\N	\N	Juanito Cura Los Dolores Pies	2022-04-26 19:10:39.346666-04	2022-04-26 19:10:39.346666-04	1	f
+2712	1	\N	\N	Juanito Cura Los Dolores Pies	2022-04-26 19:10:54.364713-04	2022-04-26 19:10:54.364713-04	1	f
+2713	1	\N	\N	Juanito Cura Los Dolores Pies	2022-04-26 19:16:46.798744-04	2022-04-26 19:16:46.798744-04	1	f
+2714	1	\N	\N	Juanito Cura Los Dolores Pies	2022-04-26 19:18:55.082459-04	2022-04-26 19:18:55.082459-04	1	f
+2715	1	\N	\N	Juanito Cura Los Dolores Pies	2022-04-26 19:19:27.280376-04	2022-04-26 19:19:27.280376-04	1	f
+2716	1	\N	\N	Juanito Cura Los Dolores Pies	2022-04-26 19:20:52.790019-04	2022-04-26 19:20:52.790019-04	1	f
+2717	1	\N	\N	Juanito Cura Los Dolores Pies	2022-04-26 19:21:57.639723-04	2022-04-26 19:21:57.639723-04	1	f
+2718	1	\N	\N	Juanito Cura Los Dolores Pies	2022-04-26 19:28:37.048375-04	2022-04-26 19:28:37.048375-04	1	f
+2719	1	\N	\N	Juanito Cura Los Dolores Pies	2022-04-26 19:29:43.34592-04	2022-04-26 19:29:43.34592-04	1	f
+2720	1	\N	\N	Juanito Cura Los Dolores Pies	2022-04-27 15:11:58.093086-04	2022-04-27 15:11:58.093086-04	1	f
+2721	1	\N	\N	Juanito Cura Los Dolores Pies	2022-04-27 15:14:36.995462-04	2022-04-27 15:14:36.995462-04	1	f
+2722	1	\N	\N	Juanito Cura Los Dolores Pies	2022-04-27 15:16:57.41319-04	2022-04-27 15:16:57.41319-04	1	f
+2723	1	\N	\N	Juanito Cura Los Dolores Pies	2022-04-27 15:20:52.621793-04	2022-04-27 15:20:52.621793-04	1	f
+2724	1	\N	\N	Juanito Cura Los Dolores Pies	2022-04-27 15:29:58.882211-04	2022-04-27 15:29:58.882211-04	1	f
+2725	1	\N	\N	Juanito Cura Los Dolores Pies	2022-04-27 15:30:06.204771-04	2022-04-27 15:30:06.204771-04	1	f
+2726	1	\N	\N	Juanito Cura Los Dolores Pies	2022-04-27 15:31:42.669316-04	2022-04-27 15:31:42.669316-04	1	f
+2727	1	\N	\N	Juanito Cura Los Dolores Pies	2022-04-27 15:33:49.253052-04	2022-04-27 15:33:49.253052-04	1	f
+2728	1	\N	\N	Juanito Cura Los Dolores Pies	2022-04-27 15:45:49.188473-04	2022-04-27 15:45:49.188473-04	1	f
+2729	1	\N	\N	Juanito Cura Los Dolores Pies	2022-04-27 15:46:01.813277-04	2022-04-27 15:46:01.813277-04	1	f
+2730	1	\N	\N	Juanito Cura Los Dolores Pies	2022-04-27 16:51:09.870109-04	2022-04-27 16:51:09.870109-04	1	f
+2731	1	\N	\N	Juanito Cura Los Dolores Pies	2022-04-27 16:51:53.456968-04	2022-04-27 16:51:53.456968-04	1	f
+2732	1	\N	\N	Juanito Cura Los Dolores Pies	2022-04-27 16:53:18.020298-04	2022-04-27 16:53:18.020298-04	1	f
+2733	1	\N	\N	Juanito Cura Los Dolores Pies	2022-04-27 17:34:16.349121-04	2022-04-27 17:34:16.349121-04	1	f
+2734	1	\N	\N	Juanito Cura Los Dolores Pies	2022-04-27 17:36:05.031098-04	2022-04-27 17:36:05.031098-04	1	f
+2735	1	\N	\N	Juanito Cura Los Dolores Pies	2022-04-27 17:57:22.482429-04	2022-04-27 17:57:22.482429-04	1	f
+2736	1	\N	\N	Juanito Cura Los Dolores Pies	2022-04-27 18:22:21.13092-04	2022-04-27 18:22:21.13092-04	1	f
+2737	1	\N	\N	Juanito Cura Los Dolores Pies	2022-04-27 18:25:20.717472-04	2022-04-27 18:25:20.717472-04	1	f
+2738	1	\N	\N	Juanito Cura Los Dolores Pies	2022-04-27 22:06:27.908169-04	2022-04-27 22:06:27.908169-04	1	f
+2739	1	\N	\N	Juanito Cura Los Dolores Pies	2022-04-27 22:28:37.918513-04	2022-04-27 22:28:37.918513-04	1	f
+2740	1	\N	\N	Juanito Cura Los Dolores Pies	2022-04-27 22:47:21.989706-04	2022-04-27 22:47:21.989706-04	1	f
+2741	1	\N	\N	Juanito Cura Los Dolores Pies	2022-04-27 22:57:52.989404-04	2022-04-27 22:57:52.989404-04	1	f
+2742	1	\N	\N	Juanito Cura Los Dolores Pies	2022-04-28 11:12:06.978118-04	2022-04-28 11:12:06.978118-04	1	f
+2743	1	\N	\N	Juanito Cura Los Dolores Pies	2022-04-28 12:48:48.919077-04	2022-04-28 12:48:48.919077-04	1	f
+2744	1	\N	\N	Juanito Cura Los Dolores Pies	2022-04-28 12:51:18.550282-04	2022-04-28 12:51:18.550282-04	1	f
+2745	1	\N	\N	Juanito Cura Los Dolores Pies	2022-04-28 16:26:55.379862-04	2022-04-28 16:26:55.379862-04	1	f
+2746	1	\N	\N	Juanito Cura Los Dolores Pies	2022-04-28 16:28:51.77126-04	2022-04-28 16:28:51.77126-04	1	f
+2747	1	\N	\N	Juanito Cura Los Dolores Pies	2022-04-28 16:48:07.147262-04	2022-04-28 16:48:07.147262-04	1	f
+2748	1	\N	\N	Juanito Cura Los Dolores Pies	2022-04-28 16:58:52.842314-04	2022-04-28 16:58:52.842314-04	1	f
+2749	2	\N	\N	Maria Jesus Alfonso Toro	2022-04-28 17:23:44.409729-04	2022-04-28 17:23:44.409729-04	1	f
+2750	2	\N	\N	Maria Jesus Alfonso Toro	2022-04-28 17:28:35.392422-04	2022-04-28 17:28:35.392422-04	1	f
+2751	2	\N	\N	Maria Jesus Alfonso Toro	2022-04-28 17:41:21.775837-04	2022-04-28 17:41:21.775837-04	1	f
+2752	1	\N	\N	Juanito Cura Los Dolores Pies	2022-04-28 17:56:57.08996-04	2022-04-28 17:56:57.08996-04	1	f
+2753	1	\N	\N	Juanito Cura Los Dolores Pies	2022-04-28 18:06:10.259722-04	2022-04-28 18:06:10.259722-04	1	f
+2754	1	\N	\N	Juanito Cura Los Dolores Pies	2022-04-28 18:19:17.511489-04	2022-04-28 18:19:17.511489-04	1	f
+2755	2	\N	\N	Maria Jesus Alfonso Toro	2022-04-28 18:21:33.823152-04	2022-04-28 18:21:33.823152-04	1	f
+2756	2	\N	\N	Maria Jesus Alfonso Toro	2022-04-28 18:22:16.273319-04	2022-04-28 18:22:16.273319-04	1	f
+\.
+
+
+--
+-- Data for Name: specialty; Type: TABLE DATA; Schema: public; Owner: conmeddb_user
+--
+
+COPY public.specialty (id, name, description) FROM stdin;
+144	Kinesiología	\N
+145	Psicología	\N
+146	Fonoaudiología	\N
+147	Nutrición	\N
+149	Kinesiologia Adulto Mayor	\N
+150	Kinesiologia Infantil	\N
+151	Traumatologia	\N
+152	Podología	\N
+148	PsicologÍa Infantil	\N
+153	Fonoaudología Infantil	\N
+\.
+
+
+--
+-- Name: account_id_seq; Type: SEQUENCE SET; Schema: public; Owner: conmeddb_user
+--
+
+SELECT pg_catalog.setval('public.account_id_seq', 1, true);
+
+
+--
+-- Name: appointment_id_seq; Type: SEQUENCE SET; Schema: public; Owner: conmeddb_user
+--
+
+SELECT pg_catalog.setval('public.appointment_id_seq', 1680, true);
+
+
+--
+-- Name: assistant_center_id_seq; Type: SEQUENCE SET; Schema: public; Owner: conmeddb_user
+--
+
+SELECT pg_catalog.setval('public.assistant_center_id_seq', 1, false);
+
+
+--
+-- Name: assistant_id_seq; Type: SEQUENCE SET; Schema: public; Owner: conmeddb_user
+--
+
+SELECT pg_catalog.setval('public.assistant_id_seq', 48, true);
+
+
+--
+-- Name: assistant_professional_id_seq; Type: SEQUENCE SET; Schema: public; Owner: conmeddb_user
+--
+
+SELECT pg_catalog.setval('public.assistant_professional_id_seq', 46, true);
+
+
+--
+-- Name: center_id_seq; Type: SEQUENCE SET; Schema: public; Owner: conmeddb_user
+--
+
+SELECT pg_catalog.setval('public.center_id_seq', 144, true);
+
+
+--
+-- Name: center_professional_id_seq; Type: SEQUENCE SET; Schema: public; Owner: conmeddb_user
+--
+
+SELECT pg_catalog.setval('public.center_professional_id_seq', 145, true);
+
+
+--
+-- Name: comuna_id_seq; Type: SEQUENCE SET; Schema: public; Owner: conmeddb_user
+--
+
+SELECT pg_catalog.setval('public.comuna_id_seq', 1747, true);
+
+
+--
+-- Name: insurance_id_seq; Type: SEQUENCE SET; Schema: public; Owner: conmeddb_user
+--
+
+SELECT pg_catalog.setval('public.insurance_id_seq', 14, true);
+
+
+--
+-- Name: professional_calendar_id_seq; Type: SEQUENCE SET; Schema: public; Owner: conmeddb_user
+--
+
+SELECT pg_catalog.setval('public.professional_calendar_id_seq', 115, true);
+
+
+--
+-- Name: professional_id_seq; Type: SEQUENCE SET; Schema: public; Owner: conmeddb_user
+--
+
+SELECT pg_catalog.setval('public.professional_id_seq', 2, true);
+
+
+--
+-- Name: professional_specialty_id_seq; Type: SEQUENCE SET; Schema: public; Owner: conmeddb_user
+--
+
+SELECT pg_catalog.setval('public.professional_specialty_id_seq', 17, true);
+
+
+--
+-- Name: session_id_seq; Type: SEQUENCE SET; Schema: public; Owner: conmeddb_user
+--
+
+SELECT pg_catalog.setval('public.session_id_seq', 2756, true);
+
+
+--
+-- Name: specialty_id_seq; Type: SEQUENCE SET; Schema: public; Owner: conmeddb_user
+--
+
+SELECT pg_catalog.setval('public.specialty_id_seq', 153, true);
+
+
+--
+-- Name: account account_id; Type: CONSTRAINT; Schema: public; Owner: conmeddb_user
+--
+
+ALTER TABLE ONLY public.account
+    ADD CONSTRAINT account_id PRIMARY KEY (id);
+
+
+--
+-- Name: appointment appointment_id; Type: CONSTRAINT; Schema: public; Owner: conmeddb_user
+--
+
+ALTER TABLE ONLY public.appointment
+    ADD CONSTRAINT appointment_id PRIMARY KEY (id);
+
+
+--
+-- Name: assistant assistant_id; Type: CONSTRAINT; Schema: public; Owner: conmeddb_user
+--
+
+ALTER TABLE ONLY public.assistant
+    ADD CONSTRAINT assistant_id PRIMARY KEY (id);
+
+
+--
+-- Name: assistant_professional assistant_professional_id; Type: CONSTRAINT; Schema: public; Owner: conmeddb_user
+--
+
+ALTER TABLE ONLY public.assistant_professional
+    ADD CONSTRAINT assistant_professional_id PRIMARY KEY (id);
+
+
+--
+-- Name: booking booking_id; Type: CONSTRAINT; Schema: public; Owner: conmeddb_user
+--
+
+ALTER TABLE ONLY public.booking
+    ADD CONSTRAINT booking_id PRIMARY KEY (id);
+
+
+--
+-- Name: center_professional center_professional_id; Type: CONSTRAINT; Schema: public; Owner: conmeddb_user
+--
+
+ALTER TABLE ONLY public.center_professional
+    ADD CONSTRAINT center_professional_id PRIMARY KEY (id);
+
+
+--
+-- Name: comuna comuna_pkey; Type: CONSTRAINT; Schema: public; Owner: conmeddb_user
+--
+
+ALTER TABLE ONLY public.comuna
+    ADD CONSTRAINT comuna_pkey PRIMARY KEY (id);
+
+
+--
+-- Name: center id; Type: CONSTRAINT; Schema: public; Owner: conmeddb_user
+--
+
+ALTER TABLE ONLY public.center
+    ADD CONSTRAINT id PRIMARY KEY (id);
+
+
+--
+-- Name: insurance insurance_id; Type: CONSTRAINT; Schema: public; Owner: conmeddb_user
+--
+
+ALTER TABLE ONLY public.insurance
+    ADD CONSTRAINT insurance_id PRIMARY KEY (id);
+
+
+--
+-- Name: patient patient_id; Type: CONSTRAINT; Schema: public; Owner: conmeddb_user
+--
+
+ALTER TABLE ONLY public.patient
+    ADD CONSTRAINT patient_id PRIMARY KEY (id);
+
+
+--
+-- Name: professional_calendar professional_calendar_pkey; Type: CONSTRAINT; Schema: public; Owner: conmeddb_user
+--
+
+ALTER TABLE ONLY public.professional_calendar
+    ADD CONSTRAINT professional_calendar_pkey PRIMARY KEY (id);
+
+
+--
+-- Name: professional professional_id; Type: CONSTRAINT; Schema: public; Owner: conmeddb_user
+--
+
+ALTER TABLE ONLY public.professional
+    ADD CONSTRAINT professional_id PRIMARY KEY (id);
+
+
+--
+-- Name: professional_register professional_register_pkey; Type: CONSTRAINT; Schema: public; Owner: conmeddb_user
+--
+
+ALTER TABLE ONLY public.professional_register
+    ADD CONSTRAINT professional_register_pkey PRIMARY KEY (doc_id);
+
+
+--
+-- Name: professional_specialty professional_specialty_pkey; Type: CONSTRAINT; Schema: public; Owner: conmeddb_user
+--
+
+ALTER TABLE ONLY public.professional_specialty
+    ADD CONSTRAINT professional_specialty_pkey PRIMARY KEY (id);
+
+
+--
+-- Name: patient_recover_appointments recover_appointments_request_pkey; Type: CONSTRAINT; Schema: public; Owner: conmeddb_user
+--
+
+ALTER TABLE ONLY public.patient_recover_appointments
+    ADD CONSTRAINT recover_appointments_request_pkey PRIMARY KEY (email);
+
+
+--
+-- Name: session session_pkey; Type: CONSTRAINT; Schema: public; Owner: conmeddb_user
+--
+
+ALTER TABLE ONLY public.session
+    ADD CONSTRAINT session_pkey PRIMARY KEY (id);
+
+
+--
+-- Name: specialty specialty_id; Type: CONSTRAINT; Schema: public; Owner: conmeddb_user
+--
+
+ALTER TABLE ONLY public.specialty
+    ADD CONSTRAINT specialty_id PRIMARY KEY (id);
+
+
+--
+-- Name: fki_center_id_FK; Type: INDEX; Schema: public; Owner: conmeddb_user
+--
+
+CREATE INDEX "fki_center_id_FK" ON public.center_professional USING btree (center_id);
+
+
+--
+-- Name: assistant_professional assistant_id_FK; Type: FK CONSTRAINT; Schema: public; Owner: conmeddb_user
+--
+
+ALTER TABLE ONLY public.assistant_professional
+    ADD CONSTRAINT "assistant_id_FK" FOREIGN KEY (assistant_id) REFERENCES public.assistant(id) ON DELETE CASCADE NOT VALID;
+
+
+--
+-- Name: center_professional center_id_FK; Type: FK CONSTRAINT; Schema: public; Owner: conmeddb_user
+--
+
+ALTER TABLE ONLY public.center_professional
+    ADD CONSTRAINT "center_id_FK" FOREIGN KEY (center_id) REFERENCES public.center(id) ON DELETE CASCADE NOT VALID;
+
+
+--
+-- Name: professional_specialty professional_id; Type: FK CONSTRAINT; Schema: public; Owner: conmeddb_user
+--
+
+ALTER TABLE ONLY public.professional_specialty
+    ADD CONSTRAINT professional_id FOREIGN KEY (professional_id) REFERENCES public.professional(id) NOT VALID;
+
+
+--
+-- Name: professional_specialty specialty_id; Type: FK CONSTRAINT; Schema: public; Owner: conmeddb_user
+--
+
+ALTER TABLE ONLY public.professional_specialty
+    ADD CONSTRAINT specialty_id FOREIGN KEY (specialty_id) REFERENCES public.specialty(id) NOT VALID;
+
+
+--
+-- PostgreSQL database dump complete
+--
+
+--
+-- Database "postgres" dump
+--
+
+\connect postgres
+
+--
+-- PostgreSQL database dump
+--
+
+-- Dumped from database version 12.9 (Ubuntu 12.9-0ubuntu0.20.04.1)
+-- Dumped by pg_dump version 12.9 (Ubuntu 12.9-0ubuntu0.20.04.1)
+
+SET statement_timeout = 0;
+SET lock_timeout = 0;
+SET idle_in_transaction_session_timeout = 0;
+SET client_encoding = 'UTF8';
+SET standard_conforming_strings = on;
+SELECT pg_catalog.set_config('search_path', '', false);
+SET check_function_bodies = false;
+SET xmloption = content;
+SET client_min_messages = warning;
+SET row_security = off;
+
+--
+-- PostgreSQL database dump complete
+--
+
+--
+-- PostgreSQL database cluster dump complete
+--
+
