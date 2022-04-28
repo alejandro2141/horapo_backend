@@ -1185,7 +1185,7 @@ var json_response = { result_status : 1 };
 //INSERT APP TYPE  CENTER
 if (req.body.app_type == 1 )
 {
-  sql = " WITH ids AS (  INSERT INTO center ( name ,  address , phone1, phone2, comuna , center_visit, home_visit, remote_care) VALUES (  '"+req.body.center_name+"' , '"+req.body.center_address+"', '"+req.body.center_phone1+"' ,'"+req.body.center_phone2+"' ,"+req.body.center_comuna+" , true, false, false ) RETURNING id as center_id ) INSERT INTO center_professional (professional_id, center_id) VALUES ('"+req.body.professional_id+"', (SELECT center_id from ids) ) RETURNING * ;  ";
+  sql = " WITH ids AS (  INSERT INTO center ( name ,  address , phone1, phone2, comuna , center_visit, home_visit, remote_care, center_color ) VALUES (  '"+req.body.center_name+"' , '"+req.body.center_address+"', '"+req.body.center_phone1+"' ,'"+req.body.center_phone2+"' ,"+req.body.center_comuna+" , true, false, false, '"+req.body.center_color+"' ) RETURNING id as center_id ) INSERT INTO center_professional (professional_id, center_id) VALUES ('"+req.body.professional_id+"', (SELECT center_id from ids) ) RETURNING * ;  ";
 }
 //INSERT APP TYPE HOME VISIT
 if (req.body.app_type == 2 )
@@ -1204,11 +1204,11 @@ if (req.body.app_type == 2 )
   if (req.body.comunas_ids[5]!=null) { comuna6=req.body.comunas_ids[5] ;}
   
   
-  sql = " WITH ids AS (  INSERT INTO center ( name ,  phone1, phone2,  center_visit, home_visit, remote_care , home_comuna1, home_comuna2, home_comuna3, home_comuna4, home_comuna5, home_comuna6  ) VALUES (  '"+req.body.center_name+"' ,  '"+req.body.center_phone1+"' ,'"+req.body.center_phone2+"' , false, true , false , "+comuna1+", "+comuna2+" , "+comuna3+" , "+comuna4+" , "+comuna5+" , "+comuna6+"    ) RETURNING id as center_id ) INSERT INTO center_professional (professional_id, center_id) VALUES ('"+req.body.professional_id+"', (SELECT center_id from ids) ) RETURNING * ;  ";
+  sql = " WITH ids AS (  INSERT INTO center ( name ,  phone1, phone2,  center_visit, home_visit, remote_care , home_comuna1, home_comuna2, home_comuna3, home_comuna4, home_comuna5, home_comuna6  , center_color ) VALUES (  '"+req.body.center_name+"' ,  '"+req.body.center_phone1+"' ,'"+req.body.center_phone2+"' , false, true , false , "+comuna1+", "+comuna2+" , "+comuna3+" , "+comuna4+" , "+comuna5+" , "+comuna6+" , '"+req.body.center_color+"'   ) RETURNING id as center_id ) INSERT INTO center_professional (professional_id, center_id) VALUES ('"+req.body.professional_id+"', (SELECT center_id from ids) ) RETURNING * ;  ";
 }
 if (req.body.app_type == 3 )
 {
-  sql = " WITH ids AS (  INSERT INTO center ( name , phone1, phone2, center_visit, home_visit, remote_care  ) VALUES (  '"+req.body.center_name+"' ,  '"+req.body.center_phone1+"' ,'"+req.body.center_phone2+"' , false, false, true  ) RETURNING id as center_id ) INSERT INTO center_professional (professional_id, center_id) VALUES ('"+req.body.professional_id+"', (SELECT center_id from ids) ) RETURNING * ;  ";
+  sql = " WITH ids AS (  INSERT INTO center ( name , phone1, phone2, center_visit, home_visit, remote_care  , center_color ) VALUES (  '"+req.body.center_name+"' ,  '"+req.body.center_phone1+"' ,'"+req.body.center_phone2+"' , false, false, true , '"+req.body.center_color+"' ) RETURNING id as center_id ) INSERT INTO center_professional (professional_id, center_id) VALUES ('"+req.body.professional_id+"', (SELECT center_id from ids) ) RETURNING * ;  ";
 }
 
 
@@ -2612,7 +2612,6 @@ async function get_professional_appointment_day(ids,dates)
   client.end() 
 }
 
-
 //called from  professional_get_appointment_day2
 async function get_appointments_available_professional(json)
 {
@@ -2699,7 +2698,7 @@ async function get_appointments_available_professional(json)
               //    status : appointment_id_filtered[i].status  ,
                   //start_time : "0"+aux_date.getHours()+":0"+aux_date.getMinutes() , 
                   //new String(new char[width - toPad.length()]).replace('\0', fill) + toPad;
-                  color :  aux_color  ,
+                  center_color :  aux_color  ,
                   app_available : appointment_id_filtered[i].app_available ,
                   message1 : message1 
                 }
@@ -2758,7 +2757,7 @@ async function get_appointments_available_professional(json)
                           //start_time : "0"+aux_date.getHours()+":0"+aux_date.getMinutes() , 
                           start_time :  aux_date.getHours().toString().padStart(2, '0')+":"+aux_date.getMinutes().toString().padStart(2, '0') , 
                           //new String(new char[width - toPad.length()]).replace('\0', fill) + toPad;
-                          color : calendars[i].color ,
+                          center_color : calendars[i].center_color ,
 
                         }
 
@@ -2832,8 +2831,7 @@ async function get_calendars_available_professional(json)
   
 }
 
-//LOGIN
-
+//LOGIN FUNCTIONS
 async function access_login(req)
 {
   console.log("access_login REQUEST") ; 
@@ -2869,7 +2867,6 @@ async function get_access_login(req)
   return json_response ;
 
 }
-
 
 //called from Both
 async function get_professional_centers(id)
