@@ -2582,8 +2582,9 @@ async function get_calendars_available(json)
   
   //console.log ("QUERY GET CALENDAR = "+sql_calendars);
   const res = await client.query(sql_calendars) 
-  return res.rows ;
   client.end() 
+  return res.rows ;
+
 }
 
 //called from Both
@@ -2608,8 +2609,9 @@ async function get_professional_appointment_day(ids,dates)
   const sql_apps_taken  = "SELECT * FROM appointment WHERE date IN ("+aux_dates+")  and professional_id  IN ("+ids+") ;";
   console.log("SQL QUERY: "+sql_apps_taken)
   const res = await client.query(sql_apps_taken)
-  return res.rows;
   client.end() 
+  return res.rows;
+
 }
 
 //called from  professional_get_appointment_day2
@@ -2809,7 +2811,7 @@ async function get_appointments_available_professional(json)
   appointments_available.sort(function(b, a){ return (new Date('Thu, 01 Jan 1970 '+b.start_time) - new Date('Thu, 01 Jan 1970 '+a.start_time )) } ) 
                   
   console.log ("Calendar Cutter result ("+appointments_available.length+") Appointments to display :"+JSON.stringify(appointments_available));
-
+ 
   return  appointments_available ;
 
 }
@@ -2864,6 +2866,7 @@ async function get_access_login(req)
           token : result.rows[0].id,
           first_time : result.rows[0].first_time,
     };
+  client.end() 
   return json_response ;
 
 }
