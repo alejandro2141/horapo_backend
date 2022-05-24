@@ -1119,6 +1119,70 @@ console.log('Professional delete calendar  SQL:'+sql ) ;
   
 })
 
+// PROFESSIONAL UPDATE  CALENDAR 
+app.route('/professional_update_calendar')
+.post(function (req, res) {
+    console.log('professional_update_calendar INPUT:', req.body );
+// ****** Connect to postgre
+const { Pool, Client } = require('pg')
+const client = new Client({
+  user: 'conmeddb_user',
+  host: '127.0.0.1',
+  database: 'conmeddb02',
+  password: 'paranoid',
+  port: 5432,
+})
+client.connect() ;
+// GET PROFESSIONAL DATA
+
+let variables_sql = "" 
+
+if (req.body.form_calendar_active !=null)
+{ variables_sql = " active = "+req.body.form_calendar_active+" "  }
+if (req.body.form_center_id !=null)
+{ variables_sql =  variables_sql +" , center_id = "+req.body.form_center_id+"" }
+
+if (req.body.form_date_start !=null)
+{ variables_sql =  variables_sql +", date_start = '"+req.body.form_date_start+"'" }
+
+if (req.body.form_date_end !=null)
+{ variables_sql =  variables_sql +", date_end = '"+req.body.form_date_end+"'" }
+
+if (req.body.form_time_start !=null)
+{ variables_sql =  variables_sql +", start_time = '"+req.body.form_time_start+"'" }
+
+if (req.body.form_time_end !=null)
+{ variables_sql =  variables_sql +", end_time = '"+req.body.form_time_end+"'" }
+
+
+
+
+
+let sql = " UPDATE professional_calendar SET "+variables_sql+"   WHERE id = "+req.body.calendar_id+"  " ;
+
+console.log('Professional UPDATE calendar  SQL:'+sql ) ;
+  
+	client.query(sql, (err, result) => {
+	  if (err) {
+	     // throw err ;
+	      console.log('Update CALENDAR  ERROR:'+sql ) ;
+	      console.log(err ) ;
+	    }
+	    else
+	    {
+	 // json_response = { result_status : 0  , center_id : result.data.center_id  };
+	  res.status(200).send(JSON.stringify(result));
+	  console.log('UPDATE CALENDAR SUCCESS ' ) ; 
+    console.log('UPDATE  CALENDAR OUTPUT :'+JSON.stringify(result) ) ; 
+	   }
+	   
+	  client.end()
+	})
+  
+
+})
+
+
 
 
 // PROFESSIONAL GET TimeTable
@@ -2286,8 +2350,6 @@ console.log('get_appointments  SQL:'+sql ) ;
 
 })
  
-
-
 
 //********************************************* 
 // PUBLIC POST CANCEL AND BLOCK APPOINTMENT
