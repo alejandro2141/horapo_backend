@@ -976,7 +976,7 @@ center_code = " '"+req.body.form_appointment_center_code+"' " ;
 }
 
 
-sql = "INSERT INTO professional_calendar (professional_id , start_time,  end_time, specialty1, duration, time_between, monday, tuesday, wednesday, thursday, friday, saturday , sunday, date_start, date_end,   center_id,  status , deleted_professional ) VALUES ( '"+req.body.professional_id+"',  '"+req.body.form_start_time+"' , '"+req.body.form_end_time+"', '"+req.body.form_specialty_id+"' , '"+req.body.form_app_duration+"' , '"+req.body.form_app_time_between+"' ,  '"+req.body.form_recurrency_mon+"' ,  '"+req.body.form_recurrency_tue+"'  ,  '"+req.body.form_recurrency_wed +"' ,  '"+req.body.form_recurrency_thu+"'  ,  '"+req.body.form_recurrency_fri+"'  , '"+req.body.form_recurrency_sat+"'  ,  '"+req.body.form_recurrency_sun+"'  ,   '"+req.body.form_calendar_start+"'  ,  '"+req.body.form_calendar_end+"'  ,   "+req.body.form_appointment_center_code+" , '1' , false  )  " ;
+sql = "INSERT INTO professional_calendar (professional_id , start_time,  end_time, specialty1, duration, time_between, monday, tuesday, wednesday, thursday, friday, saturday , sunday, date_start, date_end,   center_id,  status , deleted_professional, color ) VALUES ( '"+req.body.professional_id+"',  '"+req.body.form_start_time+"' , '"+req.body.form_end_time+"', '"+req.body.form_specialty_id+"' , '"+req.body.form_app_duration+"' , '"+req.body.form_app_time_between+"' ,  '"+req.body.form_recurrency_mon+"' ,  '"+req.body.form_recurrency_tue+"'  ,  '"+req.body.form_recurrency_wed +"' ,  '"+req.body.form_recurrency_thu+"'  ,  '"+req.body.form_recurrency_fri+"'  , '"+req.body.form_recurrency_sat+"'  ,  '"+req.body.form_recurrency_sun+"'  ,   '"+req.body.form_calendar_start+"'  ,  '"+req.body.form_calendar_end+"'  ,   "+req.body.form_appointment_center_code+" , '1' , false , '"+req.body.form_calendar_color+"' )  " ;
 console.log('create_calendar SQL:'+sql ) ;
 
   
@@ -1154,8 +1154,29 @@ if (req.body.form_time_start !=null)
 if (req.body.form_time_end !=null)
 { variables_sql =  variables_sql +", end_time = '"+req.body.form_time_end+"'" }
 
+if (req.body.form_day_mon !=null)
+{ variables_sql =  variables_sql +", monday = '"+req.body.form_day_mon+"'" }
 
+if (req.body.form_day_tue !=null)
+{ variables_sql =  variables_sql +", tuesday = '"+req.body.form_day_tue+"'" }
 
+if (req.body.form_day_wed !=null)
+{ variables_sql =  variables_sql +", wednesday= '"+req.body.form_day_wed+"'" }
+
+if (req.body.form_day_thu !=null)
+{ variables_sql =  variables_sql +", thursday= '"+req.body.form_day_thu+"'" }
+
+if (req.body.form_day_fri !=null)
+{ variables_sql =  variables_sql +", friday= '"+req.body.form_day_fri+"'" }
+
+if (req.body.form_day_sat !=null)
+{ variables_sql =  variables_sql +", saturday= '"+req.body.form_day_sat+"'" }
+
+if (req.body.form_day_sun !=null)
+{ variables_sql =  variables_sql +", sunday = '"+req.body.form_day_sun+"'" }
+
+if (req.body.form_calendar_color !=null)
+{ variables_sql =  variables_sql +", color = '"+req.body.form_calendar_color+"'" }
 
 
 let sql = " UPDATE professional_calendar SET "+variables_sql+"   WHERE id = "+req.body.calendar_id+"  " ;
