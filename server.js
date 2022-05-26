@@ -1226,7 +1226,7 @@ client.connect()
 // ****** Run query to bring appointment
 //const sql  = "SELECT * FROM professional_calendar WHERE professional_id='"+req.body.professional_id+"' ORDER BY id DESC " ;
 
-const sql  = "SELECT * FROM (SELECT *, id AS calendar_id, active as calendar_active FROM professional_calendar WHERE professional_id='"+req.body.professional_id+"' AND  deleted_professional = false )j   LEFT JOIN  center ON   j.center_id = center.id  ORDER BY j.id DESC  " ;
+const sql  = "SELECT * FROM (SELECT *, id AS calendar_id, active as calendar_active FROM professional_calendar WHERE professional_id='"+req.body.professional_id+"' AND  deleted_professional = false )j   LEFT JOIN  center ON   j.center_id = center.id  ORDER BY j.id ASC  " ;
 
 console.log('professional_get_centers: SQL :'+sql ) ;
 const resultado = client.query(sql, (err, result) => {
@@ -1396,7 +1396,7 @@ const client = new Client({
 
 client.connect()
 // ****** Run query to bring appointment
-const sql  = "SELECT * FROM center WHERE id IN  (SELECT center_id FROM center_professional where professional_id='"+req.body.professional_id+"' ) AND center_deleted!='true'  ORDER BY id DESC  " ;
+const sql  = "SELECT * FROM center WHERE id IN  (SELECT center_id FROM center_professional where professional_id='"+req.body.professional_id+"' ) AND center_deleted!='true'  ORDER BY id ASC  " ;
 console.log('professional_get_centers: SQL :'+sql ) ;
 const resultado = client.query(sql, (err, result) => {
 
@@ -2802,7 +2802,7 @@ async function get_appointments_available_professional(json)
         //GET COLOR
         let message1 = null
         let cal_color =  calendars.find(cal => cal.calendar_id === appointment_id_filtered[i].calendar_id) ;
-        let aux_color = '#EEEEEE' ;
+        let aux_color = '#EEE' ;
 
         if (cal_color != null)
          {
@@ -2816,7 +2816,7 @@ async function get_appointments_available_professional(json)
          //console.log (" ********************************************************************************** "); 
         
           let appointment_taken = {
-                 // calendar_id : appointment_id_filtered[i].calendar_id , 
+                 calendar_id : appointment_id_filtered[i].calendar_id , 
                  id :  appointment_id_filtered[i].id ,
                  date :appointment_id_filtered[i].date ,
                  start_time :  appointment_id_filtered[i].start_time , 
@@ -2844,6 +2844,7 @@ async function get_appointments_available_professional(json)
                   //start_time : "0"+aux_date.getHours()+":0"+aux_date.getMinutes() , 
                   //new String(new char[width - toPad.length()]).replace('\0', fill) + toPad;
                   center_color :  aux_color  ,
+                  calendar_color : aux_color ,
                   app_available : appointment_id_filtered[i].app_available ,
                   message1 : message1 
                 }
@@ -2874,7 +2875,7 @@ async function get_appointments_available_professional(json)
                         let aux_date = new Date(start_time_slot)
 
                         var appointment_slot = {
-                          calendar_id : calendars[i].id , 
+                          calendar_id : calendars[i].calendar_id , 
                           date : json.date ,
                           professional_name : calendars[i].professional_name , 
                           specialty1 : calendars[i].specialty1 , 
@@ -2903,6 +2904,7 @@ async function get_appointments_available_professional(json)
                           start_time :  aux_date.getHours().toString().padStart(2, '0')+":"+aux_date.getMinutes().toString().padStart(2, '0') , 
                           //new String(new char[width - toPad.length()]).replace('\0', fill) + toPad;
                           center_color : calendars[i].center_color ,
+                          calendar_color : calendars[i].calendar_color ,
 
                         }
 
@@ -2966,7 +2968,7 @@ async function get_calendars_available_professional(json)
   await client.connect()
     
   //END IF LOCATION
-   const sql_calendars  = "SELECT * FROM (SELECT name AS center_name, address AS center_address, * FROM (  SELECT name AS professional_name , calendar_id, professional_id, start_time, end_time, specialty1, duration, time_between, monday, tuesday, wednesday, thursday, friday, saturday, sunday, date_start, date_end , status, center_id, phone AS professional_phone, color  FROM (SELECT id as calendar_id , *  FROM professional_calendar WHERE  active = true  AND date_start <= '"+json.date+"'  AND date_end >= '"+json.date+"'  AND start_time  >= '00:00:00' AND  professional_id = '"+json.professional_id+"' AND deleted_professional = false ) C  LEFT JOIN professional ON C.professional_id = professional.id )     K LEFT JOIN center ON  k.center_id = center.id )J  " ; 
+   const sql_calendars  = "SELECT * FROM (SELECT name AS center_name, address AS center_address, * FROM (  SELECT name AS professional_name , calendar_id, calendar_color ,professional_id, start_time, end_time, specialty1, duration, time_between, monday, tuesday, wednesday, thursday, friday, saturday, sunday, date_start, date_end , status, center_id, phone AS professional_phone, color  FROM (SELECT id as calendar_id , color as calendar_color, *  FROM professional_calendar WHERE  active = true  AND date_start <= '"+json.date+"'  AND date_end >= '"+json.date+"'  AND start_time  >= '00:00:00' AND  professional_id = '"+json.professional_id+"' AND deleted_professional = false ) C  LEFT JOIN professional ON C.professional_id = professional.id )     K LEFT JOIN center ON  k.center_id = center.id )J  " ; 
 
    console.log("get_calendars_available_professional SQL: "+sql_calendars);
   //console.log ("QUERY GET CALENDAR = "+sql_calendars);
