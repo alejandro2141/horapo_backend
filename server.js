@@ -1295,14 +1295,27 @@ app.route('/professional_get_appointments_day2')
 // PROFESSIONAL LOGIN 
 app.route('/professional_login')
 .post(function (req, res) {
+  console.log ("professional_login REQUEST",req.body);
 
-  console.log ("professional_login REQUEST");
-  let json_response = access_login(req)
+  if (req.body["form_email"]  && req.body["form_pass"] )
+  {
+    let json_response = access_login(req)
+    json_response.then( v => {  console.log("professional_login RESPONSE: "+JSON.stringify(v)) ; return (res.status(200).send(JSON.stringify(v))) } )
+    //res.status(200).send(JSON.stringify(json_response));
+    //console.log('professional_login RESPONSE  :'+JSON.stringify(json_response) ) ;
+  }
+  else
+  {
+    let json_response_error = { 
+      professional_id: null , 
+      result_code: 3 ,
+      professional_name: null ,
+      token : null ,
+      first_time : null,
+                  };
+    return (res.status(200).send(JSON.stringify(json_response_error))) 
+  }
 
-  json_response.then( v => {  console.log("professional_login RESPONSE: "+JSON.stringify(v)) ; return (res.status(200).send(JSON.stringify(v))) } )
-  
-  //res.status(200).send(JSON.stringify(json_response));
-  //console.log('professional_login RESPONSE  :'+JSON.stringify(json_response) ) ;
 
 })
  
@@ -2986,9 +2999,13 @@ async function access_login(req)
   let login_data = await get_access_login(req)
   console.log("access_login ESPONSE "+JSON.stringify(login_data)) ;
   //get response centers 
+  if (login_data.result_code == 0)
+  {
   let response_centers = await get_professional_centers(login_data.professional_id);
   //add centers to login_data
-  login_data =  { ...login_data ,  centers : response_centers };
+  login_data =  { ...login_data ,  centers : response_centers };  
+  }
+    
   
   return login_data
 }
@@ -3001,9 +3018,12 @@ async function get_access_login(req)
     
   const sql = "INSERT INTO session (name, user_id,last_login , last_activity_time , user_type , first_time ) SELECT   name, user_id , now() as last_login ,now() as last_activity_time, 1 as user_type , first_time  FROM (SELECT * FROM (SELECT * FROM professional WHERE email ='"+req.body.form_email+"' )P LEFT JOIN account ON P.id = account.user_id) J WHERE j.pass = '"+req.body.form_pass+"'   RETURNING * ";
   console.log('professionalLogin SQL:'+sql ) ;
+  //set default error
   var json_response = {  professional_id: null , result_code : 33 };
   const result = await client.query(sql) 
-
+  //IF SUCCESS FOUND USER
+  if (result.rows.length>0 )
+  {
   json_response = { 
           professional_id: result.rows[0].user_id , 
           result_code: 0 ,
@@ -3011,6 +3031,9 @@ async function get_access_login(req)
           token : result.rows[0].id,
           first_time : result.rows[0].first_time,
     };
+  }
+  
+
   client.end() 
   return json_response ;
 
