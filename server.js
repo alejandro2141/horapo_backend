@@ -1632,9 +1632,8 @@ app.route('/patient_get_appointments_calendar')
     console.log('patient_get_appointments_calendar : INPUT : ', req.body );
     
     let appointments_available = get_appointments_available_from_calendar(req.body) ;
-
-
- 
+   
+    appointments_available.then( v => {  console.log("patient_get_appointments_calendar  RESPONSE: "+JSON.stringify(v)) ; return (res.status(200).send(JSON.stringify(v))) } )
 
     //res.status(200).send(JSON.stringify( get_appointments_available(req.body)));
    
@@ -3059,6 +3058,10 @@ async function get_appointments_available_from_calendar(json)
   console.log("get_professional_appointments_by_date : OUTPUT "+JSON.stringify(appointments_reserved));
  // 3.- cutter calendar 
   let app_calendar = calendar_cutter(calendar[0]);
+
+  let app_calendar_filtered = filter_app_from_appTaken(app_calendar,appointments_reserved)
+
+  return(app_calendar_filtered); 
 }
 
 async function get_calendars_available_by_id(json)
@@ -3067,7 +3070,9 @@ async function get_calendars_available_by_id(json)
   const client = new Client(conn_data)
   await client.connect()  
   //END IF LOCATION
-  const sql_calendars  = "SELECT * FROM professional_calendar WHERE id = 139 AND date_start <='2022-06-02' AND date_end >= '2022-06-01' AND  active = true AND deleted_professional = false AND status = 1  " ;  
+  //const sql_calendars  = "SELECT * FROM professional_calendar WHERE id = 139 AND date_start <='2022-06-02' AND date_end >= '2022-06-01' AND  active = true AND deleted_professional = false AND status = 1  " ;  
+  const sql_calendars  = "SELECT * FROM professional_calendar WHERE id = 139 AND  active = true AND deleted_professional = false AND status = 1  " ;  
+
 
   console.log("get_calendars_available_by_id  SQL:"+sql_calendars) 
   
@@ -3098,9 +3103,10 @@ function calendar_cutter(calendar)
   //get days available in calendar
   let date_start = new Date(calendar.date_start); 
   let date_end =   new Date(calendar.date_end);
-  console.log ("Date Start:"+date_start+" Date End:"+date_end );
-  let cal_days = [] ;
-  let appointments_calendar = [] ;
+
+  let cal_days = [] ; // ARRAY TO STORE DAYS
+  let cal_hours = [] ; //ARRAY TO STORE TIMES
+  let cal_appointments = [] ; //ARRAY TO STORE TIMES
 
   let cal_day_active = [] ;
     if (calendar.sunday)    { cal_day_active.push(0) }  
@@ -3110,7 +3116,7 @@ function calendar_cutter(calendar)
     if (calendar.thursday)  { cal_day_active.push(4) }
     if (calendar.friday)    { cal_day_active.push(5) }
     if (calendar.saturday)  { cal_day_active.push(6) }
-
+  // CALCULATE DAYS EXIST IN CALENDAR
   for (var d = new Date(date_start); d <= date_end; d.setDate(d.getDate() + 1)) 
     { 
       if(cal_day_active.includes( d.getDay() ) )
@@ -3118,8 +3124,60 @@ function calendar_cutter(calendar)
         cal_days.push(new Date(d))
       }
     } 
+    // CALCULATE HOURS EXIST IN DAY CALENDAR newDateObj.setTime(oldDateObj.getTime() + (30 * 60 * 1000));
+    let time_start = new Date('Thu, 01 Jan 1970 '+calendar.start_time.substring(0,5) ) ;
+    let time_end = new Date('Thu, 01 Jan 1970 '+calendar.end_time.substring(0,5) )  ;
 
-   /***********Calculate calendar slots****************** */
+    console.log ("Date Start:"+date_start+" Date End:"+date_end );
+    console.log ("Time Start:"+time_start+" Time End:"+time_end );
+    console.log ("Time Start:"+calendar.start_time+" Time End:"+calendar.end_time );
+
+  for (var t = new Date(time_start); t.getTime() <= time_end.getTime() ; t.setTime(t.getTime() + ((calendar.duration + calendar.time_between)*60*1000) ) ) 
+    { 
+      let aux_hour=new String( (t.getHours())+":"+t.getMinutes() ) ;
+      cal_hours.push(aux_hour) 
+    }
+
+    cal_days.forEach(d => console.log("Day:"+d))  ;
+    cal_hours.forEach(h => console.log("hour:"+h)) ;
+
+    //NOW CREATE APPOINTMENTS LIST 
+
+    for (let d=0 ; d < cal_days.length ; d++ )
+    {
+
+        for (let t=0 ; t < cal_hours.length ; t++ )
+            {
+              var appointment_slot = {
+                calendar_id : calendar.id , 
+                date : cal_days[d] ,
+                specialty : calendar.specialty1 , 
+                duration : calendar.duration ,
+               // professional_id : calendars[i].professional_id , 
+                center_id :calendar.center_id ,
+                start_time : cal_hours[t] , 
+                time_between : calendar.time_between ,
+               }
+               cal_appointments.push(appointment_slot) ;
+            } 
+    } 
+
+   cal_appointments.forEach(a => console.log("Appointment :"+JSON.stringify(a) ))
+ 
+   return (cal_appointments) ;
+  } 
+
+
+function filter_app_from_appTaken(app,appTaken)
+{
+  return (app);
+}
+
+
+
+
+   /***********Calculate calendar APP slots per day****************** */
+  /* 
    let aux_start_time = new Date ('Thu, 01 Jan 1970 '+calendar.start_time ).getTime();
    let aux_end_time = new Date ('Thu, 01 Jan 1970 '+calendar.end_time ).getTime();      
 
@@ -3128,55 +3186,10 @@ function calendar_cutter(calendar)
    let app_total_slots = total_available_time / app_duration ;
    console.log("CALENDAR TOTAL DRAFT slots TO CREATE:"+ app_total_slots+"   FOR PROFESSIONAL ID:"+calendar.professional_id )
    let start_time_slot = aux_start_time;
+   */
    /****************************** */
-   //let aux_date_slot= new Date ('Thu, 01 Jan 1970 '+appointment_slot.start_time ).getTime();
-                      
-    //START CUT DAY calendar appointments
-    for (var i = 0 ; i < cal_days.length ; i++) 
-    { 
-      console.log("CUTTING DAY:"+cal_days[i]);  
-      
-      for (var s = 0 ; s < app_total_slots ; s++) 
-      {
-         
-        var appointment_slot = {
-          calendar_id : calendar.calendar_id , 
-          date : cal_days[i] ,
-          //professional_name : calendars[i].professional_name , 
-          specialty : calendar.specialty1 , 
-          duration : calendar.duration ,
-          professional_id : calendar.professional_id ,       
-/*
-          home_visit : calendar.home_visit ,
-          home_visit_location1 : calendar.home_visit_location1 ,
-          home_visit_location2 : calendar.home_visit_location2 ,
-          home_visit_location3 : calendar.home_visit_location3 ,
-          home_visit_location4 : calendar.home_visit_location4 ,
-          home_visit_location5 : calendar.home_visit_location5 ,
-          home_visit_location6 : calendar.home_visit_location6 ,
-*/
-          center_id :calendar.center_id ,
-/*
-          center_visit :calendars[i].center_visit ,
-          center_name :calendars[i].center_name ,
-          center_address :calendars[i].center_address ,
-          remote_care :calendars[i].remote_care ,
-*/
-          status : calendar.status  ,
-          //start_time : "0"+aux_date.getHours()+":0"+aux_date.getMinutes() , 
-          start_time :  aux_date.getHours().toString().padStart(2, '0')+":"+aux_date.getMinutes().toString().padStart(2, '0') , 
-          //new String(new char[width - toPad.length()]).replace('\0', fill) + toPad;
-          //calendar_color : calendar.calendar_color ,
-        }
-
-
-
-
-      }
-
-      
            
-    } 
+   
     //END CUT DAY
 
 
@@ -3188,7 +3201,7 @@ function calendar_cutter(calendar)
   }
 */
  
-}
+
 
 
 
