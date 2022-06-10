@@ -548,7 +548,6 @@ const resultado = client.query(query_update, (err, result) => {
  // res.send(JSON.stringify(result));
 })
 
-
 // PROFESSIONAL CANCEL APPOINTMENT 
 app.route('/professional_cancel_appointment')
 .post(function (req, res) {
@@ -590,8 +589,6 @@ const resultado = client.query(query_update, (err, result) => {
  //res.status(200).json(resultado.rows) ;
  // res.send(JSON.stringify(result));
 })
-
-
 
 // CANCEL APPOINTMENT 
 app.route('/cancel_hour')
@@ -1653,10 +1650,6 @@ app.route('/patient_get_appointments_calendar')
   client.end()
     */
 })
-
-
-
-
 
 //PATIENT GET APPOINTMENTS  SEARCH BY CALENDAR
 app.route('/patient_get_appointments_day2')
@@ -3071,7 +3064,7 @@ async function get_calendars_available_by_id(json)
   await client.connect()  
   //END IF LOCATION
   //const sql_calendars  = "SELECT * FROM professional_calendar WHERE id = 139 AND date_start <='2022-06-02' AND date_end >= '2022-06-01' AND  active = true AND deleted_professional = false AND status = 1  " ;  
-  const sql_calendars  = "SELECT * FROM professional_calendar WHERE id = 139 AND  active = true AND deleted_professional = false AND status = 1  " ;  
+  const sql_calendars  = "SELECT * FROM professional_calendar WHERE id = "+json.calendar_id+" AND  active = true AND deleted_professional = false AND status = 1  " ;  
 
 
   console.log("get_calendars_available_by_id  SQL:"+sql_calendars) 
@@ -3175,31 +3168,6 @@ function filter_app_from_appTaken(app,appTaken)
 
 
 
-
-   /***********Calculate calendar APP slots per day****************** */
-  /* 
-   let aux_start_time = new Date ('Thu, 01 Jan 1970 '+calendar.start_time ).getTime();
-   let aux_end_time = new Date ('Thu, 01 Jan 1970 '+calendar.end_time ).getTime();      
-
-   let total_available_time =  aux_end_time  - aux_start_time ; 
-   let app_duration =  (( parseInt(calendar.duration) + parseInt(calendar.time_between) ) * 60 * 1000 ) ;
-   let app_total_slots = total_available_time / app_duration ;
-   console.log("CALENDAR TOTAL DRAFT slots TO CREATE:"+ app_total_slots+"   FOR PROFESSIONAL ID:"+calendar.professional_id )
-   let start_time_slot = aux_start_time;
-   */
-   /****************************** */
-           
-   
-    //END CUT DAY
-
-
-
-  /*
-  for (let aux_date = new Date(date_start) ; aux_date < date_end ; aux_date=aux_date.setDate(aux_date.getDate() + 1) )
-  {
-    console.log("Cutter Date="+aux_date);
-  }
-*/
  
 
 
