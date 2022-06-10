@@ -3064,7 +3064,7 @@ async function get_calendars_available_by_id(json)
   await client.connect()  
   //END IF LOCATION
   //const sql_calendars  = "SELECT * FROM professional_calendar WHERE id = 139 AND date_start <='2022-06-02' AND date_end >= '2022-06-01' AND  active = true AND deleted_professional = false AND status = 1  " ;  
-  const sql_calendars  = "SELECT * FROM professional_calendar WHERE id = "+json.calendar_id+" AND  active = true AND deleted_professional = false AND status = 1  " ;  
+  const sql_calendars  = "SELECT * FROM professional_calendar WHERE id = "+json.cal_id+" AND  active = true AND deleted_professional = false AND status = 1  " ;  
 
 
   console.log("get_calendars_available_by_id  SQL:"+sql_calendars) 
