@@ -1519,12 +1519,15 @@ console.log('SQL patient_get_center  : '+sql ) ;
 const resultado = client.query(sql, (err, result) => {
 
   if (err) {
-      console.log(' ERROR QUERY = '+sql ) ;
-    }
-
-  console.log('patient_get_center RESPONSE   = '+JSON.stringify(result.rows) ) ;
-  //res.status(200).send(JSON.stringify(result) );
-  res.status(200).json(result.rows)
+    // throw err ;
+     console.log('patient_get_center ERROR '+sql ) ;
+     console.log(err ) ;
+   }
+   else
+   {
+  res.status(200).send(JSON.stringify(result.rows[0]));
+  console.log('patient_get_center RESPONSE  :'+JSON.stringify(result) ) ; 
+  }
   
   client.end()
 })
