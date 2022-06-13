@@ -3007,13 +3007,16 @@ async function get_professional_appointments_by_date(prof_id ,date_start , date_
 function calendar_cutter(calendar, json )
 {
   console.log("Calendar Cutter : "+JSON.stringify(calendar));
+  let cal_days = [] ; // ARRAY TO STORE DAYS
+  let cal_hours = [] ; //ARRAY TO STORE TIMES
+  let cal_appointments = [] ; //ARRAY TO STORE TIMES
+ 
+  if (calendar !=null ){
   //get days available in calendar
   let date_start = new Date(json.date); 
   let date_end =   new Date(calendar.date_end);
 
-  let cal_days = [] ; // ARRAY TO STORE DAYS
-  let cal_hours = [] ; //ARRAY TO STORE TIMES
-  let cal_appointments = [] ; //ARRAY TO STORE TIMES
+ 
 
   let cal_day_active = [] ;
     if (calendar.sunday)    { cal_day_active.push(0) }  
@@ -3070,8 +3073,14 @@ function calendar_cutter(calendar, json )
     } 
 
    cal_appointments.forEach(a => console.log("Appointment :"+JSON.stringify(a) ))
- 
+  }
+
+
    return (cal_appointments) ;
+
+
+
+
   } 
 
 
