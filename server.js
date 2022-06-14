@@ -1503,6 +1503,38 @@ const resultado = client.query(sql, (err, result) => {
 //******** PATIENT API  *****************
 //***************************************
 
+
+app.route('/patient_get_professional')
+.post(function (req, res) {
+ 
+    console.log('patient_get_professional  REQUEST : ', req.body );
+ 
+// ****** Connect to postgre
+const { Client } = require('pg')
+const client = new Client(conn_data)
+client.connect()
+
+// ****** Run query to bring appointment
+const sql  = "SELECT * FROM professional WHERE id='"+req.body.professional_id+"' " ;
+console.log('SQL patient_get_professional  : '+sql ) ;
+const resultado = client.query(sql, (err, result) => {
+
+  if (err) {
+    // throw err ;
+     console.log('patient_get_professional ERROR '+sql ) ;
+     console.log(err ) ;
+   }
+   else
+   {
+  res.status(200).send(JSON.stringify(result.rows[0]));
+  console.log('patient_get_professional RESPONSE  :'+JSON.stringify(result) ) ; 
+  }
+  
+  client.end()
+})
+
+})
+
 app.route('/patient_get_center')
 .post(function (req, res) {
  
@@ -3067,6 +3099,7 @@ function calendar_cutter(calendar, json )
                 center_id :calendar.center_id ,
                 start_time : cal_hours[t] , 
                 time_between : calendar.time_between ,
+                professional_id : calendar.professional_id ,
                }
                cal_appointments.push(appointment_slot) ;
             } 
