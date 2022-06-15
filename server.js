@@ -1045,7 +1045,7 @@ console.log('Professional UPDATE calendar  SQL:'+sql ) ;
 })
 
 // PROFESSIONAL GET TimeTable
-app.route('/rofessional_get_calendars')
+app.route('/professional_get_calendars')
 .post(function (req, res) {
  
     console.log('rofessional_get_calendars :', req.body );
@@ -1079,6 +1079,7 @@ const resultado = client.query(sql, (err, result) => {
 })
 
 })
+
 
 // PROFESIONAL GET ASSISTANTS
 app.route('/professional_get_assistants')
@@ -1502,6 +1503,43 @@ const resultado = client.query(sql, (err, result) => {
 //***************************************
 //******** PATIENT API  *****************
 //***************************************
+
+// PROFESSIONAL GET TimeTable
+app.route('/patient_get_professional_calendars')
+.post(function (req, res) {
+ 
+    console.log('rofessional_get_calendars :', req.body );
+ 
+// ****** Connect to postgre
+const { Pool, Client } = require('pg')
+const client = new Client({
+  user: 'conmeddb_user',
+  host: '127.0.0.1',
+  database: 'conmeddb02',
+  password: 'paranoid',
+  port: 5432,
+})
+
+client.connect()
+// ****** Run query to bring appointment
+//const sql  = "SELECT * FROM professional_calendar WHERE professional_id='"+req.body.professional_id+"' ORDER BY id DESC " ;
+
+const sql  = "SELECT * FROM (SELECT *, id AS calendar_id, active as calendar_active FROM professional_calendar WHERE professional_id='"+req.body.professional_id+"' AND  deleted_professional = false )j   LEFT JOIN  center ON   j.center_id = center.id  ORDER BY j.id ASC  " ;
+
+console.log('professional_get_centers: SQL :'+sql ) ;
+const resultado = client.query(sql, (err, result) => {
+
+  if (err) {
+      console.log('rofessional_get_calendars ERR:'+err ) ;
+    }
+
+  console.log('professional_get_calendars : '+JSON.stringify(result) ) ;
+  res.status(200).send(JSON.stringify(result) );
+  client.end() ;
+})
+
+})
+
 
 
 app.route('/patient_get_professional')
