@@ -3099,7 +3099,7 @@ function calendar_cutter(calendar, json )
   // CALCULATE DAYS EXIST IN CALENDAR
   for (var d = new Date(date_start); d <= date_end; d.setDate(d.getDate() + 1)) 
     { 
-      if(cal_day_active.includes( d.getDay() ) )
+      if(cal_day_active.includes( d.getDay()+1 ) )
       {
         cal_days.push(new Date(d))
       }
