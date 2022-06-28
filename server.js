@@ -1080,7 +1080,6 @@ const resultado = client.query(sql, (err, result) => {
 
 })
 
-
 // PROFESIONAL GET ASSISTANTS
 app.route('/professional_get_assistants')
 .post(function (req, res) {
@@ -1258,6 +1257,73 @@ const resultado = client.query(sql, (err, result) => {
 })
 
 })
+
+app.route('/professional_update_center')
+.post(function (req, res) {
+ 
+    console.log('professional_update_center :', req.body );
+ 
+// ****** Connect to postgre
+const { Pool, Client } = require('pg')
+const client = new Client({
+  user: 'conmeddb_user',
+  host: '127.0.0.1',
+  database: 'conmeddb02',
+  password: 'paranoid',
+  port: 5432,
+})
+
+client.connect()
+
+let sql = ""
+
+if (req.body.name != null ) 
+{
+sql = sql+" name='"+req.body.name+"' " ; ;
+}
+
+if (req.body.address!= null ) 
+{
+  sql = sql+", address='"+req.body.address+"' " ; ;
+}
+
+if (req.body.comuna_code!= null ) 
+{
+ sql = sql+", comuna ='"+req.body.comuna_code+"' " ;
+}
+
+if (req.body.phone1!= null ) 
+{
+ sql = sql+", phone1='"+req.body.phone1+"' " ; 
+}
+
+if (req.body.phone2!= null ) 
+{
+ sql = sql+", phone2='"+req.body.phone2+"' " ;
+}
+
+
+
+req.body.professional_id
+// ****** Run query to bring appointment
+//const sql  = "SELECT * FROM center WHERE id IN  (SELECT center_id FROM center_professional where professional_id='"+req.body.professional_id+"' ) AND center_deleted!='true'  ORDER BY id ASC  " ;
+const sql_request  = "UPDATE center SET "+sql+"  WHERE id = "+req.body.center_id+" ;" ;
+
+console.log('professional_get_centers: SQL :'+sql_request ) ;
+const resultado = client.query(sql_request, (err, result) => {
+
+  if (err) {
+      console.log('professional_get_centers ERR:'+err ) ;
+    }
+
+  console.log('professional_get_centers : '+JSON.stringify(result) ) ;
+  res.status(200).send(JSON.stringify(result) );
+  client.end()
+})
+
+
+})
+
 
 // PROFESSIONAL delete Center
 app.route('/professional_delete_center')
