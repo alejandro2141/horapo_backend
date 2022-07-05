@@ -295,6 +295,44 @@ PROFESIONAL API
 
 *******************************************************/
 
+// PROFESSIONAL DUPLICATE DAY 
+app.route('/professional_lock_day')
+.post(function (req, res) {
+    console.log('professional_lock_day INPUT:', req.body );
+// ****** Connect to postgre
+const { Pool, Client } = require('pg')
+const client = new Client({
+  user: 'conmeddb_user',
+  host: '127.0.0.1',
+  database: 'conmeddb02',
+  password: 'paranoid',
+  port: 5432,
+})
+client.connect() ;
+// GET PROFESSIONAL DATA
+var sql  = "INSERT INTO professional_day_locked ( professional_id, date ) values ('"+req.body.appointment_professional_id+"','"+req.body.appointment_date+"') ;"
+
+console.log('professional_lock_day SQL:'+sql ) ;
+	client.query(sql, (err, result) => {
+	  if (err) {
+	     // throw err ;
+	      console.log('professional_lock_day ERROR CREATION REGISTER, QUERY:'+sql ) ;
+	      console.log(err ) ;
+        res.status(200).send(JSON.stringify(result));
+	    }
+	    else
+	    {
+	  res.status(200).send(JSON.stringify(result));
+	  console.log('professional_lock_day  SUCCESS CENTER INSERT ' ) ; 
+    console.log('professional_lock_day  OUTPUT  :'+JSON.stringify(result) ) ; 
+	   }
+	   
+	  client.end()
+	})
+  
+
+})
+
 // SAVE APPOINTMENT PRofessional
 app.route('/professional_take_appointment')
 .post(function (req, res) {
@@ -352,6 +390,7 @@ const resultado = client.query(query_reserve, (err, result) => {
 
 })
 
+/*
 // PROFESSIONAL DUPLICATE DAY 
 app.route('/professional_duplicate_day')
 .post(function (req, res) {
@@ -399,7 +438,7 @@ console.log('professional_duplicate_day SQL:'+sql ) ;
 	})
 
 })
-
+*/
 // SHUT DOWN FIRST LOGIN
 app.route('/professional_shutdown_firstlogin')
 .post(function (req, res) {
