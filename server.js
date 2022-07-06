@@ -390,55 +390,6 @@ const resultado = client.query(query_reserve, (err, result) => {
 
 })
 
-/*
-// PROFESSIONAL DUPLICATE DAY 
-app.route('/professional_duplicate_day')
-.post(function (req, res) {
-    console.log('professional_duplicate_day INPUT:', req.body );
-// ****** Connect to postgre
-const { Pool, Client } = require('pg')
-const client = new Client({
-  user: 'conmeddb_user',
-  host: '127.0.0.1',
-  database: 'conmeddb02',
-  password: 'paranoid',
-  port: 5432,
-})
-client.connect() ;
-// GET PROFESSIONAL DATA
-var sql  = null;
-var json_response = { result_status : 1 };
-//var res = null; 	
-// CHECK INPUT PARAMETERS TO IDENTIFY IF  REQUEST IS TO CREATE CENTER
-// CREATE DIRECTLY AGENDA 
-//const sql  = "INSERT INTO centers ( name ,  address , phone1, phone2 ) VALUES (  '"+req.body.center_name+"', '"+req.body.center_address+"' , '"+req.body.center_phone1+"', '"+req.body.center_phone2+"' ) RETURNING id " ;
-//sql = " WITH ids AS (  INSERT INTO center ( name ,  address , phone1, phone2, comuna ) VALUES (  '"+req.body.center_name+"' , '"+req.body.center_address+"', '"+req.body.center_phone1+"' ,'"+req.body.center_phone2+"' ,'"+req.body.center_comuna+"' ) RETURNING id as center_id ) INSERT INTO center_professional (professional_id, center_id) VALUES ('"+req.body.professional_id+"', (SELECT center_id from ids) ) RETURNING * ;  ";
-
-sql = "INSERT INTO appointment (date, start_time, duration, specialty, specialty1, specialty2,specialty3,specialty4, center_id, professional_id , app_available , app_public , available_public_search, location1,location2,location3 , location4 , location6, location7, location8, app_type_home , app_type_center, app_type_remote) " ;
-sql = sql + " SELECT '"+req.body.destination+"' , start_time, duration, specialty, specialty1, specialty2,specialty3,specialty4,  center_id, professional_id , true , app_public , false ,  location1, location2,location3 , location4 , location6, location7, location8,  app_type_home ,  app_type_center,  app_type_remote";
-sql = sql + " FROM appointment  WHERE professional_id = '"+req.body.p_id+"'  AND date='"+req.body.origin+"'  " ; 
-  
-
-console.log('professional_duplicate_day SQL:'+sql ) ;
-	client.query(sql, (err, result) => {
-	  if (err) {
-	     // throw err ;
-	      console.log('professional_duplicate_day ERROR  CENTER CREATION QUERY:'+sql ) ;
-	      console.log(err ) ;
-	    }
-	    else
-	    {
-	 // json_response = { result_status : 0  , center_id : result.data.center_id  };
-	  res.status(200).send(JSON.stringify(result));
-	  console.log('professional_duplicate_day  SUCCESS CENTER INSERT ' ) ; 
-    console.log('professional_duplicate_day  OUTPUT  :'+JSON.stringify(result) ) ; 
-	   }
-	   
-	  client.end()
-	})
-
-})
-*/
 // SHUT DOWN FIRST LOGIN
 app.route('/professional_shutdown_firstlogin')
 .post(function (req, res) {
@@ -1702,7 +1653,7 @@ const resultado = client.query(sql, (err, result) => {
    {
   res.status(200).send(JSON.stringify(result.rows[0]));
   console.log('patient_get_center RESPONSE  :'+JSON.stringify(result) ) ; 
-  }
+   }
   
   client.end()
 })
@@ -1716,8 +1667,8 @@ app.route('/patient_get_appointments_calendar')
  
     console.log('patient_get_appointments_calendar : INPUT : ', req.body );
     
-    let appointments_available = get_appointments_available_from_calendar(req.body) ;
-   
+    let appointments_available = get_appointments_available_from_calendar(req.body.cal_id,req.body.date ) ;
+
     appointments_available.then( v => {  console.log("patient_get_appointments_calendar  RESPONSE: "+JSON.stringify(v)) ; return (res.status(200).send(JSON.stringify(v))) } )
 
     //res.status(200).send(JSON.stringify( get_appointments_available(req.body)));
@@ -3130,30 +3081,30 @@ async function get_professional_centers(id)
 //************* PUBLIC SEARCH BY CALENDAR ID ********** */
 //***************************************************** */
 
-async function get_appointments_available_from_calendar(json)
+async function get_appointments_available_from_calendar(cal_id, date)
 {
   // 1.- get Calendar
-  let calendar = await get_calendars_available_by_id(json) ;
+  let calendar = await get_calendar_available_by_id(cal_id) ;
   console.log("patient_get_appointments_calendar : INPUT"+JSON.stringify(calendar));
   // 2.- get Professional Appointment
   let appointments_reserved = await get_professional_appointments_by_date( 1 , '2022-06-01' , '2022-06-04')
   console.log("get_professional_appointments_by_date : OUTPUT "+JSON.stringify(appointments_reserved));
- // 3.- cutter calendar 
-  let app_calendar = calendar_cutter(calendar[0],json);
+ // 3.- cutter calendar from date, 
+  let app_calendar = calendar_cutter(calendar[0],date);
 
   let app_calendar_filtered = filter_app_from_appTaken(app_calendar,appointments_reserved)
 
   return(app_calendar_filtered); 
 }
 
-async function get_calendars_available_by_id(json)
+async function get_calendar_available_by_id(cal_id)
 {
   const { Client } = require('pg')
   const client = new Client(conn_data)
   await client.connect()  
   //END IF LOCATION
   //const sql_calendars  = "SELECT * FROM professional_calendar WHERE id = 139 AND date_start <='2022-06-02' AND date_end >= '2022-06-01' AND  active = true AND deleted_professional = false AND status = 1  " ;  
-  const sql_calendars  = "SELECT * FROM professional_calendar WHERE id = "+json.cal_id+" AND  active = true AND deleted_professional = false AND status = 1  " ;  
+  const sql_calendars  = "SELECT * FROM professional_calendar WHERE id = "+cal_id+" AND  active = true AND deleted_professional = false AND status = 1  " ;  
 
 
   console.log("get_calendars_available_by_id  SQL:"+sql_calendars) 
@@ -3163,6 +3114,7 @@ async function get_calendars_available_by_id(json)
   return res.rows ;
 }
 
+//GET all professional appointments taken between two dates  
 async function get_professional_appointments_by_date(prof_id ,date_start , date_end)
 {
   const { Client } = require('pg')
@@ -3179,7 +3131,8 @@ async function get_professional_appointments_by_date(prof_id ,date_start , date_
   return res.rows ;
 }
 
-function calendar_cutter(calendar, json )
+//UNIQUE CALENDAR CUTTER
+function calendar_cutter(calendar, fromDate )
 {
   console.log("Calendar Cutter : "+JSON.stringify(calendar));
   let cal_days = [] ; // ARRAY TO STORE DAYS
@@ -3188,10 +3141,8 @@ function calendar_cutter(calendar, json )
  
   if (calendar !=null ){
   //get days available in calendar
-  let date_start = new Date(json.date); 
+  let date_start = new Date(fromDate); 
   let date_end =   new Date(calendar.date_end);
-
- 
 
   let cal_day_active = [] ;
     if (calendar.sunday)    { cal_day_active.push(0) }  
@@ -3250,15 +3201,9 @@ function calendar_cutter(calendar, json )
 
    cal_appointments.forEach(a => console.log("Appointment :"+JSON.stringify(a) ))
   }
-
-
    return (cal_appointments) ;
 
-
-
-
   } 
-
 
 function filter_app_from_appTaken(app,appTaken)
 {
