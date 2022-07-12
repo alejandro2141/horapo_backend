@@ -1667,7 +1667,8 @@ app.route('/patient_get_appointments_calendar')
  
     console.log('patient_get_appointments_calendar : INPUT : ', req.body );
     //get Appointments and remove the lock days from the response adding true to last parameter. 
-    let appointments_available = get_appointments_available_from_calendar(req.body.cal_id,req.body.date,true ) ;
+    let calendars = [req.body.cal_id]
+    let appointments_available = get_appointments_available_from_calendar(calendars,req.body.date,true  ) ;
 
     appointments_available.then( v => {  console.log("patient_get_appointments_calendar  RESPONSE: "+JSON.stringify(v)) ; return (res.status(200).send(JSON.stringify(v))) } )
 
@@ -3081,13 +3082,14 @@ async function get_professional_centers(id)
 //************* PUBLIC SEARCH BY CALENDAR ID ********** */
 //***************************************************** */
 
-async function get_appointments_available_from_calendar(cal_id, date,remove_lock_days )
+async function get_appointments_available_from_calendar(cal_ids, date_start,remove_lock_days )
 {
   // 1.- get Calendar
-  let calendar = await get_calendar_available_by_id(cal_id) ;
-  console.log("patient_get_appointments_calendar : INPUT"+JSON.stringify(calendar));
+  let calendar = await get_calendar_available_by_id(cal_ids) ;
+  console.log("patient_get_appointments_calendars : INPUT"+JSON.stringify(calendar));
   // 2.- get Professional Appointment
-  let appointments_reserved = await get_professional_appointments_by_date( 1 , '2022-06-01' , '2022-06-04')
+  // 
+  let appointments_reserved = await get_professional_appointments_by_date( calendar[0].professional_id , date_start , '2023-06-04')
   console.log("get_professional_appointments_by_date : OUTPUT "+JSON.stringify(appointments_reserved));
  
   // 3.- GET Lock Dates
@@ -3097,7 +3099,7 @@ async function get_appointments_available_from_calendar(cal_id, date,remove_lock
 
 
   // 4.- cutter calendar from date, 
-  let app_calendar = calendar_cutter(calendar[0],date, lockDates, remove_lock_days );
+  let app_calendar = calendar_cutter(calendar[0],date_start, lockDates, remove_lock_days );
 
   let app_calendar_filtered = filter_app_from_appTaken(app_calendar,appointments_reserved)
 
@@ -3111,7 +3113,7 @@ async function get_calendar_available_by_id(cal_id)
   await client.connect()  
   //END IF LOCATION
   //const sql_calendars  = "SELECT * FROM professional_calendar WHERE id = 139 AND date_start <='2022-06-02' AND date_end >= '2022-06-01' AND  active = true AND deleted_professional = false AND status = 1  " ;  
-  const sql_calendars  = "SELECT * FROM professional_calendar WHERE id = "+cal_id+" AND  active = true AND deleted_professional = false AND status = 1  " ;  
+  const sql_calendars  = "SELECT * FROM professional_calendar WHERE id In ("+cal_id+") AND  active = true AND deleted_professional = false AND status = 1  " ;  
 
 
   console.log("get_calendars_available_by_id  SQL:"+sql_calendars) 
@@ -3122,15 +3124,15 @@ async function get_calendar_available_by_id(cal_id)
 }
 
 //GET all professional appointments taken between two dates  
-async function get_professional_appointments_by_date(prof_id ,date_start , date_end)
+async function get_professional_appointments_by_date(prof_id ,date_start )
 {
   const { Client } = require('pg')
   const client = new Client(conn_data)
   await client.connect()  
   //END IF LOCATION
-  //const sql_calendars  = "SELECT * FROM professional_calendar WHERE id = 139 AND date_start <='2022-06-02' AND date_end >= '2022-06-01' AND  active = true AND deleted_professional = false AND status = 1  " ;  
-
-  const sql_calendars  = "SELECT * FROM appointment WHERE professional_id = "+prof_id+"  AND date >='"+date_start+"'  AND date <='"+date_end+"' AND  app_available = false " ; 
+  
+  //const sql_calendars  = "SELECT * FROM appointment WHERE professional_id = "+prof_id+"  AND date >='"+date_start+"'  AND date <='"+date_end+"' AND  app_available = false " ; 
+  const sql_calendars  = "SELECT * FROM appointment WHERE professional_id = "+prof_id+"  AND date >='"+date_start+"' AND  app_available = false " ; 
   console.log("get_professional_appointments_by_date  SQL:"+sql_calendars) 
   
   const res = await client.query(sql_calendars) 
@@ -3154,7 +3156,6 @@ async function get_professional_lock_days(prof_id)
   return res.rows ;
 }
 
-
 //******************************************************* */
 //************** UNIQUE CALENDAR CUTTER ***************** */
 //******************************************************  */
@@ -3170,24 +3171,30 @@ function calendar_cutter(calendar, fromDate ,lockDates, remove_lock_days )
   let date_start = new Date(fromDate); 
   let date_end =   new Date(calendar.date_end);
 
+  //NOTE IMPORTANT
+  //I SEE BACKEND set by default Monday as first day of week, NOT Sunday as documentation.
+  // Not sure why, but i will reflect it in code, in a different  environment it could change  
+
   let cal_day_active = [] ;
-    if (calendar.sunday)    { cal_day_active.push(0) }  
-    if (calendar.monday)    { cal_day_active.push(1) }
-    if (calendar.tuesday)   { cal_day_active.push(2) }
-    if (calendar.wednesday) { cal_day_active.push(3) }
-    if (calendar.thursday)  { cal_day_active.push(4) }
-    if (calendar.friday)    { cal_day_active.push(5) }
-    if (calendar.saturday)  { cal_day_active.push(6) }
+    if (calendar.sunday)    { cal_day_active.push(6) }  
+    if (calendar.monday)    { cal_day_active.push(0) }
+    if (calendar.tuesday)   { cal_day_active.push(1) }
+    if (calendar.wednesday) { cal_day_active.push(2) }
+    if (calendar.thursday)  { cal_day_active.push(3) }
+    if (calendar.friday)    { cal_day_active.push(4) }
+    if (calendar.saturday)  { cal_day_active.push(5) }
   // CALCULATE DAYS EXIST IN CALENDAR
+    console.log("+++++++++++++++++++++++++ Calendar day active "+cal_day_active)
   for (var d = new Date(date_start); d <= date_end; d.setDate(new Date(d).getDate() + 1)) 
     { 
+      console.log("*********Clendar Day:"+d.toISOString().split('T')[0] +" D:"+d.getDay()+" Is in Days Available:"+cal_day_active.includes( d.getDay() ) );
+
       if(cal_day_active.includes( d.getDay() ) )
       {
         cal_days.push(new Date(d).toISOString().split('T')[0])
       }
     }
-    console.log("+++++++++++++++++ Calendar day active "+cal_day_active)
-    console.log("+++++++++++++++++ calDays  "+cal_days)
+    console.log("+++++++++++++++++++++++++ calDays  "+cal_days)
         
     // CALCULATE HOURS EXIST IN DAY CALENDAR newDateObj.setTime(oldDateObj.getTime() + (30 * 60 * 1000));
     let time_start = new Date('Thu, 01 Jan 1970 '+calendar.start_time.substring(0,5) ) ;
