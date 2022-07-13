@@ -576,7 +576,7 @@ const resultado = client.query(sql, (err, result) => {
 })
 
 })
- 
+ /*
 // GET ASSISTANTS
 app.route('/get_assistants')
 .post(function (req, res) {
@@ -609,7 +609,7 @@ const resultado = client.query(sql, (err, result) => {
 })
 
 })
-
+*/
 // DELETE CENTER
 app.route('/delete_center')
 .post(function (req, res) {
@@ -1069,7 +1069,7 @@ const resultado = client.query(sql, (err, result) => {
 })
 
 })
-
+/*
 // PROFESIONAL GET ASSISTANTS
 app.route('/professional_get_assistants')
 .post(function (req, res) {
@@ -1105,7 +1105,7 @@ const resultado = client.query(sql, (err, result) => {
 })
 
 })
-
+*/
 // PROFESIONAL GET APPOINTMENT DAY
 app.route('/professional_get_appointments_day2')
 .post(function (req, res) {
@@ -1115,6 +1115,9 @@ app.route('/professional_get_appointments_day2')
      resp_app_available.then( v => {  console.log("RESPONSE: "+JSON.stringify(v)) ; return (res.status(200).send(JSON.stringify(v))) } )
      
 })
+
+
+
 
 // PROFESSIONAL LOGIN 
 app.route('/professional_login')
@@ -1661,35 +1664,6 @@ const resultado = client.query(sql, (err, result) => {
 })
 
 
-//PATIENT GET APPOINTMENTS  SEARCH BY CALENDAR
-app.route('/patient_get_appointments_calendar')
-.post(function (req, res) {
- 
-    console.log('patient_get_appointments_calendar : INPUT : ', req.body );
-    //get Appointments and remove the lock days from the response adding true to last parameter. 
-    let calendars = [req.body.cal_id]
-    let appointments_available = get_appointments_available_from_calendar(calendars,req.body.date,true  ) ;
-
-    appointments_available.then( v => {  console.log("patient_get_appointments_calendar  RESPONSE: "+JSON.stringify(v)) ; return (res.status(200).send(JSON.stringify(v))) } )
-
-    //res.status(200).send(JSON.stringify( get_appointments_available(req.body)));
-   
-    /*
-    let resp_app_available = get_appointments_available(req.body);
-    resp_app_available.then( v => {  console.log("patient_get_appointments_day2  RESPONSE: "+JSON.stringify(v)) ; return (res.status(200).send(JSON.stringify(v))) } )
-    */
-
-    //res.status(200).send(JSON.stringify(resp_app_available));
-
-    /*
-    resp_calendar.then(result => console.log(result) )
-    
-    let resp_app_taken=get_professional_apptointments_day()
-    resp_app_taken.then(result => console.log(result) )
-    res.status(200).send(JSON.stringify(result) );
-  client.end()
-    */
-})
 
 //PATIENT GET APPOINTMENTS  SEARCH BY CALENDAR
 app.route('/patient_get_appointments_day2')
@@ -1702,16 +1676,6 @@ app.route('/patient_get_appointments_day2')
     let resp_app_available = get_appointments_available(req.body);
     resp_app_available.then( v => {  console.log("patient_get_appointments_day2  RESPONSE: "+JSON.stringify(v)) ; return (res.status(200).send(JSON.stringify(v))) } )
     
-    //res.status(200).send(JSON.stringify(resp_app_available));
-
-    /*
-    resp_calendar.then(result => console.log(result) )
-    
-    let resp_app_taken=get_professional_apptointments_day()
-    resp_app_taken.then(result => console.log(result) )
-    res.status(200).send(JSON.stringify(result) );
-  client.end()
-    */
 })
 
 //********************************************* 
@@ -1805,79 +1769,7 @@ const resultado = client.query(sql, (err, result) => {
 
 })
  
- //********************************************* 
-// PUBLIC POST ASSISTANT GET AGENDA
-//********************************************* 
-/*
-app.route('/assistant_get_agendas')
-.post(function (req, res) {
  
-    console.log('Assistant_get_agendas : ', req.body );
- 
-// ****** Connect to postgre
-const { Pool, Client } = require('pg')
-const client = new Client({
-  user: 'conmeddb_user',
-  host: '127.0.0.1',
-  database: 'conmeddb01',
-  password: 'paranoid',
-  port: 5432,
-})
-
-client.connect()
-// ****** Run query to bring appointment
-const sql  = "SELECT * FROM agendas WHERE assistant_id='"+req.body.assistant_id+"' " ;
-console.log('SQL GET AGENDA = '+sql ) ;
-const resultado = client.query(sql, (err, result) => {
-
-  if (err) {
-      console.log(' ERROR QUERY = '+sql ) ;
-    }
-
-  console.log('JSON RESPONSE GET AGENDA  = '+result ) ;
-  res.status(200).send(JSON.stringify(result) );
-  client.end()
-})
-
-})
-*/
-
-//********************************************* 
-// PUBLIC POST ASSISTANT GET AGENDA
-//********************************************* 
-/*
-app.route('/assistant_get_agenda_by_id')
-.post(function (req, res) {
- 
-    console.log('Assistant_get_agenda by id : ', req.body );
- 
-// ****** Connect to postgre
-const { Pool, Client } = require('pg')
-const client = new Client({
-  user: 'conmeddb_user',
-  host: '127.0.0.1',
-  database: 'conmeddb01',
-  password: 'paranoid',
-  port: 5432,
-})
-
-client.connect()
-// ****** Run query to bring appointment
-const sql  = "SELECT * FROM agendas WHERE id='"+req.body.agenda_id+"' " ;
-console.log('SQL GET AGENDA = '+sql ) ;
-const resultado = client.query(sql, (err, result) => {
-
-  if (err) {
-      console.log(' ERROR QUERY = '+sql ) ;
-    }
-
-  console.log('JSON RESPONSE GET AGENDA  = '+result ) ;
-  res.status(200).send(JSON.stringify(result) );
-  client.end()
-})
-
-})
-*/
 //********************************************* 
 // PUBLIC POST GET APPOINTMENT AVAILABLE LIST
 //********************************************* 
@@ -1914,7 +1806,6 @@ const resultado = client.query(sql, (err, result) => {
 })
 
 })
-
 
 //********************************************* 
 // Get APpointment details
@@ -2018,7 +1909,6 @@ const resultado = client.query(sql, (err, result) => {
 })
 
 })
-
 
 //********************************************* 
 // PUBLIC POST add_hour_agenda
@@ -3079,32 +2969,120 @@ async function get_professional_centers(id)
 }
 
 //***************************************************** */
-//************* PUBLIC SEARCH BY CALENDAR ID ********** */
+//************* PUBLIC SEARCH   *********************** */
+//******* PUBLIC APPOINTMENTS IN CALENDAR ID ********** */
 //***************************************************** */
+//PATIENT GET APPOINTMENTS  SEARCH BY CALENDAR
+app.route('/patient_get_appointments_calendar')
+.post(function (req, res) {
+ 
+    console.log('patient_get_appointments_calendar : INPUT : ', req.body );
+    //get Appointments and remove the lock days from the response adding true to last parameter. 
+    let calendars = [req.body.cal_id]
+    let appointments_available = get_appointments_available_from_calendar(calendars,req.body.date,true  ) ;
 
+    appointments_available.then( v => {  console.log("patient_get_appointments_calendar  RESPONSE: "+JSON.stringify(v)) ; return (res.status(200).send(JSON.stringify(v))) } )
+})
+// CALLED FROM PUBLIC CALENDAR VIEWS
 async function get_appointments_available_from_calendar(cal_ids, date_start,remove_lock_days )
 {
   // 1.- get Calendar
-  let calendar = await get_calendar_available_by_id(cal_ids) ;
-  console.log("patient_get_appointments_calendars : INPUT"+JSON.stringify(calendar));
+  let calendars = await get_calendar_available_by_id(cal_ids) ;
+  console.log("patient_get_appointments_calendars : INPUT"+JSON.stringify(calendars));
   // 2.- get Professional Appointment
   // 
-  let appointments_reserved = await get_professional_appointments_by_date( calendar[0].professional_id , date_start , '2023-06-04')
+  let appointments_reserved = await get_professional_appointments_by_date( calendars[0].professional_id , date_start , '2023-06-04')
   console.log("get_professional_appointments_by_date : OUTPUT "+JSON.stringify(appointments_reserved));
  
   // 3.- GET Lock Dates
-  let lockDates = await get_professional_lock_days(calendar[0].professional_id);
+  let lockDates = await get_professional_lock_days(calendars[0].professional_id);
   lockDates = lockDates.map(lockDates => (new Date(lockDates.date).toISOString().split('T')[0] ) ) ;
   console.log("getLockDays:"+JSON.stringify(lockDates));
 
-
   // 4.- cutter calendar from date, 
-  let app_calendar = calendar_cutter(calendar[0],date_start, lockDates, remove_lock_days );
-
+  let app_calendar = calendar_cutter(calendars[0],date_start, null , lockDates, remove_lock_days );
   let app_calendar_filtered = filter_app_from_appTaken(app_calendar,appointments_reserved)
 
   return(app_calendar_filtered); 
 }
+
+/*****************************************************
+******************************************************
+*    LIST APPOINTMENTS IN PROFESSIONAL BACKEND 
+*        PROFESIONAL GET APPOINTMENT DAY 3
+*****************************************************
+*****************************************************/
+
+app.route('/professional_get_appointments_day3')
+.post(function (req, res) {
+  
+  console.log('professional_get_appointments_day3 : INPUT : ', req.body );
+  //get Appointments and remove the lock days from the response adding true to last parameter. 
+  
+  let appointments_available = professional_get_appointments_from_calendars(req.body.professional_id ,req.body.date,false  ) ;
+
+  appointments_available.then( v => {  console.log("professional_get_appointments_day3  RESPONSE: "+JSON.stringify(v)) ; return (res.status(200).send(JSON.stringify(v))) } )
+})
+// CALLED FROM PROFESSIONAL APPOINTMENT VIEW DAY 3 
+async function professional_get_appointments_from_calendars(prof_id, date_start,remove_lock_days )
+{
+  // 1.- get Calendar
+  let calendars = await get_calendars_available_by_ProfessionalId(prof_id) ;
+  console.log("get_calendars_available_by_ProfessionalId : INPUT"+JSON.stringify(calendars));
+
+  // 2.- get Professional Appointment
+  let appointments_reserved = await get_professional_appointments_by_date( prof_id , date_start , date_start)
+  console.log("get_professional_appointments_by_date : OUTPUT "+JSON.stringify(appointments_reserved));
+ 
+  // 3.- GET Lock Dates
+  let lockDates = await get_professional_lock_days(prof_id);
+  lockDates = lockDates.map(lockDates => (new Date(lockDates.date).toISOString().split('T')[0] ) ) ;
+  console.log("getLockDays:"+JSON.stringify(lockDates));
+
+  // 4.- cutter calendar from date,
+  //CUTTER CYCLE  each Calendar 
+  let app_calendars = [] ;
+  let aux_app_calendar = [] ;
+
+  for (let i = 0; i < calendars.length; i++) {
+    app_calendars = app_calendars.concat( calendar_cutter(calendars[i],date_start, date_start , lockDates, remove_lock_days )) 
+    }
+
+  //let app_calendar = calendar_cutter(calendars[0],date_start, date_start , lockDates, remove_lock_days );
+
+    // ***************************
+  //let app_calendar_filtered = filter_app_from_appTaken(app_calendar,appointments_reserved)
+
+  app_calendars.sort(function(b, a){ return (new Date('Thu, 01 Jan 1970 '+b.start_time) - new Date('Thu, 01 Jan 1970 '+a.start_time )) } ) 
+  
+  console.log("app_calendars:"+JSON.stringify(app_calendars));
+  return(app_calendars); 
+}
+
+
+
+/******************************************************************** */
+/****************       TOOLS UTILS  ******************************** */
+/******************************************************************** */
+
+//GET CALENDARS BY Professional ID
+async function get_calendars_available_by_ProfessionalId(prof_id)
+{
+  const { Client } = require('pg')
+  const client = new Client(conn_data)
+  await client.connect()  
+  //END IF LOCATION
+  //const sql_calendars  = "SELECT * FROM professional_calendar WHERE id = 139 AND date_start <='2022-06-02' AND date_end >= '2022-06-01' AND  active = true AND deleted_professional = false AND status = 1  " ;  
+  const sql_calendars  = "SELECT * FROM professional_calendar WHERE professional_id = "+prof_id+" AND  active = true AND deleted_professional = false AND status = 1  " ;  
+
+
+  console.log("get_calendar_available_by_ProfessionalId  SQL:"+sql_calendars) 
+  
+  const res = await client.query(sql_calendars) 
+  client.end() 
+  return res.rows ;
+}
+
 //GET CALENDARS BY ID
 async function get_calendar_available_by_id(cal_id)
 {
@@ -3124,15 +3102,16 @@ async function get_calendar_available_by_id(cal_id)
 }
 
 //GET all professional appointments taken between two dates  
-async function get_professional_appointments_by_date(prof_id ,date_start )
+async function get_professional_appointments_by_date(prof_id ,date_start ,date_end)
 {
   const { Client } = require('pg')
   const client = new Client(conn_data)
   await client.connect()  
   //END IF LOCATION
-  
+  //const sql_calendars  = "SELECT * FROM professional_calendar WHERE id = 139 AND date_start <='2022-06-02' AND date_end >= '2022-06-01' AND  active = true AND deleted_professional = false AND status = 1  " ;  
+
   //const sql_calendars  = "SELECT * FROM appointment WHERE professional_id = "+prof_id+"  AND date >='"+date_start+"'  AND date <='"+date_end+"' AND  app_available = false " ; 
-  const sql_calendars  = "SELECT * FROM appointment WHERE professional_id = "+prof_id+"  AND date >='"+date_start+"' AND  app_available = false " ; 
+  const sql_calendars  = "SELECT * FROM appointment WHERE professional_id = "+prof_id+"  AND date >='"+date_start+"' AND date <='"+date_end+"' AND  app_available = false " ; 
   console.log("get_professional_appointments_by_date  SQL:"+sql_calendars) 
   
   const res = await client.query(sql_calendars) 
@@ -3157,19 +3136,25 @@ async function get_professional_lock_days(prof_id)
 }
 
 //******************************************************* */
-//************** UNIQUE CALENDAR CUTTER ***************** */
-//******************************************************  */
-function calendar_cutter(calendar, fromDate ,lockDates, remove_lock_days )
+//************** UNIQUE AND IMPORTAN ******************** */
+//**************   CALENDAR CUTTER  ********************* */
+//******************************************************* */
+function calendar_cutter(calendar, fromDate ,endDate ,lockDates, remove_lock_days )
 {
-  console.log("Calendar Cutter : "+JSON.stringify(calendar));
+  console.log("Calendar goes to Cutter : "+JSON.stringify(calendar));
   let cal_days = [] ; // ARRAY TO STORE DAYS
   let cal_hours = [] ; //ARRAY TO STORE TIMES
   let cal_appointments = [] ; //ARRAY TO STORE TIMES
  
-  if (calendar !=null ){
+  if (calendar != null ){
   //get days available in calendar
   let date_start = new Date(fromDate); 
-  let date_end =   new Date(calendar.date_end);
+  let date_end = new Date(calendar.date_end);
+    if (endDate != null)
+    {
+      date_end = new Date(endDate)
+    }
+  
 
   //NOTE IMPORTANT
   //I SEE BACKEND set by default Monday as first day of week, NOT Sunday as documentation.
@@ -3206,7 +3191,7 @@ function calendar_cutter(calendar, fromDate ,lockDates, remove_lock_days )
 
   for (var t = new Date(time_start); t.getTime() <= time_end.getTime() ; t.setTime(t.getTime() + ((calendar.duration + calendar.time_between)*60*1000) ) ) 
     { 
-      let aux_hour=new String( (t.getHours())+":"+t.getMinutes() ) ;
+      let aux_hour=new String( ((t.getHours()).toString().padStart(2, '0') )+":"+(t.getMinutes().toString().padStart(2, '0')) ) ;
       cal_hours.push(aux_hour) 
     }
     //cal_days.forEach(d => console.log("Day:"+d))  ;
