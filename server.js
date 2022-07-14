@@ -1118,33 +1118,6 @@ app.route('/professional_get_appointments_day2')
 
 
 
-
-// PROFESSIONAL LOGIN 
-app.route('/professional_login')
-.post(function (req, res) {
-  console.log ("professional_login REQUEST",req.body);
-
-  if (req.body["form_email"]  && req.body["form_pass"] )
-  {
-    let json_response = access_login(req)
-    json_response.then( v => {  console.log("professional_login RESPONSE: "+JSON.stringify(v)) ; return (res.status(200).send(JSON.stringify(v))) } )
-    //res.status(200).send(JSON.stringify(json_response));
-    //console.log('professional_login RESPONSE  :'+JSON.stringify(json_response) ) ;
-  }
-  else
-  {
-    let json_response_error = { 
-      professional_id: null , 
-      result_code: 3 ,
-      professional_name: null ,
-      token : null ,
-      first_time : null,
-                  };
-    return (res.status(200).send(JSON.stringify(json_response_error))) 
-  }
-
-
-})
  
 // PROFESSIONAL CREATE CENTER 
 app.route('/professional_create_center')
@@ -2904,18 +2877,52 @@ async function get_calendars_available_professional(json)
 }
 
 //LOGIN FUNCTIONS
+
+// PROFESSIONAL LOGIN 
+app.route('/professional_login')
+.post(function (req, res) {
+  console.log ("professional_login REQUEST",req.body);
+
+  if (req.body["form_email"]  && req.body["form_pass"] )
+  {
+    let json_response = access_login(req)
+    json_response.then( v => {  console.log("professional_login RESPONSE: "+JSON.stringify(v)) ; return (res.status(200).send(JSON.stringify(v))) } )
+    //res.status(200).send(JSON.stringify(json_response));
+    //console.log('professional_login RESPONSE  :'+JSON.stringify(json_response) ) ;
+  }
+  else
+  {
+    let json_response_error = { 
+      professional_id: null , 
+      result_code: 3 ,
+      professional_name: null ,
+      token : null ,
+      first_time : null,
+                  };
+    return (res.status(200).send(JSON.stringify(json_response_error))) 
+  }
+})
+
 async function access_login(req)
 {
   console.log("access_login REQUEST") ; 
-  //get login data
+  //1- Get login data
   let login_data = await get_access_login(req)
   console.log("access_login ESPONSE "+JSON.stringify(login_data)) ;
   //get response centers 
+  //2.- Get Centers
   if (login_data.result_code == 0)
   {
   let response_centers = await get_professional_centers(login_data.professional_id);
   //add centers to login_data
   login_data =  { ...login_data ,  centers : response_centers };  
+  }
+  //3.- Get CALENDARS
+  if (login_data.result_code == 0)
+  {
+  let response_calendars = await get_professional_calendars(login_data.professional_id);
+  //add centers to login_data
+  login_data =  { ...login_data ,  calendars : response_calendars };  
   }
     
   
@@ -2968,6 +2975,25 @@ async function get_professional_centers(id)
   
 }
 
+//called from Both
+async function get_professional_calendars(prof_id)
+{
+  const { Client } = require('pg')
+  const client = new Client(conn_data)
+  await client.connect()
+  //console.log("ids:"+ids+" dates:"+dates)
+  
+  const sql_calendars  = "SELECT * FROM professional_calendar WHERE professional_id ='"+prof_id+"' AND  deleted_professional = false  ORDER BY id DESC  " ;
+
+ // const sql_apps_taken  = "SELECT * FROM appointment WHERE date IN ("+aux_dates+")  and professional_id  IN ("+ids+") ;";
+  console.log("SQL QUERY: "+sql_calendars)
+  const res = await client.query(sql_calendars)
+  client.end() 
+  return res.rows;
+}
+
+
+
 //***************************************************** */
 //************* PUBLIC SEARCH   *********************** */
 //******* PUBLIC APPOINTMENTS IN CALENDAR ID ********** */
@@ -3012,7 +3038,6 @@ async function get_appointments_available_from_calendar(cal_ids, date_start,remo
 *        PROFESIONAL GET APPOINTMENT DAY 3
 *****************************************************
 *****************************************************/
-
 app.route('/professional_get_appointments_day3')
 .post(function (req, res) {
   
@@ -3049,14 +3074,14 @@ async function professional_get_appointments_from_calendars(prof_id, date_start,
     }
 
   //let app_calendar = calendar_cutter(calendars[0],date_start, date_start , lockDates, remove_lock_days );
-
     // ***************************
-  //let app_calendar_filtered = filter_app_from_appTaken(app_calendar,appointments_reserved)
-
-  app_calendars.sort(function(b, a){ return (new Date('Thu, 01 Jan 1970 '+b.start_time) - new Date('Thu, 01 Jan 1970 '+a.start_time )) } ) 
   
-  console.log("app_calendars:"+JSON.stringify(app_calendars));
-  return(app_calendars); 
+  let app_calendar_filtered = filter_app_from_appTaken(app_calendars,appointments_reserved)
+
+  app_calendar_filtered.sort(function(b, a){ return (new Date('Thu, 01 Jan 1970 '+b.start_time) - new Date('Thu, 01 Jan 1970 '+a.start_time )) } ) 
+  
+  console.log("app_calendars:"+JSON.stringify(app_calendar_filtered));
+  return(app_calendar_filtered); 
 }
 
 
@@ -3248,9 +3273,9 @@ function calendar_cutter(calendar, fromDate ,endDate ,lockDates, remove_lock_day
 } 
 
 // filter app from app taken
-function filter_app_from_appTaken(app,appTaken)
+function filter_app_from_appTaken(apps,appsTaken)
 {
-  return (app);
+  return (apps);
 }
 
 
