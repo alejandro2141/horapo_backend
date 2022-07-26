@@ -2636,6 +2636,44 @@ async function get_professional_calendars(prof_id)
   return res.rows;
 }
 
+//***************************************************** */
+//********** PUBLIC GET CENTERS ARRAY from ids  ******* */
+//**********                                   ******** */
+//***************************************************** */
+app.route('/common_get_centers')
+.post(function (req, res) {
+  console.log('common_get_centers REQUEST : ', req.body );
+ 
+// ****** Connect to postgre
+const { Client } = require('pg')
+const client = new Client(conn_data)
+client.connect()
+
+// ****** Run query to bring appointment
+const sql  = "SELECT * FROM center where id IN ( "+req.body.centers_ids+" )  " ;
+console.log('SQL common_get_centers : '+sql ) ;
+const resultado = client.query(sql, (err, result) => {
+
+  if (err) {
+      console.log(' ERROR QUERY = '+sql ) ;
+      console.log(' ERR = '+err ) ;
+    }
+
+  if (result !=null)
+  {
+  console.log('GET common_get_centers '+JSON.stringify(result.rows) ) ;
+  res.status(200).send(JSON.stringify(result.rows) );
+  }
+  else
+  {
+    res.status(200).send( null ) ;
+  }
+  
+  client.end()
+})
+
+})
+
 
 //***************************************************** */
 //********** PUBLIC SEARCH Main Page Public    ******** */
@@ -3017,6 +3055,8 @@ async function professional_get_appointments_from_calendars(prof_id, date_start,
 /******************************************************************** */
 /****************       TOOLS UTILS  ******************************** */
 /******************************************************************** */
+
+
 
 //GET CALENDARS BY Professional ID
 async function get_calendars_available_by_ProfessionalId(prof_id,date)
