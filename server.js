@@ -1537,7 +1537,7 @@ const resultado = client.query(sql, (err, result) => {
 
 })
 
-
+/*
 app.route('/patient_get_professional')
 .post(function (req, res) {
  
@@ -1569,6 +1569,7 @@ const resultado = client.query(sql, (err, result) => {
 
 })
 
+*/
 app.route('/patient_get_center')
 .post(function (req, res) {
  
@@ -2674,7 +2675,6 @@ const resultado = client.query(sql, (err, result) => {
 
 })
 
-
 //***************************************************** */
 //********** PUBLIC SEARCH Main Page Public    ******** */
 //********** PUBLIC APPOINTMENTS               ******** */
@@ -2744,8 +2744,7 @@ async function get_appointments_available(json)
 */
   return  app_calendar_filtered ;
 }
-
- // 1.-  PUBLIC GET CALENDARS 
+// 1.-  PUBLIC GET CALENDARS 
 async function get_calendars_available_by_specialty(json)
 {
   const { Client } = require('pg')
@@ -2823,144 +2822,6 @@ async function get_calendars_available_by_specialty(json)
   return res.rows ;
 
 }
-
-/*
-async function get_appointments_available(json)
-{
-  let professional_ids = [] ;
-    professional_ids.push(999);
-  let dates = [] ;
-   // dates.push("2022-02-01");
-  let appointments_available = [] ; 
-  console.log('GET APPOINTMENT AVAILABLE ');
-   // 1.-  CALENDARS 
-  let calendars = await get_calendars_available(json)
-  console.log('1.- GET CALENDARS Match with Search Parameters Total:'+calendars.length );
-  calendars.forEach(cal => console.log("CALENDAR ID :"+cal.id));
-
-  // get all appointments of Profecioals belog calendars for the days required
-  //extract professional ids from Calendars
-  for(var i=0; i<calendars.length; i++){
-    professional_ids.push(calendars[i]['professional_id']);
-  }
-
-  professional_ids = professional_ids.sort().filter(function(item, pos, ary) {
-    return !pos || item != ary[pos - 1];
-    });
-  console.log('CALENDARS LIST Professional Ids:'+professional_ids );
-  
-  //filtrar para no tener ids repetidos. 
-  //MUST ELIMINATE DUPLICATED IDs 
-   dates.push(json.date);
-
-   // 2.-  APPOINTMENTS TAKEN
-  let appointments = await get_professional_appointment_day(professional_ids,dates)
-  
-  // now we cut calendar skiping appotintments taken 
-  for(var i=0; i<calendars.length; i++){
-      let appointment_id_filtered = appointments.filter(appointments => appointments.professional_id == calendars[i].professional_id );
-     
-        let aux_date_start = new Date(calendars[i].date_start) ; 
-        let aux_date_end = new Date(calendars[i].date_end) ;
-   
-        let aux_start_time = new Date ('Thu, 01 Jan 1970 '+calendars[i].start_time ).getTime();
-        let aux_end_time = new Date ('Thu, 01 Jan 1970 '+calendars[i].end_time ).getTime();      
-
-        let total_available_time =  aux_end_time  - aux_start_time ; 
-        let app_duration =  (( parseInt(calendars[i].duration) + parseInt(calendars[i].time_between) ) * 60 * 1000 ) ;
-        let app_total_slots = total_available_time / app_duration ;
-        console.log("CALENDAR TOTAL DRAFT slots TO CREATE:"+ app_total_slots+"   FOR PROFESSIONAL ID:"+calendars[i].professional_id )
-        console.log("CALENDAR APPOINTMENT ALREADY RESERVED :"+appointment_id_filtered.length+ " For Professional id: "+calendars[i].professional_id);
-        console.log("START CYCLE TO CREATE SLOTS (skiping reserved)");
-
-        let start_time_slot = aux_start_time;
-        //INSERT Appointments TO ARRAY based in CALENDAR times 
-                  for (let x = 1; x <= app_total_slots ; x ++) {
-                      
-                        let aux_date = new Date(start_time_slot)
-
-                        var appointment_slot = {
-                          calendar_id : calendars[i].calendar_id , 
-                          date : json.date ,
-                          professional_name : calendars[i].professional_name , 
-                          specialty1 : calendars[i].specialty1 , 
-                          duration : calendars[i].duration ,
-                          professional_id : calendars[i].professional_id , 
-
-                          pattient_doc_id : calendars[i].pattient_doc_id ,
-
-                          home_visit : calendars[i].home_visit ,
-                          home_visit_location1 : calendars[i].home_comuna1 ,
-                          home_visit_location2 : calendars[i].home_comuna2 ,
-                          home_visit_location3 : calendars[i].home_comuna3 ,
-                          home_visit_location4 : calendars[i].home_comuna4 ,
-                          home_visit_location5 : calendars[i].home_comuna5 ,
-                          home_visit_location6 : calendars[i].home_comuna6 ,
-
-                          center_visit_location : calendars[i].comuna ,
-
-                          center_visit :calendars[i].center_visit ,
-                          center_id :calendars[i].center_id ,
-                          center_name :calendars[i].center_name ,
-                          center_address :calendars[i].center_address ,
-
-                          remote_care : calendars[i].remote_care ,
-
-                          status : calendars[i].status  ,
-                          //start_time : "0"+aux_date.getHours()+":0"+aux_date.getMinutes() , 
-                          start_time :  aux_date.getHours().toString().padStart(2, '0')+":"+aux_date.getMinutes().toString().padStart(2, '0') , 
-                          //new String(new char[width - toPad.length()]).replace('\0', fill) + toPad;
-                        }
-
-                      start_time_slot +=  app_duration ;
-                      
-                      console.log("--> DRAFT SLOT "+x+"/"+app_total_slots+" Start_Time: "+appointment_slot.start_time+" Duration:"+appointment_slot.duration );
-                      //check if this Available App is not already taken by users. 
-                      //AQUI ME QUEDE
-                      //console.log("FILTERS CALENDAR    -> id: "+calendars[i].calendar_id+" Professional Id: "+calendars[i].professional_id+"   " )
-                      //let exist = appointments_filtered.filter(w => w.start_time == aux_date.getTime() );
-                      let aux_date_slot= new Date ('Thu, 01 Jan 1970 '+appointment_slot.start_time ).getTime();
-                      let skip_insert = false ; 
-                      if (appointment_id_filtered.length > 0) 
-                      {
-                            for (let i = 0; i < appointment_id_filtered.length; i++) {
-                             // console.log("----> CYCLE APPOINTMENTS to compare "+(i+1)+"/"+appointment_id_filtered.length );
-                              let aux_date_app = new Date('Thu, 01 Jan 1970 '+appointment_id_filtered[i].start_time).getTime(); ;
-                           
-                                if ( aux_date_slot === aux_date_app)
-                                {
-                                  console.log("------> MATCH TRUE --> SKIPING "+appointment_slot.date+" "+appointment_slot.start_time+" Professional_id: "+appointment_slot.professional_id );
-                                  skip_insert = true ;
-                                }
-                                else
-                                {
-                                  //console.log("------> MATCH FALSE. ADD TO APP AVAILABLE LIST "+appointment_slot.date+" "+appointment_slot.start_time+" Professional_id: "+appointment_slot.professional_id );
-                                  //appointments_available.push(appointment_slot)
-                                }
-                            }
-                            if (!skip_insert) 
-                            {
-                              appointments_available.push(appointment_slot)
-                            }
-
-                      }
-                      else{ 
-                          appointments_available.push(appointment_slot) ;
-                      }
-
-                    }
-
-             } // END FOR CYCLE CALENDARS
-  console.log("CALENDAR APPOINTMENT SORT")
-  appointments_available.sort(function(b, a){ return (new Date('Thu, 01 Jan 1970 '+b.start_time) - new Date('Thu, 01 Jan 1970 '+a.start_time )) } ) 
-                  
-  console.log ("************* FINAL TO DISPLAY ************************ ");
-  console.log ("FINAL  APPOINTMENTS AVAILABLE TO DISPLAY :"+appointments_available.length);
-  console.log ("DETAILS FINAL  APPOINTMENTS AVAILABLE TO DISPLAY :"+JSON.stringify(appointments_available));
-
-  return  appointments_available ;
-}
-*/
 
 //***************************************************** */
 //************* PUBLIC SEARCH   *********************** */
@@ -3056,6 +2917,37 @@ async function professional_get_appointments_from_calendars(prof_id, date_start,
 /****************       TOOLS UTILS  ******************************** */
 /******************************************************************** */
 
+// GET PROFESSIONAL DATA 
+app.route('/patient_get_professional')
+.post(function (req, res) {
+ 
+    console.log('patient_get_professional  REQUEST : ', req.body );
+ 
+// ****** Connect to postgre
+const { Client } = require('pg')
+const client = new Client(conn_data)
+client.connect()
+
+// ****** Run query to bring appointment
+const sql  = "SELECT * FROM professional WHERE id='"+req.body.professional_id+"' " ;
+console.log('SQL patient_get_professional  : '+sql ) ;
+const resultado = client.query(sql, (err, result) => {
+
+  if (err) {
+    // throw err ;
+     console.log('patient_get_professional ERROR '+sql ) ;
+     console.log(err ) ;
+   }
+   else
+   {
+  res.status(200).send(JSON.stringify(result.rows[0]));
+  console.log('patient_get_professional RESPONSE  :'+JSON.stringify(result) ) ; 
+  }
+  
+  client.end()
+})
+
+})
 
 
 //GET CALENDARS BY Professional ID
@@ -3242,8 +3134,51 @@ function calendar_cutter(calendar, fromDate ,endDate ,lockDates, remove_lock_day
 // filter app from app taken
 function filter_app_from_appTaken(apps,appsTaken)
 {
-  return (apps);
+  console.log("APPS:"+apps);
+  console.log("APPS TAKEN:"+appsTaken);
+    /*
+  if (appsTaken != null)
+  {
+    for (let i = 0; i < appsTaken.length; i++) {
+      
+      var appointment_slot = {
+        calendar_id : appsTaken.calendar_id , 
+        date : appsTaken.date  ,
+        specialty :   appsTaken.specialty_reserved , 
+        duration : appsTaken.duration ,
+        center_id :appsTaken.center_id ,
+        start_time :  appsTaken.start_time , 
+        professional_id : appsTaken.professional_id ,
+        lock_day : false ,
+       }
+       apps.push(appointment_slot)
+    }
+
+    
+  }
+  */
+  console.log("APPS RETURN "+apps);
+  return (apps)
+  
+  /*
+  var appointment_slot = {
+    calendar_id : calendar.id , 
+    date : cal_days[d] ,
+    specialty : calendar.specialty1 , 
+    duration : calendar.duration ,
+   // professional_id : calendars[i].professional_id , 
+    center_id :calendar.center_id ,
+    start_time : cal_hours[t] , 
+    time_between : calendar.time_between ,
+    professional_id : calendar.professional_id ,
+    lock_day :lock_day ,
+   }
+   */
+
 }
+
+
+
 
 
 
