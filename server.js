@@ -2886,7 +2886,7 @@ async function professional_get_appointments_from_calendars(prof_id, date_start,
 
   // 2.- get Professional Appointment
   let appointments_reserved = await get_professional_appointments_by_date( prof_id , date_start , date_start)
-  console.log("get_professional_appointments_by_date : OUTPUT "+JSON.stringify(appointments_reserved));
+  console.log("++++++++++++++  APP RESERVED : OUTPUT "+JSON.stringify(appointments_reserved));
  
   // 3.- GET Lock Dates
   let lockDates = await get_professional_lock_days(prof_id);
@@ -3135,30 +3135,43 @@ function calendar_cutter(calendar, fromDate ,endDate ,lockDates, remove_lock_day
 function filter_app_from_appTaken(apps,appsTaken)
 {
   console.log("APPS:"+apps);
-  console.log("APPS TAKEN:"+appsTaken);
-    /*
+  console.log("APPS TAKEN:"+JSON.stringify(appsTaken));
+ 
+  let apps_taken_array = [] ;  
   if (appsTaken != null)
   {
     for (let i = 0; i < appsTaken.length; i++) {
-      
+         
       var appointment_slot = {
-        calendar_id : appsTaken.calendar_id , 
-        date : appsTaken.date  ,
-        specialty :   appsTaken.specialty_reserved , 
-        duration : appsTaken.duration ,
-        center_id :appsTaken.center_id ,
-        start_time :  appsTaken.start_time , 
-        professional_id : appsTaken.professional_id ,
+        calendar_id : appsTaken[i].calendar_id , 
+        date : appsTaken[i].date  ,
+        specialty :   appsTaken[i].specialty_reserved , 
+        duration : appsTaken[i].duration ,
+        center_id :appsTaken[i].center_id ,
+        start_time :  appsTaken[i].start_time , 
+        professional_id : appsTaken[i].professional_id ,
         lock_day : false ,
+        app_available : false ,
+        app_type_center : appsTaken[i].app_type_center ,
+        app_type_home : appsTaken[i].app_type_home ,
+        app_type_remote : appsTaken[i].app_type_remote ,
+        
+        patient_name : appsTaken[i].patient_name , 
+        patient_doc_id : appsTaken[i].patient_doc_id , 
+        patient_age : appsTaken[i].patient_age, 
+        patient_address : appsTaken[i].patient_address , 
+        patient_doc_id : appsTaken[i].patient_doc_id , 
+
        }
-       apps.push(appointment_slot)
+       apps_taken_array.push(appointment_slot)
     }
 
-    
   }
-  */
-  console.log("APPS RETURN "+apps);
-  return (apps)
+  
+  let apps_taken_plus_available = apps.concat(apps_taken_array);
+
+  console.log("APPS RETURN "+apps_taken_plus_available);
+  return (apps_taken_plus_available)
   
   /*
   var appointment_slot = {
