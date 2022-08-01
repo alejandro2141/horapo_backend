@@ -2687,7 +2687,6 @@ app.route('/patient_get_appointments_day2')
     //res.status(200).send(JSON.stringify( get_appointments_available(req.body)));
     let resp_app_available = get_appointments_available(req.body);
     resp_app_available.then( v => {  console.log("patient_get_appointments_day2  RESPONSE: "+JSON.stringify(v)) ; return (res.status(200).send(JSON.stringify(v))) } )
-    
 })
 
 async function get_appointments_available(json)
@@ -2732,12 +2731,15 @@ async function get_appointments_available(json)
   
   for (let i = 0; i < calendars.length; i++) {
     lockDates = await get_professional_lock_days(calendars[i].professional_id );
-    app_calendars = app_calendars.concat( calendar_cutter(calendars[i],json.date, json.date , lockDates, false)) 
-    
-    //we must get all APPS reserver for Professional
-   
+    //calendar_cutter(calendar, fromDate ,endDate ,lockDates, remove_lock_days )
+    let apps = calendar_cutter(calendars[i],json.date, json.date , lockDates, true) ;
+     
+    //remove APP reserved from app list response
     let appointments_reserved = await get_professional_appointments_by_date( calendars[i].professional_id , json.date , json.date)
-    app_calendar_filtered = filter_app_from_appTaken( app_calendars,appointments_reserved,true)
+    //filter_app_from_appTaken(apps,appsTaken, includeAppTaken)
+    app_calendar_filtered = filter_app_from_appTaken( apps,appointments_reserved, false )
+    
+    app_calendars = app_calendars.concat( app_calendar_filtered ) 
     }
 
  
@@ -2862,7 +2864,8 @@ async function get_appointments_available_from_calendar(cal_ids, date_start,remo
   lockDates = lockDates.map(lockDates => (new Date(lockDates.date).toISOString().split('T')[0] ) ) ;
   console.log("getLockDays:"+JSON.stringify(lockDates));
 
-  // 4.- cutter calendar from date, 
+  // 4.- cutter calendar from date, remove_lock_days = true
+  // calendar_cutter(calendar, fromDate ,endDate ,lockDates, remove_lock_days )
   let app_calendar = calendar_cutter(calendars[0],date_start, null , lockDates, remove_lock_days );
   let app_calendar_filtered = filter_app_from_appTaken(app_calendar,appointments_reserved)
 
@@ -2912,8 +2915,8 @@ async function professional_get_appointments_from_calendars(prof_id, date_start,
 
   //let app_calendar = calendar_cutter(calendars[0],date_start, date_start , lockDates, remove_lock_days );
     // ***************************
-  
-  let app_calendar_filtered = filter_app_from_appTaken(app_calendars,appointments_reserved, false )
+  //filter_app_from_appTaken(apps,appsTaken, includeAppTaken)
+  let app_calendar_filtered = filter_app_from_appTaken(app_calendars,appointments_reserved, true )
 
   app_calendar_filtered.sort(function(b, a){ return (new Date('Thu, 01 Jan 1970 '+b.start_time) - new Date('Thu, 01 Jan 1970 '+a.start_time )) } ) 
   
@@ -2956,7 +2959,6 @@ const resultado = client.query(sql, (err, result) => {
 })
 
 })
-
 
 //GET CALENDARS BY Professional ID
 async function get_calendars_available_by_ProfessionalId(prof_id,date)
@@ -3141,7 +3143,7 @@ function calendar_cutter(calendar, fromDate ,endDate ,lockDates, remove_lock_day
 } 
 
 // filter app from app taken
-function filter_app_from_appTaken(apps,appsTaken, removeTaken)
+function filter_app_from_appTaken(apps,appsTaken, includeAppTaken)
 {
   console.log("APPS:"+JSON.stringify(apps));
   console.log("APPS TAKEN:"+JSON.stringify(appsTaken));
@@ -3173,7 +3175,7 @@ function filter_app_from_appTaken(apps,appsTaken, removeTaken)
 
        }
        
-       if (removeTaken == false )
+       if (includeAppTaken )
        {
        apps_taken_array.push(appointment_slot)
        }
