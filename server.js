@@ -294,7 +294,7 @@ const resultado = client.query(query_update, (err, result) => {
 PROFESIONAL API
 
 *******************************************************/
-
+/*
 // PROFESSIONAL DUPLICATE DAY 
 app.route('/professional_lock_day')
 .post(function (req, res) {
@@ -332,6 +332,7 @@ console.log('professional_lock_day SQL:'+sql ) ;
   
 
 })
+*/
 
 // SAVE APPOINTMENT PRofessional
 app.route('/professional_take_appointment')
@@ -2730,7 +2731,11 @@ async function get_appointments_available(json)
   let app_calendar_filtered = []
   
   for (let i = 0; i < calendars.length; i++) {
-    lockDates = await get_professional_lock_days(calendars[i].professional_id );
+    let lockDates_aux = await get_professional_lock_days(calendars[i].professional_id );
+    lockDates_aux.forEach(data => lockDates.push( new Date(data.date).toISOString().split('T')[0] )) 
+    console.log("LOCK DATES only date :"+JSON.stringify(lockDates))
+    //lockDates = lockDates_aux.forEach( element => console.log("****************ELEMENT DATE:"+element.date) );
+
     //calendar_cutter(calendar, fromDate ,endDate ,lockDates, remove_lock_days )
     let apps = calendar_cutter(calendars[i],json.date, json.date , lockDates, true) ;
      
@@ -2921,11 +2926,20 @@ async function professional_get_appointments_from_calendars(prof_id, date_start,
   app_calendar_filtered.sort(function(b, a){ return (new Date('Thu, 01 Jan 1970 '+b.start_time) - new Date('Thu, 01 Jan 1970 '+a.start_time )) } ) 
   
   console.log("app_calendars:"+JSON.stringify(app_calendar_filtered));
-  return(app_calendar_filtered); 
+
+  let json_response = {
+                    appointments : app_calendar_filtered ,
+                    lock_dates : lockDates,
+                      }
+
+  //return(app_calendar_filtered); 
+  return(json_response); 
 }
 
 /******************************************************************** */
+/******************************************************************** */
 /****************       TOOLS UTILS  ******************************** */
+/******************************************************************** */
 /******************************************************************** */
 
 // GET PROFESSIONAL DATA 
@@ -3013,7 +3027,7 @@ async function get_professional_appointments_by_date(prof_id ,date_start ,date_e
   return res.rows ;
 }
 
-//GET LOCK DAYS
+// GET LOCK DAYS
 async function get_professional_lock_days(prof_id)
 {
   const { Client } = require('pg')
@@ -3022,12 +3036,70 @@ async function get_professional_lock_days(prof_id)
   //END IF LOCATION
   //const sql_calendars SELECT * FROM professional_day_locked WHERE professional_id = 1 ;  = "SELECT * FROM professional_calendar WHERE id = 139 AND date_start <='2022-06-02' AND date_end >= '2022-06-01' AND  active = true AND deleted_professional = false AND status = 1  " ;  
 
-  const sql_calendars  = "SELECT date FROM professional_day_locked WHERE professional_id = "+prof_id ; 
+  const sql_calendars  = "SELECT * FROM professional_day_locked WHERE professional_id = "+prof_id ; 
   console.log("************* get_professional_lock_days  SQL:"+sql_calendars) 
   const res = await client.query(sql_calendars) 
   client.end() 
+  console.log ("LOCK DAYS: PID:"+prof_id+" DLOCK:"+JSON.stringify(res.rows));
   return res.rows ;
 }
+
+// PROFESSIONAL LOCK  DAY 
+app.route('/professional_lock_day')
+.post(function (req, res) {
+console.log('professional_lock_day INPUT:', req.body );
+const { Client } = require('pg')
+const client = new Client(conn_data)
+client.connect() 
+var sql  = "INSERT INTO professional_day_locked ( professional_id, date ) values ('"+req.body.appointment_professional_id+"','"+req.body.appointment_date+"') ;"
+console.log('professional_lock_day SQL:'+sql ) ;
+	client.query(sql, (err, result) => {
+	  if (err) {
+	     // throw err ;
+	      console.log('professional_lock_day ERROR CREATION REGISTER, QUERY:'+sql ) ;
+	      console.log(err ) ;
+        res.status(200).send(JSON.stringify(result));
+	    }
+	    else
+	    {
+	  res.status(200).send(JSON.stringify(result));
+	  console.log('professional_lock_day  SUCCESS CENTER INSERT ' ) ; 
+    console.log('professional_lock_day  OUTPUT  :'+JSON.stringify(result) ) ; 
+	   }
+	   
+	  client.end()
+	})
+  
+})
+
+// PROFESSIONAL UN LOCK  DAY 
+app.route('/professional_unlock_day')
+.post(function (req, res) {
+console.log('professional_lock_day INPUT:', req.body );
+const { Client } = require('pg')
+const client = new Client(conn_data)
+client.connect() 
+var sql  = "DELETE FROM  professional_day_locked  WHERE professional_id='"+req.body.appointment_professional_id+"' AND date='"+req.body.appointment_date+"' ;"
+console.log('professional_lock_day SQL:'+sql ) ;
+	client.query(sql, (err, result) => {
+	  if (err) {
+	     // throw err ;
+	      console.log('professional_lock_day ERROR CREATION REGISTER, QUERY:'+sql ) ;
+	      console.log(err ) ;
+        res.status(200).send(JSON.stringify(result));
+	    }
+	    else
+	    {
+	  res.status(200).send(JSON.stringify(result));
+	  console.log('professional_lock_day  SUCCESS CENTER INSERT ' ) ; 
+    console.log('professional_lock_day  OUTPUT  :'+JSON.stringify(result) ) ; 
+	   }
+	   
+	  client.end()
+	})
+  
+})
+
 
 //******************************************************* */
 //************** UNIQUE AND IMPORTAN ******************** */
@@ -3039,6 +3111,7 @@ function calendar_cutter(calendar, fromDate ,endDate ,lockDates, remove_lock_day
   let cal_days = [] ; // ARRAY TO STORE DAYS
   let cal_hours = [] ; //ARRAY TO STORE TIMES
   let cal_appointments = [] ; //ARRAY TO STORE TIMES
+  let cal_days_noBlock = []
  
   if (calendar != null ){
   //get days available in calendar
@@ -3091,18 +3164,42 @@ function calendar_cutter(calendar, fromDate ,endDate ,lockDates, remove_lock_day
     //cal_days.forEach(d => console.log("Day:"+d))  ;
     //cal_hours.forEach(h => console.log("hour:"+h)) ;
     //NOW CREATE APPOINTMENTS LIST 
-    console.log("---------- Lock Dates = "+lockDates);
+    console.log("---------- Lock Dates = "+JSON.stringify(lockDates));
     console.log("---------- Calendar days = "+cal_days );
+    console.log("---------- REMOVE LOCK DAYS = "+remove_lock_days );
     // Remove from calendar days the lock days  
+
+    if (remove_lock_days == true) 
+    {
+    cal_days.forEach( function filterApp(day) { 
+       if (!lockDates.includes(day)) {  cal_days_noBlock.push(day) }  
+        
+       //NOTE: NO COPY, just point memory addres when REMOVE LOCK DAYS is TRUE 
+        cal_days = cal_days_noBlock ;
+      })
+      
+    }
+    console.log("---------- Calendar days After = "+cal_days );
+
+    /*
     let cal_days_noBlock = cal_days.filter(function(day) {
       return !lockDates.includes(day);
       });
-    //IF WE WANT TO REMOVE LOCK DAYS FROM RESPONSE, USEFUL FOR PROFESSIONAL VIEWS
-    if (remove_lock_days)
+    */
+      
+      //let cal_days_noBlock = cal_days.filter( cal => lockDates.includes('"'+cal+'"')  );
+      
+
+      console.log("---------- Calendar days NO BLOCK = "+cal_days_noBlock);
+
+      //IF WE WANT TO REMOVE LOCK DAYS FROM RESPONSE, USEFUL FOR PROFESSIONAL VIEWS
+    /*
+      if (remove_lock_days)
     {
       cal_days = [...cal_days_noBlock] ; 
-      console.log("------------ ACTIVE REMOVE LOCK DAYS ");
+      console.log("------------ ACTIVE REMOVED LOCK DAYS "+cal_days);
     }
+    */
 
     console.log("------------cal_days = "+cal_days);
     let lock_day=false ; 
