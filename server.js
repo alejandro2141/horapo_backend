@@ -2693,36 +2693,31 @@ app.route('/patient_get_appointments_day2')
 async function get_appointments_available(json)
 {
   let professional_ids = [] ;
-    professional_ids.push(999);
   let dates = [] ;
+  
    // dates.push("2022-02-01");
   let appointments_available = [] ; 
   //console.log('GET APPOINTMENT AVAILABLE ');
-   // 1.-  CALENDARS 
+   // 1.-  CALENDARS, CALENDARS_ID, PROFESSIONAL_IDS 
   let calendars = await get_calendars_available_by_specialty(json)
-  //console.log('1.- GET CALENDARS Match with Search Parameters Total:'+calendars.length );
-  //calendars.forEach(cal => console.log("CALENDAR ID :"+cal.id));
-
-  // get all appointments of Profecioals belog calendars for the days required
-  //extract professional ids from Calendars
-  for(var i=0; i<calendars.length; i++){
-    professional_ids.push(calendars[i]['professional_id']);
-  }
-
+  let calendars_ids= calendars.map(val => val.id)
+  console.log("calendars_ids: "+calendars_ids);
+  professional_ids = calendars.map(val => val.professional_id)
+  console.log("Professional_ids: "+professional_ids);
+  //Remove duplicated IDs 
   professional_ids = professional_ids.sort().filter(function(item, pos, ary) {
     return !pos || item != ary[pos - 1];
     });
-  
-  //MUST ELIMINATE DUPLICATED IDs 
-   dates.push(json.date);
-  // 2.-  APPOINTMENTS TAKEN
+  console.log("Professional_ids NO DUP: "+professional_ids);
+
+  // LIST OF DATES 
+  dates.push(json.date);
+  // 2.-  APPOINTMENTS  GET APPOINTMENTS DAY
   let appointments = await get_professional_appointment_day(professional_ids,dates)
   //SUMMARY
   console.log("Public Search :"+JSON.stringify(json));
-  console.log("N Calendars found: "+calendars.length+"  calendars Ids:" );
-  calendars.forEach(cal => console.log(" "+JSON.stringify(cal.id)));
-  console.log("Professional IDs of Calendars : "+JSON.stringify(professional_ids));
-  
+  console.log("Calendars MATCH Search parameters : "+calendars_ids);
+  console.log("Professional IDS in Calendars: "+professional_ids);
   
   // CUTTING CALENDARS FOUND
   let app_calendars = [] 
@@ -2732,22 +2727,27 @@ async function get_appointments_available(json)
   
   for (let i = 0; i < calendars.length; i++) {
     let lockDates_aux = await get_professional_lock_days(calendars[i].professional_id );
-    lockDates_aux.forEach(data => lockDates.push( new Date(data.date).toISOString().split('T')[0] )) 
-    console.log("LOCK DATES only date :"+JSON.stringify(lockDates))
+    lockDates = lockDates_aux.map( lockDate => new Date(lockDate.date).toISOString().split('T')[0] )  
+    //lockDates_aux.forEach(data => lockDates.push( new Date(data.date).toISOString().split('T')[0] )) 
+    //console.log("Lock Dates :"+JSON.stringify(lockDates))
     //lockDates = lockDates_aux.forEach( element => console.log("****************ELEMENT DATE:"+element.date) );
 
     //calendar_cutter(calendar, fromDate ,endDate ,lockDates, remove_lock_days )
-    let apps = calendar_cutter(calendars[i],json.date, json.date , lockDates, true) ;
-     
+    let apps = calendar_cutter(calendars[i],json.date, json.date , lockDates, true) ;     
+    let appointments_reserved = await get_professional_appointments_by_date( calendars[i].professional_id , json.date , json.date )
+    console.log("++++++++++++++  APP RESERVED : OUTPUT "+JSON.stringify(appointments_reserved));
+   
+    //let app_removed_ours_reserved = filter_app_from_appTaken(apps ,appointments_reserved, true )
     //remove APP reserved from app list response
-    let appointments_reserved = await get_professional_appointments_by_date( calendars[i].professional_id , json.date , json.date)
+    //let appointments_reserved = await get_professional_appointments_by_date( calendars[i].professional_id , json.date , json.date)
     //filter_app_from_appTaken(apps,appsTaken, includeAppTaken)
-    app_calendar_filtered = filter_app_from_appTaken( apps,appointments_reserved, false )
-    
-    app_calendars = app_calendars.concat( app_calendar_filtered ) 
+    //app_calendar_filtered = filter_app_from_appTaken( apps,appointments_reserved, false )
+    //let apps_without_reserved = filter_app_from_appTaken(apps , appointments_reserved , false )
+
+   
+    app_calendar_filtered = app_calendar_filtered.concat( apps ) 
     }
 
- 
   app_calendar_filtered.sort(function(b, a){ return (new Date('Thu, 01 Jan 1970 '+b.start_time) - new Date('Thu, 01 Jan 1970 '+a.start_time )) } ) 
 /*
   console.log("CALENDAR APPOINTMENT SORT")
@@ -2766,68 +2766,7 @@ async function get_calendars_available_by_specialty(json)
   const client = new Client(conn_data)
   await client.connect()
   
-  let specialty = " " ;
-  if (json.specialty != null )
-  {
-    specialty = "AND specialty1 = '"+json.specialty+"'  " ;
-  }
-
-  // IF HOME VISIT  OR IN CENTER 
-  let app_type = " " ;
-  if (json.type_home)
-        {
-          app_type = "home_visit = 'true'  " ;
-        }
-  if (json.type_center)
-        {
-          app_type = "center_visit = 'true'  " ;
-        }
-  if (json.type_remote)
-        {
-          app_type = "remote_care = 'true'  " ;
-        }
-  
-   if (json.type_center && json.type_home)
-   {
-    app_type = " " ;
-   }
-   // END HOME VISIT
-
-   // IF LOCATION SEARCH
-   let sql_location = "" ;
-   /*
-   if (json.location != null )
-   { 
-      if ( (json.type_home && json.type_home) || (!json.type_home && !json.type_home)   )
-      {
-        sql_location = " WHERE home_visit_location1 IN ("+json.location+") OR home_visit_location2 IN ("+json.location+")  OR home_visit_location3 IN ("+json.location+") OR home_visit_location4 IN ("+json.location+") OR home_visit_location5 IN ("+json.location+") OR home_visit_location6 IN ("+json.location+")  OR comuna IN ("+json.location+")  " ;
-      }   
-      else if (json.type_home)
-      {
-      sql_location = " WHERE home_visit_location1 IN ("+json.location+") OR home_visit_location2 IN ("+json.location+")  OR home_visit_location3 IN ("+json.location+") OR home_visit_location4 IN ("+json.location+") OR home_visit_location5 IN ("+json.location+") OR home_visit_location6 IN ("+json.location+")    " ;
-      }
-      else if (json.type_center)
-      {
-      sql_location = "WHERE comuna IN ("+json.location+") " ;
-      }
-  }
-  */
-  if (json.location != null )
-  { 
-     sql_location = "AND center_id IN (SELECT id from center WHERE  comuna ="+json.location+") " ;
-  }
-  //END IF LOCATION
-  //const sql_calendars  = " SELECT * FROM (SELECT id as calendar_id , *  FROM professional_calendar WHERE "+specialty+" date_start <= '"+json.date+"' AND date_end >= '"+json.date+"'  AND start_time  >= '00:00:00' AND active = true ) C  LEFT JOIN  professional ON C.professional_id = professional.id ";
-  //const sql_calendars  = "SELECT * FROM (SELECT name AS center_name, address AS center_address, * FROM (  SELECT name AS professional_name , calendar_id, professional_id, start_time, end_time, specialty1, duration, time_between, monday, tuesday, wednesday, thursday, friday, saturday, sunday, date_start, date_end ,  status,   center_id,   phone AS professional_phone  FROM (SELECT id as calendar_id , *  FROM professional_calendar WHERE  active = true  "+sql_location+" "+specialty+"  AND date_start <= '"+json.date+"'  AND date_end >= '"+json.date+"'  AND start_time  >= '00:00:00'  AND deleted_professional = false ) C  LEFT JOIN professional ON C.professional_id = professional.id )     K LEFT JOIN center ON  k.center_id = center.id "+sql_location+"  )J   " ; 
-  /*
-  date: '2022-07-31',
-  specialty: 152,
-  type_home: false,
-  type_center: false,
-  type_remote: false
-  */
   const sql_calendars  = "SELECT * FROM professional_calendar WHERE specialty1 = "+json.specialty+" AND  active = true AND deleted_professional = false AND status = 1  AND date_start <= '"+json.date+"'  AND date_end >= '"+json.date+"'  " ;  
- 
 
   console.log("PUBLIC get_calendars_available  SQL:"+sql_calendars) 
   
@@ -2835,6 +2774,32 @@ async function get_calendars_available_by_specialty(json)
   const res = await client.query(sql_calendars) 
   client.end() 
   return res.rows ;
+}
+// 2.- PROFESSIONAL GET APPOINTMENT DAY
+// Return appointments taken in DATE belong to a PROFESSIONAL ID
+async function get_professional_appointment_day(ids,dates)
+{
+  const { Client } = require('pg')
+  const client = new Client(conn_data)
+  await client.connect()
+  //console.log("ids:"+ids+" dates:"+dates)
+
+  let aux_dates =" ";
+  for(var i=0; i<dates.length; i++){
+      aux_dates += "'"+dates[i]+"' " ;
+      
+      if (i < dates.length-1) 
+      {
+      aux_dates += "," ;
+      }
+    //console.log ("\n Value= "+calendars[i]['professional_id']) ; 
+  }
+
+  const sql_apps_taken  = "SELECT * FROM appointment WHERE date IN ("+aux_dates+")  and professional_id  IN ("+ids+") ;";
+  console.log("SQL QUERY: "+sql_apps_taken)
+  const res = await client.query(sql_apps_taken)
+  client.end() 
+  return res.rows;
 
 }
 
@@ -3156,11 +3121,15 @@ function calendar_cutter(calendar, fromDate ,endDate ,lockDates, remove_lock_day
     console.log ("Time Start:"+time_start+" Time End:"+time_end );
     console.log ("Time Start:"+calendar.start_time+" Time End:"+calendar.end_time );
 
-  for (var t = new Date(time_start); t.getTime() <= time_end.getTime() ; t.setTime(t.getTime() + ((calendar.duration + calendar.time_between)*60*1000) ) ) 
+   //for (var t = new Date(time_start); t.getTime() <= time_end.getTime() ; t.setTime(t.getTime() + ((calendar.duration + calendar.time_between)*60*1000) ) ) 
+    for (var t = new Date(time_start); t.getTime() <= ( time_end.getTime() - (calendar.time_between*60*1000)  ); t.setTime(t.getTime() + ((calendar.duration + calendar.time_between)*60*1000) ) ) 
     { 
       let aux_hour=new String( ((t.getHours()).toString().padStart(2, '0') )+":"+(t.getMinutes().toString().padStart(2, '0')) ) ;
+      //check if start time + duration < CALENDAR endTIme  
+     
       cal_hours.push(aux_hour) 
     }
+
     //cal_days.forEach(d => console.log("Day:"+d))  ;
     //cal_hours.forEach(h => console.log("hour:"+h)) ;
     //NOW CREATE APPOINTMENTS LIST 
