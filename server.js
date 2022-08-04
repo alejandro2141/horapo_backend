@@ -1571,6 +1571,7 @@ const resultado = client.query(sql, (err, result) => {
 })
 
 */
+/*
 app.route('/patient_get_center')
 .post(function (req, res) {
  
@@ -1601,7 +1602,7 @@ const resultado = client.query(sql, (err, result) => {
 })
 
 })
-
+*/
 
 /*
 //PATIENT GET APPOINTMENTS  SEARCH BY CALENDAR
@@ -2692,18 +2693,34 @@ app.route('/patient_get_appointments_day2')
 
 async function get_appointments_available(json)
 {
+  let calendars_ids = [] ;
   let professional_ids = [] ;
   let dates = [] ;
+  let centers_ids = [] ;
+  let centers = [] ;
   
    // dates.push("2022-02-01");
   let appointments_available = [] ; 
   //console.log('GET APPOINTMENT AVAILABLE ');
    // 1.-  CALENDARS, CALENDARS_ID, PROFESSIONAL_IDS 
   let calendars = await get_calendars_available_by_specialty(json)
-  let calendars_ids= calendars.map(val => val.id)
+  if (calendars.length <= 0 )
+  {
+    return []
+  }
+
+  //extract Calendard Ids
+  calendars_ids= calendars.map(val => val.id)
   console.log("calendars_ids: "+calendars_ids);
+  //extract Professional_Ids
   professional_ids = calendars.map(val => val.professional_id)
   console.log("Professional_ids: "+professional_ids);
+  //extract Center_Ids
+  centers_ids = calendars.map(val => val.center_id)
+  console.log("Centers_ids: "+centers_ids);
+  centers = get_public_centers(centers_ids)
+
+
   //Remove duplicated IDs 
   professional_ids = professional_ids.sort().filter(function(item, pos, ary) {
     return !pos || item != ary[pos - 1];
@@ -2735,8 +2752,8 @@ async function get_appointments_available(json)
     //calendar_cutter(calendar, fromDate ,endDate ,lockDates, remove_lock_days )
     let apps = calendar_cutter(calendars[i],json.date, json.date , lockDates, true) ;     
     let appointments_reserved = await get_professional_appointments_by_date( calendars[i].professional_id , json.date , json.date )
-    console.log("++++++++++++++  APP RESERVED : OUTPUT "+JSON.stringify(appointments_reserved));
-   
+    
+    let apps_removed_reserved = filter_app_from_appTaken(apps ,appointments_reserved, false )
     //let app_removed_ours_reserved = filter_app_from_appTaken(apps ,appointments_reserved, true )
     //remove APP reserved from app list response
     //let appointments_reserved = await get_professional_appointments_by_date( calendars[i].professional_id , json.date , json.date)
@@ -2745,7 +2762,7 @@ async function get_appointments_available(json)
     //let apps_without_reserved = filter_app_from_appTaken(apps , appointments_reserved , false )
 
    
-    app_calendar_filtered = app_calendar_filtered.concat( apps ) 
+    app_calendar_filtered = app_calendar_filtered.concat( apps_removed_reserved ) 
     }
 
   app_calendar_filtered.sort(function(b, a){ return (new Date('Thu, 01 Jan 1970 '+b.start_time) - new Date('Thu, 01 Jan 1970 '+a.start_time )) } ) 
@@ -2757,6 +2774,7 @@ async function get_appointments_available(json)
   console.log ("FINAL  APPOINTMENTS AVAILABLE TO DISPLAY :"+appointments_available.length);
   console.log ("DETAILS FINAL  APPOINTMENTS AVAILABLE TO DISPLAY :"+JSON.stringify(appointments_available));
 */
+  console.log("PUBLIC SEARCH Response DATE:"+json.date+"  APPOINTMENTS:"+JSON.stringify(app_calendar_filtered));
   return  app_calendar_filtered ;
 }
 // 1.-  PUBLIC GET CALENDARS 
@@ -2802,6 +2820,26 @@ async function get_professional_appointment_day(ids,dates)
   return res.rows;
 
 }
+
+// GET CENTERS DATA
+async function get_public_centers(center_ids)
+{
+  console.log('get_public_centers  REQUEST : ', center_ids );
+ 
+  // ****** Connect to postgre
+  const { Client } = require('pg')
+  const client = new Client(conn_data)
+  client.connect()
+  
+  // ****** Run query to bring appointment
+  const sql  = "SELECT * FROM center WHERE id IN ("+center_ids+" )" ;
+  console.log('SQL get_public_centers  : '+sql ) ;
+  console.log("SQL QUERY: "+sql)
+  const res = await client.query(sql)
+  client.end() 
+  return res.rows;
+}
+
 
 //***************************************************** */
 //************* PUBLIC SEARCH   *********************** */
@@ -3240,24 +3278,21 @@ function filter_app_from_appTaken(apps,appsTaken, includeAppTaken)
         patient_doc_id : appsTaken[i].patient_doc_id , 
 
        }
-       
-       if (includeAppTaken )
+       if (includeAppTaken == true )
        {
        apps_taken_array.push(appointment_slot)
        }
 
        //NOW Look for this APP and remove from Available list
       let matchAPP = apps.findIndex( (element) => element.start_time.substring(0,4) === appointment_slot.start_time.substring(0,4) );
-      if (matchAPP != null )
+      if (matchAPP != -1 )
       {
       console.log ("MATCH To be removed from APPS available list:  "+matchAPP+" apps:"+JSON.stringify(apps[matchAPP]) )
       apps.splice(matchAPP,1);
       }
 
-      }
-    
+      }    
   }
-
 
   let apps_taken_plus_available = apps.concat(apps_taken_array);
 
