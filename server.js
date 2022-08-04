@@ -2717,8 +2717,9 @@ async function get_appointments_available(json)
   console.log("Professional_ids: "+professional_ids);
   //extract Center_Ids
   centers_ids = calendars.map(val => val.center_id)
-  console.log("Centers_ids: "+centers_ids);
-  centers = get_public_centers(centers_ids)
+  centers = await get_public_centers(centers_ids)
+  console.log("Centers : "+JSON.stringify(centers))
+  
 
 
   //Remove duplicated IDs 
@@ -2839,7 +2840,6 @@ async function get_public_centers(center_ids)
   client.end() 
   return res.rows;
 }
-
 
 //***************************************************** */
 //************* PUBLIC SEARCH   *********************** */
