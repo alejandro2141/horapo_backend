@@ -1190,71 +1190,6 @@ const resultado = client.query(sql, (err, result) => {
 
 })
 
-app.route('/professional_update_center')
-.post(function (req, res) {
- 
-    console.log('professional_update_center :', req.body );
- 
-// ****** Connect to postgre
-const { Pool, Client } = require('pg')
-const client = new Client({
-  user: 'conmeddb_user',
-  host: '127.0.0.1',
-  database: 'conmeddb02',
-  password: 'paranoid',
-  port: 5432,
-})
-
-client.connect()
-
-let sql = ""
-
-if (req.body.name != null ) 
-{
-sql = sql+" name='"+req.body.name+"' " ; ;
-}
-
-if (req.body.address!= null ) 
-{
-  sql = sql+", address='"+req.body.address+"' " ; ;
-}
-
-if (req.body.comuna_code!= null ) 
-{
- sql = sql+", comuna ='"+req.body.comuna_code+"' " ;
-}
-
-if (req.body.phone1!= null ) 
-{
- sql = sql+", phone1='"+req.body.phone1+"' " ; 
-}
-
-if (req.body.phone2!= null ) 
-{
- sql = sql+", phone2='"+req.body.phone2+"' " ;
-}
-
-
-
-req.body.professional_id
-// ****** Run query to bring appointment
-//const sql  = "SELECT * FROM center WHERE id IN  (SELECT center_id FROM center_professional where professional_id='"+req.body.professional_id+"' ) AND center_deleted!='true'  ORDER BY id ASC  " ;
-const sql_request  = "UPDATE center SET "+sql+"  WHERE id = "+req.body.center_id+" ;" ;
-
-console.log('professional_get_centers: SQL :'+sql_request ) ;
-const resultado = client.query(sql_request, (err, result) => {
-
-  if (err) {
-      console.log('professional_get_centers ERR:'+err ) ;
-    }
-
-  console.log('professional_get_centers : '+JSON.stringify(result) ) ;
-  res.status(200).send(JSON.stringify(result) );
-  client.end()
-})
-
-
-})
 
 
 // PROFESSIONAL delete Center
@@ -2957,6 +2892,100 @@ async function professional_get_appointments_from_calendars(prof_id, date_start,
 /******************************************************************** */
 /******************************************************************** */
 
+
+//******************************************************************** */
+//***************       TOOLS Servicios   **************************** */
+//******************************************************************** */
+
+
+//PROFESSIONAL UPDATE CENTER
+app.route('/professional_update_center')
+.post(function (req, res) {
+ 
+    console.log('professional_update_center :', req.body );
+ 
+// ****** Connect to postgre
+const { Client } = require('pg')
+const client = new Client(conn_data)
+client.connect()
+
+let sql = ""
+
+if (req.body.name != null ) 
+{
+sql = sql+" name='"+req.body.name+"' " ; ;
+}
+
+if (req.body.address!= null ) 
+{
+  sql = sql+", address='"+req.body.address+"' " ; ;
+}
+
+if (req.body.comuna_code!= null ) 
+{
+ sql = sql+", comuna ='"+req.body.comuna_code+"' " ;
+}
+
+if (req.body.phone1!= null ) 
+{
+ sql = sql+", phone1='"+req.body.phone1+"' " ; 
+}
+
+if (req.body.phone2!= null ) 
+{
+ sql = sql+", phone2='"+req.body.phone2+"' " ;
+}
+
+
+
+req.body.professional_id
+// ****** Run query to bring appointment
+//const sql  = "SELECT * FROM center WHERE id IN  (SELECT center_id FROM center_professional where professional_id='"+req.body.professional_id+"' ) AND center_deleted!='true'  ORDER BY id ASC  " ;
+const sql_request  = "UPDATE center SET "+sql+"  WHERE id = "+req.body.center_id+" ;" ;
+
+console.log('professional_get_centers: SQL :'+sql_request ) ;
+const resultado = client.query(sql_request, (err, result) => {
+
+  if (err) {
+      console.log('professional_get_centers ERR:'+err ) ;
+    }
+
+  console.log('professional_get_centers : '+JSON.stringify(result) ) ;
+  res.status(200).send(JSON.stringify(result) );
+  client.end()
+})
+
+
+})
+
+//PROFESSIONAL DELETE CENTER
+app.route('/professional_delete_center')
+.post(function (req, res) {
+ 
+    console.log('professional_delete_center :', req.body );
+ 
+// ****** Connect to postgre
+const { Client } = require('pg')
+const client = new Client(conn_data)
+client.connect()
+
+const sql_request  = "DELETE FROM center WHERE id ="+req.body.center_id+" ;" ;
+
+console.log('professional_delete_center : SQL :'+sql_request ) ;
+const resultado = client.query(sql_request, (err, result) => {
+
+  if (err) {
+      console.log('professional_delete_center ERR:'+err ) ;
+    }
+
+  console.log('professional_delete_center : '+JSON.stringify(result) ) ;
+  res.status(200).send(JSON.stringify(result) );
+  client.end()
+})
+
+
+})
+
 // GET PROFESSIONAL DATA 
 app.route('/patient_get_professional')
 .post(function (req, res) {
@@ -2988,6 +3017,68 @@ const resultado = client.query(sql, (err, result) => {
 })
 
 })
+
+// PROFESSIONAL LOCK  DAY 
+app.route('/professional_lock_day')
+.post(function (req, res) {
+console.log('professional_lock_day INPUT:', req.body );
+const { Client } = require('pg')
+const client = new Client(conn_data)
+client.connect() 
+var sql  = "INSERT INTO professional_day_locked ( professional_id, date ) values ('"+req.body.appointment_professional_id+"','"+req.body.appointment_date+"') ;"
+console.log('professional_lock_day SQL:'+sql ) ;
+	client.query(sql, (err, result) => {
+	  if (err) {
+	     // throw err ;
+	      console.log('professional_lock_day ERROR CREATION REGISTER, QUERY:'+sql ) ;
+	      console.log(err ) ;
+        res.status(200).send(JSON.stringify(result));
+	    }
+	    else
+	    {
+	  res.status(200).send(JSON.stringify(result));
+	  console.log('professional_lock_day  SUCCESS CENTER INSERT ' ) ; 
+    console.log('professional_lock_day  OUTPUT  :'+JSON.stringify(result) ) ; 
+	   }
+	   
+	  client.end()
+	})
+  
+})
+
+// PROFESSIONAL UN LOCK  DAY 
+app.route('/professional_unlock_day')
+.post(function (req, res) {
+console.log('professional_lock_day INPUT:', req.body );
+const { Client } = require('pg')
+const client = new Client(conn_data)
+client.connect() 
+var sql  = "DELETE FROM  professional_day_locked  WHERE professional_id='"+req.body.appointment_professional_id+"' AND date='"+req.body.appointment_date+"' ;"
+console.log('professional_lock_day SQL:'+sql ) ;
+	client.query(sql, (err, result) => {
+	  if (err) {
+	     // throw err ;
+	      console.log('professional_lock_day ERROR CREATION REGISTER, QUERY:'+sql ) ;
+	      console.log(err ) ;
+        res.status(200).send(JSON.stringify(result));
+	    }
+	    else
+	    {
+	  res.status(200).send(JSON.stringify(result));
+	  console.log('professional_lock_day  SUCCESS CENTER INSERT ' ) ; 
+    console.log('professional_lock_day  OUTPUT  :'+JSON.stringify(result) ) ; 
+	   }
+	   
+	  client.end()
+	})
+  
+})
+
+
+//******************************************************************** */
+//***************    Funciones        ******************************** */
+//******************************************************************** */
+
 
 //GET CALENDARS BY Professional ID
 async function get_calendars_available_by_ProfessionalId(prof_id,date)
@@ -3059,61 +3150,6 @@ async function get_professional_lock_days(prof_id)
   return res.rows ;
 }
 
-// PROFESSIONAL LOCK  DAY 
-app.route('/professional_lock_day')
-.post(function (req, res) {
-console.log('professional_lock_day INPUT:', req.body );
-const { Client } = require('pg')
-const client = new Client(conn_data)
-client.connect() 
-var sql  = "INSERT INTO professional_day_locked ( professional_id, date ) values ('"+req.body.appointment_professional_id+"','"+req.body.appointment_date+"') ;"
-console.log('professional_lock_day SQL:'+sql ) ;
-	client.query(sql, (err, result) => {
-	  if (err) {
-	     // throw err ;
-	      console.log('professional_lock_day ERROR CREATION REGISTER, QUERY:'+sql ) ;
-	      console.log(err ) ;
-        res.status(200).send(JSON.stringify(result));
-	    }
-	    else
-	    {
-	  res.status(200).send(JSON.stringify(result));
-	  console.log('professional_lock_day  SUCCESS CENTER INSERT ' ) ; 
-    console.log('professional_lock_day  OUTPUT  :'+JSON.stringify(result) ) ; 
-	   }
-	   
-	  client.end()
-	})
-  
-})
-
-// PROFESSIONAL UN LOCK  DAY 
-app.route('/professional_unlock_day')
-.post(function (req, res) {
-console.log('professional_lock_day INPUT:', req.body );
-const { Client } = require('pg')
-const client = new Client(conn_data)
-client.connect() 
-var sql  = "DELETE FROM  professional_day_locked  WHERE professional_id='"+req.body.appointment_professional_id+"' AND date='"+req.body.appointment_date+"' ;"
-console.log('professional_lock_day SQL:'+sql ) ;
-	client.query(sql, (err, result) => {
-	  if (err) {
-	     // throw err ;
-	      console.log('professional_lock_day ERROR CREATION REGISTER, QUERY:'+sql ) ;
-	      console.log(err ) ;
-        res.status(200).send(JSON.stringify(result));
-	    }
-	    else
-	    {
-	  res.status(200).send(JSON.stringify(result));
-	  console.log('professional_lock_day  SUCCESS CENTER INSERT ' ) ; 
-    console.log('professional_lock_day  OUTPUT  :'+JSON.stringify(result) ) ; 
-	   }
-	   
-	  client.end()
-	})
-  
-})
 
 //******************************************************* */
 //************** UNIQUE AND IMPORTAN ******************** */
