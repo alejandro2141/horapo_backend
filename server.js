@@ -1002,41 +1002,7 @@ console.log('Professional UPDATE calendar  SQL:'+sql ) ;
 
 })
 
-// PROFESSIONAL GET TimeTable
-app.route('/professional_get_calendars')
-.post(function (req, res) {
- 
-    console.log('rofessional_get_calendars :', req.body );
- 
-// ****** Connect to postgre
-const { Pool, Client } = require('pg')
-const client = new Client({
-  user: 'conmeddb_user',
-  host: '127.0.0.1',
-  database: 'conmeddb02',
-  password: 'paranoid',
-  port: 5432,
-})
 
-client.connect()
-// ****** Run query to bring appointment
-//const sql  = "SELECT * FROM professional_calendar WHERE professional_id='"+req.body.professional_id+"' ORDER BY id DESC " ;
-
-const sql  = "SELECT * FROM (SELECT *, id AS calendar_id, active as calendar_active FROM professional_calendar WHERE professional_id='"+req.body.professional_id+"' AND  deleted_professional = false )j   LEFT JOIN  center ON   j.center_id = center.id  ORDER BY j.id ASC  " ;
-
-console.log('professional_get_centers: SQL :'+sql ) ;
-const resultado = client.query(sql, (err, result) => {
-
-  if (err) {
-      console.log('rofessional_get_calendars ERR:'+err ) ;
-    }
-
-  console.log('professional_get_calendars : '+JSON.stringify(result) ) ;
-  res.status(200).send(JSON.stringify(result) );
-  client.end() ;
-})
-
-})
 /*
 // PROFESIONAL GET ASSISTANTS
 app.route('/professional_get_assistants')
@@ -1157,38 +1123,6 @@ console.log('create_center SQL:'+sql ) ;
 
 })
 
-// PROFESSIONAL GET CENTERS
-app.route('/professional_get_centers')
-.post(function (req, res) {
- 
-    console.log('professional_get_centers :', req.body );
- 
-// ****** Connect to postgre
-const { Pool, Client } = require('pg')
-const client = new Client({
-  user: 'conmeddb_user',
-  host: '127.0.0.1',
-  database: 'conmeddb02',
-  password: 'paranoid',
-  port: 5432,
-})
-
-client.connect()
-// ****** Run query to bring appointment
-const sql  = "SELECT * FROM center WHERE id IN  (SELECT center_id FROM center_professional where professional_id='"+req.body.professional_id+"' ) AND center_deleted!='true'  ORDER BY id ASC  " ;
-console.log('professional_get_centers: SQL :'+sql ) ;
-const resultado = client.query(sql, (err, result) => {
-
-  if (err) {
-      console.log('professional_get_centers ERR:'+err ) ;
-    }
-
-  console.log('professional_get_centers : '+JSON.stringify(result) ) ;
-  res.status(200).send(JSON.stringify(result) );
-  client.end()
-})
-
-})
 
 
 
@@ -2540,39 +2474,6 @@ async function get_access_login(req)
 
 }
 
-//called from Both
-async function get_professional_centers(id)
-{
-  const { Client } = require('pg')
-  const client = new Client(conn_data)
-  await client.connect()
-  //console.log("ids:"+ids+" dates:"+dates)
-  const sql_centers  = "SELECT * FROM center WHERE id IN  (SELECT center_id FROM center_professional where professional_id='"+id+"' ) AND center_deleted!='true'  ORDER BY id DESC  " ;
-
- // const sql_apps_taken  = "SELECT * FROM appointment WHERE date IN ("+aux_dates+")  and professional_id  IN ("+ids+") ;";
-  console.log("SQL QUERY: "+sql_centers)
-  const res = await client.query(sql_centers)
-  client.end() 
-  return res.rows;
-  
-}
-
-//called from Both
-async function get_professional_calendars(prof_id)
-{
-  const { Client } = require('pg')
-  const client = new Client(conn_data)
-  await client.connect()
-  //console.log("ids:"+ids+" dates:"+dates)
-  
-  const sql_calendars  = "SELECT * FROM professional_calendar WHERE professional_id ='"+prof_id+"' AND  deleted_professional = false  ORDER BY id DESC  " ;
-
- // const sql_apps_taken  = "SELECT * FROM appointment WHERE date IN ("+aux_dates+")  and professional_id  IN ("+ids+") ;";
-  console.log("SQL QUERY: "+sql_calendars)
-  const res = await client.query(sql_calendars)
-  client.end() 
-  return res.rows;
-}
 
 //***************************************************** */
 //********** PUBLIC GET CENTERS ARRAY from ids  ******* */
@@ -2611,6 +2512,39 @@ const resultado = client.query(sql, (err, result) => {
 })
 
 })
+
+
+//***************************************************** */
+//********** GET DATA FOR PROFESSIONAL CALENDARS VIEW * */
+//***************************************************** */
+
+// PROFESSIONAL GET CALENDARS
+app.route('/professional_get_data_for_calendars_view')
+.post(function (req, res) {
+console.log('professional_get_data_for_calendars_view :', req.body );
+
+let response = professional_get_data_for_calendars_view(req.body);
+response.then( v => {  console.log("professional_get_data_for_calendars_view  RESPONSE: "+JSON.stringify(v)) ; return (res.status(200).send(JSON.stringify(v))) } )
+})
+// ASYNC Function  PROFESSIONAL GET CALENDARS
+async function professional_get_data_for_calendars_view(json)
+{
+  
+  let professional_calendars = []
+  professional_calendars = await get_professional_calendars(json.professional_id)
+  
+  let professional_centers = []
+  professional_centers = await get_professional_centers(json.professional_id)
+
+  let json_response = {
+    calendars : professional_calendars ,
+    centers : professional_centers
+    }
+
+    return json_response
+
+}
+
 
 //***************************************************** */
 //********** PUBLIC SEARCH Main Page Public    ******** */
@@ -2654,7 +2588,16 @@ async function get_appointments_available(json)
   //extract Center_Ids
   centers_ids = calendars.map(val => val.center_id)
   centers = await get_public_centers(centers_ids)
+  let centers_ids_filtered = centers.map(val => val.id)
   console.log("Centers : "+JSON.stringify(centers))
+  //REMOVE CALENDARS LINKED TO DELETED CENTERS
+//************------------------- */
+
+  //filter CALENDARS have only active centers.
+  calendars =  calendars.filter(cal =>  centers_ids_filtered.includes(cal.center_id) ) 
+
+//************------------------- */
+
   
   // remove CALENDARS not match with Location parameter search
   if ( json.location != null )
@@ -2780,7 +2723,7 @@ async function get_public_centers(center_ids)
   client.connect()
   
   // ****** Run query to bring appointment
-  const sql  = "SELECT * FROM center WHERE id IN ("+center_ids+" )" ;
+  const sql  = "SELECT * FROM center WHERE id IN ("+center_ids+" ) and center_deleted != true" ;
   console.log('SQL get_public_centers  : '+sql ) ;
   console.log("SQL QUERY: "+sql)
   const res = await client.query(sql)
@@ -2859,18 +2802,25 @@ async function professional_get_appointments_from_calendars(prof_id, date_start,
   lockDates = lockDates.map(lockDates => (new Date(lockDates.date).toISOString().split('T')[0] ) ) ;
   console.log("getLockDays:"+JSON.stringify(lockDates));
 
+  // 4.- GET CENTERS
+  let centers_professional = await get_professional_centers(prof_id);
+  let centers_professional_ids = centers_professional.map(center => center.id ) ;
+  // 5.- GET CALENDARS
+  //let calendars_professional = await get_professional_calendars(prof_id);
+  
+  //filter CALENDARS have only active centers.
+  let calendars_filtered =  calendars.filter(cal =>  centers_professional_ids.includes(cal.center_id) ) 
+
+  
   // 4.- cutter calendar from date,
   //CUTTER CYCLE  each Calendar 
   let app_calendars = [] ;
   let aux_app_calendar = [] ;
 
-  for (let i = 0; i < calendars.length; i++) {
-    app_calendars = app_calendars.concat( calendar_cutter(calendars[i],date_start, date_start , lockDates, remove_lock_days )) 
+  for (let i = 0; i < calendars_filtered.length; i++) {
+    app_calendars = app_calendars.concat( calendar_cutter(calendars_filtered[i],date_start, date_start , lockDates, remove_lock_days )) 
     }
 
-  //let app_calendar = calendar_cutter(calendars[0],date_start, date_start , lockDates, remove_lock_days );
-    // ***************************
-  //filter_app_from_appTaken(apps,appsTaken, includeAppTaken)
   let app_calendar_filtered = filter_app_from_appTaken(app_calendars,appointments_reserved, true )
 
   app_calendar_filtered.sort(function(b, a){ return (new Date('Thu, 01 Jan 1970 '+b.start_time) - new Date('Thu, 01 Jan 1970 '+a.start_time )) } ) 
@@ -2879,7 +2829,9 @@ async function professional_get_appointments_from_calendars(prof_id, date_start,
 
   let json_response = {
                     appointments : app_calendar_filtered ,
-                    lock_dates : lockDates,
+                    centers : centers_professional ,
+                    calendars : calendars_filtered ,
+                    lock_dates : lockDates ,
                       }
 
   //return(app_calendar_filtered); 
@@ -2896,6 +2848,64 @@ async function professional_get_appointments_from_calendars(prof_id, date_start,
 //******************************************************************** */
 //***************       TOOLS Servicios   **************************** */
 //******************************************************************** */
+
+// PROFESSIONAL GET CALENDARS
+app.route('/professional_get_calendars')
+.post(function (req, res) {
+ 
+    console.log('rofessional_get_calendars :', req.body );
+ 
+// ****** Connect to postgre
+const { Client } = require('pg')
+const client = new Client(conn_data)
+client.connect()
+
+// ****** Run query to bring appointment
+//const sql  = "SELECT * FROM professional_calendar WHERE professional_id='"+req.body.professional_id+"' ORDER BY id DESC " ;
+
+const sql  = "SELECT * FROM (SELECT *, id AS calendar_id, active as calendar_active FROM professional_calendar WHERE professional_id='"+req.body.professional_id+"' AND  deleted_professional = false )j   LEFT JOIN  center ON   j.center_id = center.id  ORDER BY j.id ASC  " ;
+
+console.log('professional_get_calendars: SQL :'+sql ) ;
+const resultado = client.query(sql, (err, result) => {
+
+  if (err) {
+      console.log('rofessional_get_calendars ERR:'+err ) ;
+    }
+
+  console.log('professional_get_calendars : '+JSON.stringify(result) ) ;
+  res.status(200).send(JSON.stringify(result) );
+  client.end() ;
+})
+
+})
+
+
+// PROFESSIONAL GET CENTERS
+app.route('/professional_get_centers')
+.post(function (req, res) {
+ 
+    console.log('professional_get_centers :', req.body );
+
+// ****** Connect to postgre
+const { Client } = require('pg')
+const client = new Client(conn_data)
+client.connect()
+
+// ****** Run query to bring appointment
+const sql  = "SELECT * FROM center WHERE id IN  (SELECT center_id FROM center_professional where professional_id='"+req.body.professional_id+"' ) AND center_deleted!='true'  ORDER BY id ASC  " ;
+console.log('professional_get_centers: SQL :'+sql ) ;
+const resultado = client.query(sql, (err, result) => {
+
+  if (err) {
+      console.log('professional_get_centers ERR:'+err ) ;
+    }
+
+  console.log('professional_get_centers : '+JSON.stringify(result) ) ;
+  res.status(200).send(JSON.stringify(result) );
+  client.end()
+})
+
+})
 
 
 //PROFESSIONAL UPDATE CENTER
@@ -2969,7 +2979,7 @@ const { Client } = require('pg')
 const client = new Client(conn_data)
 client.connect()
 
-const sql_request  = "DELETE FROM center WHERE id ="+req.body.center_id+" ;" ;
+const sql_request  = "UPDATE center  SET  center_deleted = 'true'  WHERE id ="+req.body.center_id+" ;" ;
 
 console.log('professional_delete_center : SQL :'+sql_request ) ;
 const resultado = client.query(sql_request, (err, result) => {
@@ -3078,6 +3088,41 @@ console.log('professional_lock_day SQL:'+sql ) ;
 //******************************************************************** */
 //***************    Funciones        ******************************** */
 //******************************************************************** */
+
+
+//GET PROFESSIONAL Calendars
+async function get_professional_calendars(prof_id)
+{
+  const { Client } = require('pg')
+  const client = new Client(conn_data)
+  await client.connect()
+  //console.log("ids:"+ids+" dates:"+dates)
+  
+  const sql_calendars  = "SELECT * FROM professional_calendar WHERE professional_id ='"+prof_id+"' AND  deleted_professional = false  ORDER BY id DESC  " ;
+
+ // const sql_apps_taken  = "SELECT * FROM appointment WHERE date IN ("+aux_dates+")  and professional_id  IN ("+ids+") ;";
+  console.log("SQL QUERY: "+sql_calendars)
+  const res = await client.query(sql_calendars)
+  client.end() 
+  return res.rows;
+}
+
+//GET PROFESSIONAL Centers
+async function get_professional_centers(id)
+{
+  const { Client } = require('pg')
+  const client = new Client(conn_data)
+  await client.connect()
+  //console.log("ids:"+ids+" dates:"+dates)
+  const sql_centers  = "SELECT * FROM center WHERE id IN  (SELECT center_id FROM center_professional where professional_id='"+id+"' ) AND center_deleted!='true'  ORDER BY id DESC  " ;
+
+ // const sql_apps_taken  = "SELECT * FROM appointment WHERE date IN ("+aux_dates+")  and professional_id  IN ("+ids+") ;";
+  console.log("SQL QUERY: "+sql_centers)
+  const res = await client.query(sql_centers)
+  client.end() 
+  return res.rows;
+  
+}
 
 
 //GET CALENDARS BY Professional ID
