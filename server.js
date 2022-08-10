@@ -2513,8 +2513,8 @@ const resultado = client.query(sql, (err, result) => {
 
 })
 
-
 //***************************************************** */
+//****************    VIEW       ********************** */
 //********** GET DATA FOR PROFESSIONAL CALENDARS VIEW * */
 //***************************************************** */
 
@@ -3098,7 +3098,7 @@ async function get_professional_calendars(prof_id)
   await client.connect()
   //console.log("ids:"+ids+" dates:"+dates)
   
-  const sql_calendars  = "SELECT * FROM professional_calendar WHERE professional_id ='"+prof_id+"' AND  deleted_professional = false  ORDER BY id DESC  " ;
+  const sql_calendars  = "SELECT * FROM professional_calendar WHERE professional_id ='"+prof_id+"' AND  deleted_professional = false  ORDER BY id ASC  " ;
 
  // const sql_apps_taken  = "SELECT * FROM appointment WHERE date IN ("+aux_dates+")  and professional_id  IN ("+ids+") ;";
   console.log("SQL QUERY: "+sql_calendars)
