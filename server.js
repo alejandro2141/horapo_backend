@@ -334,62 +334,6 @@ console.log('professional_lock_day SQL:'+sql ) ;
 })
 */
 
-// SAVE APPOINTMENT PRofessional
-app.route('/professional_take_appointment')
-.post(function (req, res) {
-    console.log('professional_take_appointment INPUT : ', req.body );
-// ****** Connect to postgre
-const { Pool, Client } = require('pg')
-const client = new Client({
-  user: 'conmeddb_user',
-  host: '127.0.0.1',
-  database: 'conmeddb02',
-  password: 'paranoid',
-  port: 5432,
-})
-client.connect()
-/*
-//const query_update = "UPDATE appointment SET reserve_patient_name = '"+req.body.patient_name+"' ,  reserve_patient_doc_id = '"+req.body.patient_doc_id+"' , reserve_patient_email = '"+req.body.patient_email+"' , reserve_patient_phone ='"+req.body.patient_phone+"' , reserve_patient_insurance='"+req.body.patient_insurance+"' , reserve_available='FALSE'    WHERE id = '"+req.body.appointment_id+"' RETURNING * " ;
-let query_reserve =  "INSERT INTO appointment (date, start_time, duration, specialty, specialty1, specialty2,specialty3,specialty4, center_id, professional_id , app_available , app_public , available_public_search, location1,location2,location3 , location4 , location6, location7, location8, app_type_home , app_type_center, app_type_remote) " ;
-sql = sql + " SELECT '"+req.body.destination+"' , start_time, duration, specialty, specialty1, specialty2,specialty3,specialty4,  center_id, professional_id , true , app_public , false ,  location1, location2,location3 , location4 , location6, location7, location8,  app_type_home ,  app_type_center,  app_type_remote";
-sql = sql + " FROM appointment  WHERE professional_id = '"+req.body.p_id+"'  AND date='"+req.body.origin+"'  " ; 
-
- INSERT INTO appointment ( 
-	 date , start_time,  duration,  center_id, confirmation_status, professional_id, patient_doc_id, patient_name,  
-	 patient_email, app_available, app_status, app_blocked, app_public,  location1, location2, location3, location4, location5, location6, 
-	 app_type_home, app_type_center, patient_notification_email_reserved , specialty_reserved , patient_address 
- )
- VALUES ( '2022-01-01' , '01:00:00' , '15' ,  '12' , '0' , '2' , '13909371-2' , 'JUan Alejandro MOrales' , 'alejandro2141@gmail.com' ,
-		 '1' , '1' , '0' , '1', '1017', '1017','1017','1017','1017','1017',
-		'true', 'false' , '1' , '153', 'avenida Vivaceta 1543, Departamento 123, Independencia, Santiago Chile'
-		)
-*/
-
-//let query_reserve = "INSERT INTO appointment (  date , start_time,  duration,  center_id, confirmation_status, professional_id, patient_doc_id, patient_name,    patient_email, patient_phone1,  patient_age,  app_available, app_status, app_blocked, app_public,  location1, location2, location3, location4, location5, location6,   app_type_home, app_type_center,  app_type_remote, patient_notification_email_reserved , specialty_reserved , patient_address , calendar_id )  "  ; 
-let query_reserve =   "INSERT INTO appointment (  date , start_time,  duration,  center_id, confirmation_status, professional_id, patient_doc_id, patient_name,    patient_email, patient_phone1,  patient_age,  app_available, app_status, app_blocked, app_public,  location1, location2, location3, location4, location5, location6,   app_type_home, app_type_center,  app_type_remote, patient_notification_email_reserved , specialty_reserved , patient_address , calendar_id )"   
-//VALUES ( '2022-05-05' , '02:00' , '15' ,  149 , '0' , '1' , '13909371-2' , 'juan Alejandro MOrales' , 'alejandro@nada.com' , '477382' ,  '44' ,'false' , '1' , '0' , '1', 1662 , 1662 ,1662 ,1662 ,1662 ,1662 , 'true' , 'false' , 'false' , '1' , '147' , 'TRistan COrnejo 957'  , '118' 	) RETURNING * " ;  
-
-query_reserve  += " VALUES ( '"+req.body.appointment_date+"' , '"+req.body.appointment_start_time+"' , '"+req.body.appointment_duration+"' ,  "+req.body.appointment_center_id+" , '0' , '"+req.body.appointment_professional_id+"' , '"+req.body.patient_doc_id.toUpperCase() +"' , '"+req.body.patient_name.toUpperCase()+"' , '"+req.body.patient_email.toUpperCase()+"' , '"+req.body.patient_phone+"' ,  '"+req.body.patient_age+"' ,'false' , '1' , '0' , '1', "+req.body.appointment_location1+" , "+req.body.appointment_location2+" ,"+req.body.appointment_location3+" ,"+req.body.appointment_location4+" ,"+req.body.appointment_location5+" ,"+req.body.appointment_location6+" , '"+req.body.appointment_type_home+"' , '"+req.body.appointment_type_center+"' , '"+req.body.appointment_type_remote+"' , '1' , '"+req.body.appointment_specialty+"' , '"+req.body.patient_address+"'  , '"+req.body.appointment_calendar_id+"' 	) RETURNING * " ; 
-
-
-//const query_update = "UPDATE appointment SET patient_name = '"+req.body.patient_name+"' ,  patient_doc_id = '"+req.body.patient_doc_id+"' , patient_email = '"+req.body.patient_email+"' , patient_phone1 ='"+req.body.patient_phone+"' , patient_insurance='"+req.body.patient_insurance+"' , app_available='FALSE'     WHERE id = '"+req.body.appointment_id+"'  RETURNING * ";
-
-console.log(query_reserve);
-const resultado = client.query(query_reserve, (err, result) => {
-    //res.status(200).send(JSON.stringify(result)) ;
-    if (err) {
-      console.log('/professional_take_appointment ERR:'+err ) ;
-    }
-    else {
-    console.log("professional_take_appointment JSON RESPONSE BODY : "+JSON.stringify(result));
-    res.status(200).send(JSON.stringify(result.rows[0])) ;  
-    }
-    
-
-    client.end()
-})
-
-})
 
 // SHUT DOWN FIRST LOGIN
 app.route('/professional_shutdown_firstlogin')
@@ -1407,86 +1351,6 @@ const resultado = client.query(sql, (err, result) => {
 
 })
 
-/*
-app.route('/patient_get_professional')
-.post(function (req, res) {
- 
-    console.log('patient_get_professional  REQUEST : ', req.body );
- 
-// ****** Connect to postgre
-const { Client } = require('pg')
-const client = new Client(conn_data)
-client.connect()
-
-// ****** Run query to bring appointment
-const sql  = "SELECT * FROM professional WHERE id='"+req.body.professional_id+"' " ;
-console.log('SQL patient_get_professional  : '+sql ) ;
-const resultado = client.query(sql, (err, result) => {
-
-  if (err) {
-    // throw err ;
-     console.log('patient_get_professional ERROR '+sql ) ;
-     console.log(err ) ;
-   }
-   else
-   {
-  res.status(200).send(JSON.stringify(result.rows[0]));
-  console.log('patient_get_professional RESPONSE  :'+JSON.stringify(result) ) ; 
-  }
-  
-  client.end()
-})
-
-})
-
-*/
-/*
-app.route('/patient_get_center')
-.post(function (req, res) {
- 
-    console.log('patient_get_center  REQUEST : ', req.body );
- 
-// ****** Connect to postgre
-const { Client } = require('pg')
-const client = new Client(conn_data)
-client.connect()
-
-// ****** Run query to bring appointment
-const sql  = "SELECT * FROM center WHERE id='"+req.body.center_id+"' " ;
-console.log('SQL patient_get_center  : '+sql ) ;
-const resultado = client.query(sql, (err, result) => {
-
-  if (err) {
-    // throw err ;
-     console.log('patient_get_center ERROR '+sql ) ;
-     console.log(err ) ;
-   }
-   else
-   {
-  res.status(200).send(JSON.stringify(result.rows[0]));
-  console.log('patient_get_center RESPONSE  :'+JSON.stringify(result) ) ; 
-   }
-  
-  client.end()
-})
-
-})
-*/
-
-/*
-//PATIENT GET APPOINTMENTS  SEARCH BY CALENDAR
-app.route('/patient_get_appointments_day2')
-.post(function (req, res) {
- 
-    console.log('patient_get_appointments_day2 : INPUT : ', req.body );
-    
-    //res.status(200).send(JSON.stringify( get_appointments_available(req.body)));
-    
-    let resp_app_available = get_appointments_available(req.body);
-    resp_app_available.then( v => {  console.log("patient_get_appointments_day2  RESPONSE: "+JSON.stringify(v)) ; return (res.status(200).send(JSON.stringify(v))) } )
-    
-})
-*/
 
 //********************************************* 
 // PUBLIC POST TAKE APPOINTMENT
@@ -1528,7 +1392,6 @@ const resultado = client.query(query_update, (err, result) => {
 })
 
 })
- 
 
 //********************************************* 
 // PUBLIC POST Login
@@ -1578,8 +1441,7 @@ const resultado = client.query(sql, (err, result) => {
 
 
 })
- 
- 
+  
 //********************************************* 
 // PUBLIC POST GET APPOINTMENT AVAILABLE LIST
 //********************************************* 
@@ -1797,7 +1659,6 @@ const resultado = client.query(SQL_VALUES, (err, result) => {
 
 })
  
-
 //********************************************* 
 // PUBLIC POST get Professioal Data by  agenda id
 //********************************************* 
@@ -1838,7 +1699,6 @@ console.log('get_professional_data_by_agenda_id  SQL:'+sql ) ;
 
 })
  
-
 //********************************************* 
 // PUBLIC POST get Professioal GET CALENDAR
 //********************************************* 
@@ -2474,7 +2334,6 @@ async function get_access_login(req)
 
 }
 
-
 //***************************************************** */
 //********** PUBLIC GET CENTERS ARRAY from ids  ******* */
 //**********                                   ******** */
@@ -2544,7 +2403,6 @@ async function professional_get_data_for_calendars_view(json)
     return json_response
 
 }
-
 
 //***************************************************** */
 //********** PUBLIC SEARCH Main Page Public    ******** */
@@ -2849,6 +2707,48 @@ async function professional_get_appointments_from_calendars(prof_id, date_start,
 //***************       TOOLS Servicios   **************************** */
 //******************************************************************** */
 
+// PROFESSIONAL TAKE APPOINTMENT
+app.route('/professional_take_appointment')
+.post(function (req, res) {
+    console.log('professional_take_appointment INPUT : ', req.body );
+// ****** Connect to postgre
+const { Client } = require('pg')
+const client = new Client(conn_data)
+client.connect()
+
+let query_reserve =   "INSERT INTO appointment (  date , start_time,  duration,  center_id, confirmation_status, professional_id, patient_doc_id, patient_name,    patient_email, patient_phone1,  patient_age,  app_available, app_status, app_blocked, app_public,  location1, location2, location3, location4, location5, location6,   app_type_home, app_type_center,  app_type_remote, patient_notification_email_reserved , specialty_reserved , patient_address , calendar_id )"   
+
+query_reserve  += " VALUES ( '"+req.body.appointment_date+"' , '"+req.body.appointment_start_time+"' , '"+req.body.appointment_duration+"' ,  "+req.body.appointment_center_id+" , '0' , '"+req.body.appointment_professional_id+"' , '"+req.body.patient_doc_id.toUpperCase() +"' , '"+req.body.patient_name.toUpperCase()+"' , '"+req.body.patient_email.toUpperCase()+"' , '"+req.body.patient_phone+"' ,  '"+req.body.patient_age+"' ,'false' , '1' , '0' , '1', "+req.body.appointment_location1+" , "+req.body.appointment_location2+" ,"+req.body.appointment_location3+" ,"+req.body.appointment_location4+" ,"+req.body.appointment_location5+" ,"+req.body.appointment_location6+" , '"+req.body.appointment_type_home+"' , '"+req.body.appointment_type_center+"' , '"+req.body.appointment_type_remote+"' , '1' , '"+req.body.appointment_specialty+"' , '"+req.body.patient_address+"'  , '"+req.body.appointment_calendar_id+"' 	) RETURNING * " ; 
+
+console.log(query_reserve);
+const resultado = client.query(query_reserve, (err, result) => {
+    //res.status(200).send(JSON.stringify(result)) ;
+    if (err) {
+      console.log('/professional_take_appointment ERR:'+err ) ;
+    }
+    else {
+    console.log("professional_take_appointment JSON RESPONSE BODY : "+JSON.stringify(result));
+    res.status(200).send(JSON.stringify(result.rows[0])) ;  
+    }
+    client.end()
+})
+
+})
+
+// PROFESSIONAL BLOCK APPOINTMENTS  PLURAL MANY
+app.route('/professional_block_appointments')
+.post(function (req, res) {
+  console.log("professional_block_appointments "+JSON.stringify(req.body) )
+
+  //CYCLE TROUGH req.body.lock_apps 
+  console.log("Cycle trough apps to block")
+  let apps = req.body.lock_apps
+  apps.forEach( app => professional_block_appointment(app) )
+ 
+  //return res.rows;
+  return null 
+})
+
 // PROFESSIONAL GET CALENDARS
 app.route('/professional_get_calendars')
 .post(function (req, res) {
@@ -2878,7 +2778,6 @@ const resultado = client.query(sql, (err, result) => {
 })
 
 })
-
 
 // PROFESSIONAL GET CENTERS
 app.route('/professional_get_centers')
@@ -3090,6 +2989,42 @@ console.log('professional_lock_day SQL:'+sql ) ;
 //******************************************************************** */
 
 
+async function professional_block_appointment(app)
+{
+  console.log("Blocking appointment:"+JSON.stringify(app))
+
+  const { Client } = require('pg')
+  const client = new Client(conn_data)
+  await client.connect()
+/*
+  let query_block =   "INSERT INTO appointment (  date , start_time,  duration,  center_id, confirmation_status, professional_id, patient_doc_id, patient_name,    patient_email, patient_phone1,  patient_age,  app_available, app_status, app_blocked, app_public,  location1, location2, location3, location4, location5, location6,   app_type_home, app_type_center,  app_type_remote, patient_notification_email_reserved , specialty_reserved , patient_address , calendar_id )"   
+  query_block  += " VALUES ( '"+app.date+"' , '"+app.start_time+"' , '"+app.duration+"' ,  "+app.center_id+" , '0' , '"+app.professional_id+"' , '1111111' , 'BLOCKEADO' , 'BLOQUEADOEMAIL' , '00000' ,  '999' ,'false' , '1' , '0' , '1', '1' , '1' , '1' , '1' , '1' , '1'  , true , true , true , '1' , '1' , 'NO ADDRESS'  , '"+app.calendar_id+"' 	) RETURNING * " ; 
+*/
+  let query_block =   "INSERT INTO appointment ( date , start_time,  duration,  center_id, confirmation_status, professional_id, patient_doc_id, patient_name,    patient_email, patient_phone1,  patient_age,  app_available, app_status, app_blocked, app_public,  location1, location2, location3, location4, location5, location6,   app_type_home, app_type_center,  app_type_remote, patient_notification_email_reserved , specialty_reserved , patient_address , calendar_id )"   
+  query_block  += " VALUES (  '"+app.date+"' , '"+app.start_time+"' , '"+app.duration+"' ,  "+app.center_id+" , '0' , '"+app.professional_id+"' , 'BLOCKEADO' , 'BLOQUEADO' , 'BLOQUEADO' , 'BLOQUEADO' ,  '111' ,'false' , '1' , '1' , '1', '0' , '0' ,'0' , '0' , '0' , '0' , false , false , false , '1' , '"+app.specialty+"' , 'BLOCKED'  , '"+app.calendar_id+"' 	) RETURNING * " ; 
+
+  console.log("SQL QUERY: "+query_block)
+  const res = await client.query(query_block)
+  client.end() 
+  return 1 ;
+
+  /*
+  const { Client } = require('pg')
+  const client = new Client(conn_data)
+  await client.connect()
+  //console.log("ids:"+ids+" dates:"+dates)
+  
+  const sql_calendars  = "SELECT * FROM professional_calendar WHERE professional_id ='"+prof_id+"' AND  deleted_professional = false  ORDER BY id DESC  " ;
+
+ // const sql_apps_taken  = "SELECT * FROM appointment WHERE date IN ("+aux_dates+")  and professional_id  IN ("+ids+") ;";
+  console.log("SQL QUERY: "+sql_calendars)
+  const res = await client.query(sql_calendars)
+  client.end() 
+  return res.rows;
+  */
+}
+
+
 //GET PROFESSIONAL Calendars
 async function get_professional_calendars(prof_id)
 {
@@ -3098,7 +3033,7 @@ async function get_professional_calendars(prof_id)
   await client.connect()
   //console.log("ids:"+ids+" dates:"+dates)
   
-  const sql_calendars  = "SELECT * FROM professional_calendar WHERE professional_id ='"+prof_id+"' AND  deleted_professional = false  ORDER BY id ASC  " ;
+  const sql_calendars  = "SELECT * FROM professional_calendar WHERE professional_id ='"+prof_id+"' AND  deleted_professional = false  ORDER BY id DESC  " ;
 
  // const sql_apps_taken  = "SELECT * FROM appointment WHERE date IN ("+aux_dates+")  and professional_id  IN ("+ids+") ;";
   console.log("SQL QUERY: "+sql_calendars)
@@ -3114,7 +3049,7 @@ async function get_professional_centers(id)
   const client = new Client(conn_data)
   await client.connect()
   //console.log("ids:"+ids+" dates:"+dates)
-  const sql_centers  = "SELECT * FROM center WHERE id IN  (SELECT center_id FROM center_professional where professional_id='"+id+"' ) AND center_deleted!='true'  ORDER BY id DESC  " ;
+  const sql_centers  = "SELECT * FROM center WHERE id IN  (SELECT center_id FROM center_professional where professional_id='"+id+"' ) AND center_deleted!='true'  ORDER BY id ASC  " ;
 
  // const sql_apps_taken  = "SELECT * FROM appointment WHERE date IN ("+aux_dates+")  and professional_id  IN ("+ids+") ;";
   console.log("SQL QUERY: "+sql_centers)
@@ -3123,7 +3058,6 @@ async function get_professional_centers(id)
   return res.rows;
   
 }
-
 
 //GET CALENDARS BY Professional ID
 async function get_calendars_available_by_ProfessionalId(prof_id,date)
