@@ -2746,7 +2746,11 @@ app.route('/professional_block_appointments')
   apps.forEach( app => professional_block_appointment(app) )
  
   //return res.rows;
-  return null 
+  let json_response = {
+                      result : 'success'
+                      }
+  res.status(200).send(JSON.stringify(json_response) );
+  
 })
 
 // PROFESSIONAL GET CALENDARS
@@ -2987,41 +2991,31 @@ console.log('professional_lock_day SQL:'+sql ) ;
 //******************************************************************** */
 //***************    Funciones        ******************************** */
 //******************************************************************** */
-
-
 async function professional_block_appointment(app)
-{
+{  
   console.log("Blocking appointment:"+JSON.stringify(app))
-
   const { Client } = require('pg')
   const client = new Client(conn_data)
   await client.connect()
-/*
-  let query_block =   "INSERT INTO appointment (  date , start_time,  duration,  center_id, confirmation_status, professional_id, patient_doc_id, patient_name,    patient_email, patient_phone1,  patient_age,  app_available, app_status, app_blocked, app_public,  location1, location2, location3, location4, location5, location6,   app_type_home, app_type_center,  app_type_remote, patient_notification_email_reserved , specialty_reserved , patient_address , calendar_id )"   
-  query_block  += " VALUES ( '"+app.date+"' , '"+app.start_time+"' , '"+app.duration+"' ,  "+app.center_id+" , '0' , '"+app.professional_id+"' , '1111111' , 'BLOCKEADO' , 'BLOQUEADOEMAIL' , '00000' ,  '999' ,'false' , '1' , '0' , '1', '1' , '1' , '1' , '1' , '1' , '1'  , true , true , true , '1' , '1' , 'NO ADDRESS'  , '"+app.calendar_id+"' 	) RETURNING * " ; 
-*/
-  let query_block =   "INSERT INTO appointment ( date , start_time,  duration,  center_id, confirmation_status, professional_id, patient_doc_id, patient_name,    patient_email, patient_phone1,  patient_age,  app_available, app_status, app_blocked, app_public,  location1, location2, location3, location4, location5, location6,   app_type_home, app_type_center,  app_type_remote, patient_notification_email_reserved , specialty_reserved , patient_address , calendar_id )"   
-  query_block  += " VALUES (  '"+app.date+"' , '"+app.start_time+"' , '"+app.duration+"' ,  "+app.center_id+" , '0' , '"+app.professional_id+"' , 'BLOCKEADO' , 'BLOQUEADO' , 'BLOQUEADO' , 'BLOQUEADO' ,  '111' ,'false' , '1' , '1' , '1', '0' , '0' ,'0' , '0' , '0' , '0' , false , false , false , '1' , '"+app.specialty+"' , 'BLOCKED'  , '"+app.calendar_id+"' 	) RETURNING * " ; 
-
-  console.log("SQL QUERY: "+query_block)
-  const res = await client.query(query_block)
-  client.end() 
-  return 1 ;
-
-  /*
-  const { Client } = require('pg')
-  const client = new Client(conn_data)
-  await client.connect()
-  //console.log("ids:"+ids+" dates:"+dates)
   
-  const sql_calendars  = "SELECT * FROM professional_calendar WHERE professional_id ='"+prof_id+"' AND  deleted_professional = false  ORDER BY id DESC  " ;
+  let query = [] 
+  
+  if (app.app_id != null)
+  {
+    query = "DELETE FROM  appointment WHERE id="+app.app_id+" " 
+  }
+  else
+  {
+    query =   "INSERT INTO appointment ( date , start_time,  duration,  center_id, confirmation_status, professional_id, patient_doc_id, patient_name,    patient_email, patient_phone1,  patient_age,  app_available, app_status, app_blocked, app_public,  location1, location2, location3, location4, location5, location6,   app_type_home, app_type_center,  app_type_remote, patient_notification_email_reserved , specialty_reserved , patient_address , calendar_id )"   
+    query += " VALUES (  '"+app.date+"' , '"+app.start_time+"' , '"+app.duration+"' ,  "+app.center_id+" , '0' , '"+app.professional_id+"' , 'BLOCKEADO' , 'BLOQUEADO' , 'BLOQUEADO' , 'BLOQUEADO' ,  '111' ,'false' , '1' , '1' , '1', '0' , '0' ,'0' , '0' , '0' , '0' , false , false , false , '1' , '"+app.specialty+"' , 'BLOCKED'  , '"+app.calendar_id+"' 	) RETURNING * " ; 
+  }
+  console.log("SQL QUERY: "+query)
 
- // const sql_apps_taken  = "SELECT * FROM appointment WHERE date IN ("+aux_dates+")  and professional_id  IN ("+ids+") ;";
-  console.log("SQL QUERY: "+sql_calendars)
-  const res = await client.query(sql_calendars)
+  const res =  client.query(query)
   client.end() 
-  return res.rows;
-  */
+  
+  console.log("Blocking appointment : "+res );
+  return res ;
 }
 
 
@@ -3223,6 +3217,8 @@ function calendar_cutter(calendar, fromDate ,endDate ,lockDates, remove_lock_day
                 time_between : calendar.time_between ,
                 professional_id : calendar.professional_id ,
                 lock_day :lock_day ,
+                app_available : true ,
+                app_blocked : null , 
                }
                cal_appointments.push(appointment_slot) ;
             }           
@@ -3245,6 +3241,7 @@ function filter_app_from_appTaken(apps,appsTaken, includeAppTaken)
     for (let i = 0; i < appsTaken.length; i++) {
          
       var appointment_slot = {
+        app_id : appsTaken[i].id ,
         calendar_id : appsTaken[i].calendar_id , 
         date : appsTaken[i].date  ,
         specialty :   appsTaken[i].specialty_reserved , 
@@ -3263,6 +3260,8 @@ function filter_app_from_appTaken(apps,appsTaken, includeAppTaken)
         patient_age : appsTaken[i].patient_age, 
         patient_address : appsTaken[i].patient_address , 
         patient_doc_id : appsTaken[i].patient_doc_id , 
+
+        app_blocked : appsTaken[i].app_blocked ,
 
        }
        if (includeAppTaken == true )
