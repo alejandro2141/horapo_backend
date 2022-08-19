@@ -2738,19 +2738,15 @@ const resultado = client.query(query_reserve, (err, result) => {
 // PROFESSIONAL BLOCK APPOINTMENTS  PLURAL MANY
 app.route('/professional_block_appointments')
 .post(function (req, res) {
+ 
   console.log("professional_block_appointments "+JSON.stringify(req.body) )
 
-  //CYCLE TROUGH req.body.lock_apps 
-  console.log("Cycle trough apps to block")
-  let apps = req.body.lock_apps
-  apps.forEach( app => professional_block_appointment(app) )
- 
-  //return res.rows;
+  let response_blocking = professional_block_appointments(req.body.lock_apps) 
   let json_response = {
                       result : 'success'
                       }
-  res.status(200).send(JSON.stringify(json_response) );
-  
+
+  response_blocking.then( v => {  console.log("professional_block_appointments  RESPONSE: "+JSON.stringify(json_response)) ; return (res.status(200).send(JSON.stringify(json_response))) } )
 })
 
 // PROFESSIONAL GET CALENDARS
@@ -2991,31 +2987,42 @@ console.log('professional_lock_day SQL:'+sql ) ;
 //******************************************************************** */
 //***************    Funciones        ******************************** */
 //******************************************************************** */
+async function professional_block_appointments(apps_list)
+{  
+  console.log("Blocking appointment:"+JSON.stringify(apps_list))
+
+  for (let i = 0;  i < apps_list.length ; i++) {
+    await professional_block_appointment(apps_list[i])
+  }
+
+  //apps_list.forEach(app =>  await professional_block_appointment(app) )
+
+  console.log("Blocking appointment List DONE : ");
+  return 200 ;
+}
+
 async function professional_block_appointment(app)
 {  
   console.log("Blocking appointment:"+JSON.stringify(app))
   const { Client } = require('pg')
   const client = new Client(conn_data)
   await client.connect()
-  
-  let query = [] 
-  
-  if (app.app_id != null)
-  {
-    query = "DELETE FROM  appointment WHERE id="+app.app_id+" " 
-  }
-  else
-  {
-    query =   "INSERT INTO appointment ( date , start_time,  duration,  center_id, confirmation_status, professional_id, patient_doc_id, patient_name,    patient_email, patient_phone1,  patient_age,  app_available, app_status, app_blocked, app_public,  location1, location2, location3, location4, location5, location6,   app_type_home, app_type_center,  app_type_remote, patient_notification_email_reserved , specialty_reserved , patient_address , calendar_id )"   
-    query += " VALUES (  '"+app.date+"' , '"+app.start_time+"' , '"+app.duration+"' ,  "+app.center_id+" , '0' , '"+app.professional_id+"' , 'BLOCKEADO' , 'BLOQUEADO' , 'BLOQUEADO' , 'BLOQUEADO' ,  '111' ,'false' , '1' , '1' , '1', '0' , '0' ,'0' , '0' , '0' , '0' , false , false , false , '1' , '"+app.specialty+"' , 'BLOCKED'  , '"+app.calendar_id+"' 	) RETURNING * " ; 
-  }
-  console.log("SQL QUERY: "+query)
 
-  const res =  client.query(query)
+   let query = [] 
+      if (app.app_id != null)
+      {
+        query = "DELETE FROM  appointment WHERE id = "+app.app_id+" " 
+      }
+      else
+      {
+        query =   "INSERT INTO appointment ( date , start_time,  duration,  center_id, confirmation_status, professional_id, patient_doc_id, patient_name,    patient_email, patient_phone1,  patient_age,  app_available, app_status, app_blocked, app_public,  location1, location2, location3, location4, location5, location6,   app_type_home, app_type_center,  app_type_remote, patient_notification_email_reserved , specialty_reserved , patient_address , calendar_id )"   
+        query += " VALUES (  '"+app.date+"' , '"+app.start_time+"' , '"+app.duration+"' ,  "+app.center_id+" , '0' , '"+app.professional_id+"' , 'BLOCKEADO' , 'BLOQUEADO' , 'BLOQUEADO' , 'BLOQUEADO' ,  '111' ,'false' , '1' , '1' , '1', '0' , '0' ,'0' , '0' , '0' , '0' , false , false , false , '1' , '"+app.specialty+"' , 'BLOCKED'  , '"+app.calendar_id+"' 	)  " ; 
+      }
+      console.log("SQL QUERY: "+query)
+  const res =  await client.query(query)   
   client.end() 
-  
   console.log("Blocking appointment : "+res );
-  return res ;
+  return 200 ;
 }
 
 
