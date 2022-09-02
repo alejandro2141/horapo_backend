@@ -826,7 +826,7 @@ console.log('Professional INactivate calendar  SQL:'+sql ) ;
 // PROFESSIONAL DELETE CALENDAR 
 app.route('/professional_delete_calendar')
 .post(function (req, res) {
-    console.log('professional_delete_calendar INPUT:', req.body );
+    console.log('professional_delete_calendar INPUT:', JSON.stringify(req.body) );
 // ****** Connect to postgre
 const { Pool, Client } = require('pg')
 const client = new Client({
