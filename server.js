@@ -918,8 +918,8 @@ if (req.body.form_day_sat !=null)
 if (req.body.form_day_sun !=null)
 { variables_sql =  variables_sql +", sunday = '"+req.body.form_day_sun+"'" }
 
-if (req.body.form_calendar_color !=null)
-{ variables_sql =  variables_sql +", color = '"+req.body.form_calendar_color+"'" }
+if (req.body.form_color !=null)
+{ variables_sql =  variables_sql +", color = '"+req.body.form_color+"' " }
 
 
 let sql = " UPDATE professional_calendar SET "+variables_sql+"   WHERE id = "+req.body.calendar_id+"  " ;
