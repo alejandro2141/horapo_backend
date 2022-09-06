@@ -2504,8 +2504,11 @@ async function get_appointments_available(json)
     //console.log("Lock Dates :"+JSON.stringify(lockDates))
     //lockDates = lockDates_aux.forEach( element => console.log("****************ELEMENT DATE:"+element.date) );
 
+    let date_end  = new Date(json.date);
+    date_end.setDate(date_end.getDate() + 7);
+
     //calendar_cutter(calendar, fromDate ,endDate ,lockDates, remove_lock_days )
-    let apps = calendar_cutter(calendars[i],json.date, json.date , lockDates, true) ;     
+    let apps = calendar_cutter(calendars[i],json.date, date_end.toISOString() , lockDates, true) ;     
     let appointments_reserved = await get_professional_appointments_by_date( calendars[i].professional_id , json.date , json.date )
     
     let apps_removed_reserved = filter_app_from_appTaken(apps ,appointments_reserved, false )
@@ -2532,6 +2535,8 @@ async function get_calendars_available_by_specialty(json)
   const { Client } = require('pg')
   const client = new Client(conn_data)
   await client.connect()
+  
+  
   
   const sql_calendars  = "SELECT * FROM professional_calendar WHERE specialty1 = "+json.specialty+" AND  active = true AND deleted_professional = false AND status = 1  AND date_start <= '"+json.date+"'  AND date_end >= '"+json.date+"'  " ;  
 
