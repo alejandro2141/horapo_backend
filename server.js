@@ -2686,7 +2686,8 @@ async function professional_get_appointments_from_calendars(prof_id, date_start,
 
   let app_calendar_filtered = filter_app_from_appTaken(app_calendars,appointments_reserved, true )
 
-  app_calendar_filtered.sort(function(b, a){ return (new Date('Thu, 01 Jan 1970 '+b.start_time) - new Date('Thu, 01 Jan 1970 '+a.start_time )) } ) 
+  //app_calendar_filtered.sort(function(b, a){ return (new Date('Thu, 01 Jan 1970 '+b.start_time) - new Date('Thu, 01 Jan 1970 '+a.start_time )) } ) 
+  app_calendar_filtered = app_calendar_filtered.sort(function(b, a){ return ( new Date(b.start_time) - new Date(a.start_time ) ) } ) 
   
   console.log("app_calendars:"+JSON.stringify(app_calendar_filtered));
 
@@ -3156,49 +3157,58 @@ function calendar_cutter(calendar, fromDate ,endDate ,lockDates, remove_lock_day
     {
       date_end = new Date(endDate)
     }
-  
-
   //NOTE IMPORTANT
   //I SEE BACKEND set by default Monday as first day of week, NOT Sunday as documentation.
   // Not sure why, but i will reflect it in code, in a different  environment it could change  getDay()+1
 
   let cal_day_active = [] ;
-    if (calendar.sunday)    { cal_day_active.push(0) }  
-    if (calendar.monday)    { cal_day_active.push(1) }
-    if (calendar.tuesday)   { cal_day_active.push(2) }
-    if (calendar.wednesday) { cal_day_active.push(3) }
-    if (calendar.thursday)  { cal_day_active.push(4) }
-    if (calendar.friday)    { cal_day_active.push(5) }
-    if (calendar.saturday)  { cal_day_active.push(6) }
+    if (calendar.monday)    { cal_day_active.push(0) }
+    if (calendar.tuesday)   { cal_day_active.push(1) }
+    if (calendar.wednesday) { cal_day_active.push(2) }
+    if (calendar.thursday)  { cal_day_active.push(3) }
+    if (calendar.friday)    { cal_day_active.push(4) }
+    if (calendar.saturday)  { cal_day_active.push(5) }
+    if (calendar.sunday)    { cal_day_active.push(6) }  
+    
   // CALCULATE DAYS EXIST IN CALENDAR
   for (var d = new Date(date_start); d <= date_end; d.setDate(new Date(d).getDate() + 1)) 
     { 
-     
       if(cal_day_active.includes( d.getDay()) )
       {
-        cal_days.push(new Date(d).toISOString().split('T')[0])
+        cal_days.push(new Date(d.setHours(0,0,0,0)).toISOString())
       }
     }
         
     // CALCULATE HOURS EXIST IN DAY CALENDAR newDateObj.setTime(oldDateObj.getTime() + (30 * 60 * 1000));
-    let time_start = new Date('Thu, 01 Jan 1970 '+calendar.start_time.substring(0,5) ) ;
-    let time_end = new Date('Thu, 01 Jan 1970 '+calendar.end_time.substring(0,5) )  ;
+//    let time_start = new Date('Thu, 01 Jan 1970 '+calendar.start_time ) ;
+//    let time_end = new Date('Thu, 01 Jan 1970 '+calendar.end_time ) ;
+
+    let time_start = new Date('Thu, 01 Jan 1970 '+calendar.start_time ) ;
+    let time_end = new Date('Thu, 01 Jan 1970 '+calendar.end_time ) ;
 
     for (var t = new Date(time_start); t.getTime() <= ( time_end.getTime() - (calendar.time_between*60*1000)  ); t.setTime(t.getTime() + ((calendar.duration + calendar.time_between)*60*1000) ) ) 
     { 
-      let aux_hour=new String( ((t.getHours()).toString().padStart(2, '0') )+":"+(t.getMinutes().toString().padStart(2, '0')) ) ;
-      cal_hours.push(aux_hour) 
+    //let aux_hour=new String( ((t.getHours()).toString().padStart(2, '0') )+":"+(t.getMinutes().toString().padStart(2, '0')) ) ;
+     //let aux_hour= t.toISOString()  ;
+     cal_hours.push(new Date(t) ) 
     }
+    console.log("Calendar Start Time"+calendar.start_time );
+    console.log("Calendar End   Time"+calendar.end_time);
+
+    console.log("time_start"+time_start );
+    console.log("time_end"+time_end);
+
+    cal_hours.forEach(hour => console.log("++++++++ LISTA CAL HOURS:"+hour.toUTCString()  ) );
+
+   // console.log("LISTA CAL HOURS:"+cal_hours);
  
     if (remove_lock_days == true) 
     {
     cal_days.forEach( function filterApp(day) { 
-       if (!lockDates.includes(day)) {  cal_days_noBlock.push(day) }  
-        
+       if (!lockDates.includes(day)) {  cal_days_noBlock.push(day) }    
        //NOTE: NO COPY, just point memory addres when REMOVE LOCK DAYS is TRUE 
         cal_days = cal_days_noBlock ;
       })
-      
     }
     console.log("---------- Calendar days After = "+cal_days );
     console.log("---------- Calendar days NO BLOCK = "+cal_days_noBlock);
@@ -3215,9 +3225,15 @@ function calendar_cutter(calendar, fromDate ,endDate ,lockDates, remove_lock_day
       {
       lock_day=false ; 
       }
-   
         for (let t=0 ; t < cal_hours.length ; t++ )
             {
+              let time_start_set = new Date(cal_days[d])
+              time_start_set.setHours  ( cal_hours[t].getHours()   )
+              time_start_set.setMinutes( cal_hours[t].getMinutes() )
+              //time_start_set.setHours(cal_hours[t].getUTCHours() , cal_hours[t].getUTCMinutes() )
+
+              //time_start_set.setUTCHours(cal_hours[t].getHours,cal_hours[t].getMinutes, 0 )
+             
               var appointment_slot = {
                 calendar_id : calendar.id , 
                 date : cal_days[d] ,
@@ -3225,7 +3241,13 @@ function calendar_cutter(calendar, fromDate ,endDate ,lockDates, remove_lock_day
                 duration : calendar.duration ,
                // professional_id : calendars[i].professional_id , 
                 center_id :calendar.center_id ,
-                start_time : cal_hours[t] , 
+                //start_time : cal_hours[t] , 
+                start_time : time_start_set.toUTCString()  , 
+                /*
+date.setHours(0);
+date.setMinutes(0);
+date.setSeconds(0);
+                */
                 time_between : calendar.time_between ,
                 professional_id : calendar.professional_id ,
                 lock_day :lock_day ,
