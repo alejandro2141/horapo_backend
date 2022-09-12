@@ -3162,23 +3162,36 @@ function calendar_cutter(calendar, fromDate ,endDate ,lockDates, remove_lock_day
   // Not sure why, but i will reflect it in code, in a different  environment it could change  getDay()+1
 
   let cal_day_active = [] ;
-    if (calendar.monday)    { cal_day_active.push(0) }
-    if (calendar.tuesday)   { cal_day_active.push(1) }
-    if (calendar.wednesday) { cal_day_active.push(2) }
-    if (calendar.thursday)  { cal_day_active.push(3) }
-    if (calendar.friday)    { cal_day_active.push(4) }
-    if (calendar.saturday)  { cal_day_active.push(5) }
-    if (calendar.sunday)    { cal_day_active.push(6) }  
-    
+    if (calendar.sunday)    { cal_day_active.push(0) }   
+    if (calendar.monday)    { cal_day_active.push(1) }
+    if (calendar.tuesday)   { cal_day_active.push(2) }
+    if (calendar.wednesday) { cal_day_active.push(3) }
+    if (calendar.thursday)  { cal_day_active.push(4) }
+    if (calendar.friday)    { cal_day_active.push(5) }
+    if (calendar.saturday)  { cal_day_active.push(6) }
+   
   // CALCULATE DAYS EXIST IN CALENDAR
+  
   for (var d = new Date(date_start); d <= date_end; d.setDate(new Date(d).getDate() + 1)) 
     { 
       if(cal_day_active.includes( d.getDay()) )
       {
-        cal_days.push(new Date(d.setHours(0,0,0,0)).toISOString())
+        cal_days.push(new Date(d).toUTCString())
       }
     }
-        
+    
+   /*
+    for (var dat = new Date(date_start); dat <= date_end; dat.setDate(dat.getDate() + 1)) 
+    { 
+      console.log("**************************************************")
+      console.log("*********** DIA CALENDARIO "+dat.toISOString())
+      console.log("**************************************************")
+     
+        cal_days.push(dat.toISOString)
+      
+    } 
+    */
+    
     // CALCULATE HOURS EXIST IN DAY CALENDAR newDateObj.setTime(oldDateObj.getTime() + (30 * 60 * 1000));
 //    let time_start = new Date('Thu, 01 Jan 1970 '+calendar.start_time ) ;
 //    let time_end = new Date('Thu, 01 Jan 1970 '+calendar.end_time ) ;
@@ -3227,9 +3240,13 @@ function calendar_cutter(calendar, fromDate ,endDate ,lockDates, remove_lock_day
       }
         for (let t=0 ; t < cal_hours.length ; t++ )
             {
+              /*
               let time_start_set = new Date(cal_days[d])
               time_start_set.setHours  ( cal_hours[t].getHours()   )
               time_start_set.setMinutes( cal_hours[t].getMinutes() )
+              */
+              let time_start_set = cal_hours[t]
+
               //time_start_set.setHours(cal_hours[t].getUTCHours() , cal_hours[t].getUTCMinutes() )
 
               //time_start_set.setUTCHours(cal_hours[t].getHours,cal_hours[t].getMinutes, 0 )
