@@ -3171,13 +3171,18 @@ function calendar_cutter(calendar, fromDate ,endDate ,lockDates, remove_lock_day
     if (calendar.saturday)  { cal_day_active.push(6) }
    
   // CALCULATE DAYS EXIST IN CALENDAR
-  
+
+      console.log("------------ DAY Pre Cycle     :"+date_start.toUTCString() );
   for (var d = new Date(date_start); d <= date_end; d.setDate(new Date(d).getDate() + 1)) 
     { 
-      if(cal_day_active.includes( d.getDay()) )
+      console.log("------------ DAY Number:"+d.getUTCDay()   );
+      console.log("------------ DAY       :"+d.toUTCString() );
+      
+      if(cal_day_active.includes( d.getUTCDay()) )
       {
-        cal_days.push(new Date(d).toUTCString())
+        cal_days.push(new Date(d))
       }
+            
     }
     
    /*
@@ -3240,17 +3245,22 @@ function calendar_cutter(calendar, fromDate ,endDate ,lockDates, remove_lock_day
       }
         for (let t=0 ; t < cal_hours.length ; t++ )
             {
-              /*
+             // let time_start_set = new Date (cal_days[d])
+              
               let time_start_set = new Date(cal_days[d])
-              time_start_set.setHours  ( cal_hours[t].getHours()   )
-              time_start_set.setMinutes( cal_hours[t].getMinutes() )
-              */
+              time_start_set.setUTCHours  ( cal_hours[t].getUTCHours()   )
+              time_start_set.setUTCMinutes( cal_hours[t].getUTCMinutes() )
+              time_start_set.setUTCFullYear(  cal_days[d].getUTCFullYear() ) 
+              
+              /*
               let time_start_set = cal_hours[t]
+              time_start_set.setUTCDate(  cal_days[d].getUTCDate() ) 
+              time_start_set.setUTCMonth(  cal_days[d].getUTCMonth() ) 
+              time_start_set.setUTCFullYear(  cal_days[d].getUTCFullYear() ) 
+              */
 
               //time_start_set.setHours(cal_hours[t].getUTCHours() , cal_hours[t].getUTCMinutes() )
-
               //time_start_set.setUTCHours(cal_hours[t].getHours,cal_hours[t].getMinutes, 0 )
-             
               var appointment_slot = {
                 calendar_id : calendar.id , 
                 date : cal_days[d] ,
@@ -3259,7 +3269,7 @@ function calendar_cutter(calendar, fromDate ,endDate ,lockDates, remove_lock_day
                // professional_id : calendars[i].professional_id , 
                 center_id :calendar.center_id ,
                 //start_time : cal_hours[t] , 
-                start_time : time_start_set.toUTCString()  , 
+                start_time : time_start_set  , 
                 /*
 date.setHours(0);
 date.setMinutes(0);
