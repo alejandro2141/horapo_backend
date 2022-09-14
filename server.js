@@ -2450,13 +2450,10 @@ async function get_appointments_available(json)
   console.log("Centers : "+JSON.stringify(centers))
   //REMOVE CALENDARS LINKED TO DELETED CENTERS
 //************------------------- */
-
   //filter CALENDARS have only active centers.
   calendars =  calendars.filter(cal =>  centers_ids_filtered.includes(cal.center_id) ) 
-
 //************------------------- */
 
-  
   // remove CALENDARS not match with Location parameter search
   if ( json.location != null )
   {
@@ -2498,14 +2495,15 @@ async function get_appointments_available(json)
   let app_calendar_filtered = []
   
   for (let i = 0; i < calendars.length; i++) {
+    //TODO Deberia poner limite a los lock days para no traer mas de lo necesario
     let lockDates_aux = await get_professional_lock_days(calendars[i].professional_id );
     lockDates = lockDates_aux.map( lockDate => new Date(lockDate.date).toISOString().split('T')[0] )  
-    //lockDates_aux.forEach(data => lockDates.push( new Date(data.date).toISOString().split('T')[0] )) 
-    //console.log("Lock Dates :"+JSON.stringify(lockDates))
-    //lockDates = lockDates_aux.forEach( element => console.log("****************ELEMENT DATE:"+element.date) );
-
     let date_end  = new Date(json.date);
-    date_end.setDate(date_end.getDate() + 7);
+
+    //******************************************** */
+    //*****  UNTIL DAY  RETURN   ***************** */ 
+    //******************************************** */
+    date_end.setDate(date_end.getDate() + 6);
 
     //calendar_cutter(calendar, fromDate ,endDate ,lockDates, remove_lock_days )
     let apps = calendar_cutter(calendars[i],json.date, date_end.toISOString() , lockDates, true) ;     
@@ -2516,7 +2514,9 @@ async function get_appointments_available(json)
     app_calendar_filtered = app_calendar_filtered.concat( apps_removed_reserved ) 
     }
 
-  app_calendar_filtered.sort(function(b, a){ return (new Date('Thu, 01 Jan 1970 '+b.start_time) - new Date('Thu, 01 Jan 1970 '+a.start_time )) } ) 
+  //app_calendar_filtered.sort(function(b, a){ return (new Date('Thu, 01 Jan 1970 '+b.start_time) - new Date('Thu, 01 Jan 1970 '+a.start_time )) } ) 
+  app_calendar_filtered.sort((a, b) => a.start_time - b.start_time) 
+  //const sortedActivities = activities.slice().sort((a, b) => b.date - a.date)
 
   console.log("PUBLIC SEARCH Response DATE:"+json.date+"  APPOINTMENTS:"+JSON.stringify(app_calendar_filtered));
   
@@ -2535,9 +2535,7 @@ async function get_calendars_available_by_specialty(json)
   const { Client } = require('pg')
   const client = new Client(conn_data)
   await client.connect()
-  
-  
-  
+    
   const sql_calendars  = "SELECT * FROM professional_calendar WHERE specialty1 = "+json.specialty+" AND  active = true AND deleted_professional = false AND status = 1  AND date_start <= '"+json.date+"'  AND date_end >= '"+json.date+"'  " ;  
 
   console.log("PUBLIC get_calendars_available  SQL:"+sql_calendars) 
@@ -3141,6 +3139,8 @@ async function get_professional_lock_days(prof_id)
 //************** UNIQUE AND IMPORTAN ******************** */
 //**************   CALENDAR CUTTER  ********************* */
 //******************************************************* */
+//let apps = calendar_cutter(calendars[i],json.date, date_end.toISOString() , lockDates, true) ;  
+//******************************************************* */
 function calendar_cutter(calendar, fromDate ,endDate ,lockDates, remove_lock_days )
 {
   console.log("Calendar Cutter : "+calendar.id);
@@ -3173,7 +3173,7 @@ function calendar_cutter(calendar, fromDate ,endDate ,lockDates, remove_lock_day
   // CALCULATE DAYS EXIST IN CALENDAR
 
       console.log("------------ DAY Pre Cycle     :"+date_start.toUTCString() );
-  for (var d = new Date(date_start); d <= date_end; d.setDate(new Date(d).getDate() + 1)) 
+  for (var d = new Date(date_start); (d <= date_end && d <= new Date(calendar.date_end)  )  ; d.setDate(new Date(d).getDate() + 1)) 
     { 
       console.log("------------ DAY Number:"+d.getUTCDay()   );
       console.log("------------ DAY       :"+d.toUTCString() );
@@ -3251,7 +3251,7 @@ function calendar_cutter(calendar, fromDate ,endDate ,lockDates, remove_lock_day
               time_start_set.setUTCHours  ( cal_hours[t].getUTCHours()   )
               time_start_set.setUTCMinutes( cal_hours[t].getUTCMinutes() )
               time_start_set.setUTCFullYear(  cal_days[d].getUTCFullYear() ) 
-              
+
               /*
               let time_start_set = cal_hours[t]
               time_start_set.setUTCDate(  cal_days[d].getUTCDate() ) 
