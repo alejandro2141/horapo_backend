@@ -2685,7 +2685,7 @@ async function professional_get_appointments_from_calendars(prof_id, date_start,
   let app_calendar_filtered = filter_app_from_appTaken(app_calendars,appointments_reserved, true )
 
   //app_calendar_filtered.sort(function(b, a){ return (new Date('Thu, 01 Jan 1970 '+b.start_time) - new Date('Thu, 01 Jan 1970 '+a.start_time )) } ) 
-  app_calendar_filtered = app_calendar_filtered.sort(function(b, a){ return ( new Date(b.start_time) - new Date(a.start_time ) ) } ) 
+  app_calendar_filtered = app_calendar_filtered.sort(function(b, a){ return ( new Date(b.start_time).getTime() - new Date(a.start_time ).getTime() ) } ) 
   
   console.log("app_calendars:"+JSON.stringify(app_calendar_filtered));
 
