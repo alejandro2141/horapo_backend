@@ -2643,7 +2643,7 @@ app.route('/professional_get_appointments_day3')
   console.log('professional_get_appointments_day3 : INPUT : ', req.body );
   //get Appointments and remove the lock days from the response adding true to last parameter. 
   
-  let appointments_available = professional_get_appointments_from_calendars(req.body.professional_id ,req.body.date,false  ) ;
+  let appointments_available = professional_get_appointments_from_calendars(req.body.professional_id , req.body.date,false  ) ;
 
   appointments_available.then( v => {  console.log("professional_get_appointments_day3  RESPONSE: "+JSON.stringify(v)) ; return (res.status(200).send(JSON.stringify(v))) } )
 })
@@ -2655,7 +2655,11 @@ async function professional_get_appointments_from_calendars(prof_id, date_start,
   console.log("get_calendars_available_by_ProfessionalId : INPUT"+JSON.stringify(calendars));
 
   // 2.- get Professional Appointment
-  let appointments_reserved = await get_professional_appointments_by_date( prof_id , date_start , date_start)
+      //first set day end
+    let date_end = new Date(date_start)
+    date_end.setDate(date_end.getDate()+1)
+
+  let appointments_reserved = await get_professional_appointments_by_date( prof_id , date_start , date_end.toISOString())
   console.log("++++++++++++++  APP RESERVED : OUTPUT "+JSON.stringify(appointments_reserved));
  
   // 3.- GET Lock Dates
