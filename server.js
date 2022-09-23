@@ -2662,7 +2662,7 @@ async function professional_get_appointments_from_calendars(prof_id, date_start,
   let appointments_reserved = await get_professional_appointments_by_date( prof_id , date_start , date_end.toISOString())
   console.log("++++++++++++++  APP RESERVED : OUTPUT "+JSON.stringify(appointments_reserved));
  
-  // 3.- GET Lock Dates
+  // 3.- GET Lock Dates TODO PROBLEM TO ISO STRING
   let lockDates = await get_professional_lock_days(prof_id);
   lockDates = lockDates.map(lockDates => (new Date(lockDates.date).toISOString().split('T')[0] ) ) ;
   console.log("getLockDays:"+JSON.stringify(lockDates));
@@ -3312,7 +3312,7 @@ function filter_app_from_appTaken(apps,appsTaken, includeAppTaken)
         specialty :   appsTaken[i].specialty_reserved , 
         duration : appsTaken[i].duration ,
         center_id :appsTaken[i].center_id ,
-        start_time :  appsTaken[i].start_time , 
+        start_time :  appsTaken[i].date  , 
         professional_id : appsTaken[i].professional_id ,
         lock_day : false ,
         app_available : false ,
@@ -3335,7 +3335,7 @@ function filter_app_from_appTaken(apps,appsTaken, includeAppTaken)
        }
 
        //NOW Look for this APP and remove from Available list
-      let matchAPP = apps.findIndex( (element) => element.start_time.substring(0,4) === appointment_slot.start_time.substring(0,4) );
+      let matchAPP = apps.findIndex( (element) => new Date(element.start_time).getTime()  === new Date(appointment_slot.start_time).getTime() );
       if (matchAPP != -1 )
       {
       console.log ("MATCH To be removed from APPS available list:  "+matchAPP+" apps:"+JSON.stringify(apps[matchAPP]) )
