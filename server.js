@@ -3263,7 +3263,7 @@ function calendar_cutter(calendar, fromDate ,endDate ,lockDates, remove_lock_day
               //time_start_set.setUTCHours(cal_hours[t].getHours,cal_hours[t].getMinutes, 0 )
               var appointment_slot = {
                 calendar_id : calendar.id , 
-                date : cal_days[d] ,
+                date : time_start_set ,
                 specialty : calendar.specialty1 , 
                 duration : calendar.duration ,
                // professional_id : calendars[i].professional_id , 
