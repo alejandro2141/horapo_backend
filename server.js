@@ -3175,7 +3175,6 @@ function calendar_cutter(calendar, fromDate ,endDate ,lockDates, remove_lock_day
     if (calendar.saturday)  { cal_day_active.push(6) }
    
   // CALCULATE DAYS EXIST IN CALENDAR
-
       console.log("------------ DAY Pre Cycle     :"+date_start.toUTCString() );
   for (var d = new Date(date_start); (d <= date_end && d <= new Date(calendar.date_end)  )  ; d.setDate(new Date(d).getDate() + 1)) 
     { 
@@ -3249,22 +3248,20 @@ function calendar_cutter(calendar, fromDate ,endDate ,lockDates, remove_lock_day
       }
         for (let t=0 ; t < cal_hours.length ; t++ )
             {
-             // let time_start_set = new Date (cal_days[d])
+              //let time_start_set = new Date( cal_hours[t] )
+              //first set date
+              let time_start_set = cal_days[d];
+              time_start_set.setUTCHours(0,0,0) 
+              //Get Miliseconds since day start. 
+              //let miliseconds = cal_hours[t].getTime() - cal_hours[t].setUTCHours(0,0,0) 
+              time_start_set.setTime(time_start_set.getTime() + cal_hours[t].getTime() ) 
+             // time_start_set.setUTCHours( cal_hours[t].getUTCHours() ) 
+             // time_start_set.setTime(time_start_set.getTime() + miliseconds)  
               
-              let time_start_set = new Date(cal_days[d])
-              time_start_set.setUTCHours  ( cal_hours[t].getUTCHours()   )
-              time_start_set.setUTCMinutes( cal_hours[t].getUTCMinutes() )
-              time_start_set.setUTCFullYear(  cal_days[d].getUTCFullYear() ) 
-
-              /*
-              let time_start_set = cal_hours[t]
-              time_start_set.setUTCDate(  cal_days[d].getUTCDate() ) 
-              time_start_set.setUTCMonth(  cal_days[d].getUTCMonth() ) 
-              time_start_set.setUTCFullYear(  cal_days[d].getUTCFullYear() ) 
-              */
-
-              //time_start_set.setHours(cal_hours[t].getUTCHours() , cal_hours[t].getUTCMinutes() )
-              //time_start_set.setUTCHours(cal_hours[t].getHours,cal_hours[t].getMinutes, 0 )
+             console.log("********* cal_days[d]     ="+cal_days[d].toUTCString() )
+             console.log("********* cal_hours[t]    ="+cal_hours[t].toUTCString() )
+             console.log("********* time_start_set  ="+time_start_set.toUTCString() )
+           
               var appointment_slot = {
                 calendar_id : calendar.id , 
                 date : time_start_set ,
