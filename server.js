@@ -2664,7 +2664,7 @@ async function professional_get_appointments_from_calendars(prof_id, date_start,
  
   // 3.- GET Lock Dates TODO PROBLEM TO ISO STRING
   let lockDates = await get_professional_lock_days(prof_id);
-  lockDates = lockDates.map(lockDates => (new Date(lockDates.date).toISOString().split('T')[0] ) ) ;
+  lockDates = lockDates.map(lockDates => (new Date(lockDates.date) )) ;
   console.log("getLockDays:"+JSON.stringify(lockDates));
 
   // 4.- GET CENTERS
@@ -3184,8 +3184,7 @@ function calendar_cutter(calendar, fromDate ,endDate ,lockDates, remove_lock_day
       if(cal_day_active.includes( d.getUTCDay()) )
       {
         cal_days.push(new Date(d))
-      }
-            
+      }   
     }
     
    /*
@@ -3232,13 +3231,15 @@ function calendar_cutter(calendar, fromDate ,endDate ,lockDates, remove_lock_day
       })
     }
     console.log("---------- Calendar days After = "+cal_days );
+    console.log("---------- Calendar Days Block = "+lockDates );
     console.log("---------- Calendar days NO BLOCK = "+cal_days_noBlock);
 
     console.log("------------cal_days = "+cal_days);
     let lock_day=false ; 
     for (let d=0 ; d < cal_days.length ; d++ )
     {  
-      if ( lockDates.includes(cal_days[d]) )
+      /*
+      if ( lockDates.includes( cal_days[d] ) )
       {
       lock_day=true ; 
       }
@@ -3246,6 +3247,19 @@ function calendar_cutter(calendar, fromDate ,endDate ,lockDates, remove_lock_day
       {
       lock_day=false ; 
       }
+      */
+      const lock_date_found = lockDates.find(element => element.getTime() === cal_days[d].getTime()  );
+      if (lock_date_found != null )
+        {
+        lock_day=true ; 
+        }
+      else
+        {
+        lock_day=false ; 
+        }
+      
+
+
         for (let t=0 ; t < cal_hours.length ; t++ )
             {
               //let time_start_set = new Date( cal_hours[t] )
