@@ -2656,13 +2656,15 @@ async function professional_get_appointments_from_calendars(prof_id, date_start,
 
   // 2.- get Professional Appointment
       //first set day end
-    let date_end = new Date(date_start)
-    date_end.setDate(date_end.getDate()+1)
+      let aux_date_start = new Date(date_start)
+      aux_date_start.setHours(0,0,0,0)
+      let aux_date_end = new Date( aux_date_start.getTime()  + (1000*60*60*24) )
+   // date_end.setDate(date_end.getDate()+1)
 
-  let appointments_reserved = await get_professional_appointments_by_date( prof_id , date_start , date_end.toISOString())
+  let appointments_reserved = await get_professional_appointments_by_date( prof_id , aux_date_start , aux_date_end)
   console.log("++++++++++++++  APP RESERVED : OUTPUT "+JSON.stringify(appointments_reserved));
  
-  // 3.- GET Lock Dates TODO PROBLEM TO ISO STRING
+  // 3.- GET Lock Dates 
   let lockDates = await get_professional_lock_days(prof_id);
   lockDates = lockDates.map(lockDates => (new Date(lockDates.date) )) ;
   console.log("getLockDays:"+JSON.stringify(lockDates));
@@ -2685,7 +2687,8 @@ async function professional_get_appointments_from_calendars(prof_id, date_start,
   for (let i = 0; i < calendars_filtered.length; i++) {
     app_calendars = app_calendars.concat( calendar_cutter(calendars_filtered[i],date_start, date_start , lockDates, remove_lock_days )) 
     }
-
+  
+  // 5.- FILTER APPs list from APPS TAKEN
   let app_calendar_filtered = filter_app_from_appTaken(app_calendars,appointments_reserved, true )
 
   //app_calendar_filtered.sort(function(b, a){ return (new Date('Thu, 01 Jan 1970 '+b.start_time) - new Date('Thu, 01 Jan 1970 '+a.start_time )) } ) 
@@ -3109,11 +3112,14 @@ async function get_professional_appointments_by_date(prof_id ,date_start ,date_e
   const { Client } = require('pg')
   const client = new Client(conn_data)
   await client.connect()  
+   
   //END IF LOCATION
   //const sql_calendars  = "SELECT * FROM professional_calendar WHERE id = 139 AND date_start <='2022-06-02' AND date_end >= '2022-06-01' AND  active = true AND deleted_professional = false AND status = 1  " ;  
 
   //const sql_calendars  = "SELECT * FROM appointment WHERE professional_id = "+prof_id+"  AND date >='"+date_start+"'  AND date <='"+date_end+"' AND  app_available = false " ; 
-  const sql_calendars  = "SELECT * FROM appointment WHERE professional_id = "+prof_id+"  AND date >='"+date_start+"' AND date <='"+date_end+"' AND  app_available = false " ; 
+  let aux_date_start = new Date(date_start).toISOString()
+  let aux_date_end = new Date(date_end).toISOString()
+  const sql_calendars  = "SELECT * FROM appointment WHERE professional_id = "+prof_id+"  AND date >='"+aux_date_start+"' AND date <='"+aux_date_end+"' AND  app_available = false " ; 
   console.log("get_professional_appointments_by_date  SQL:"+sql_calendars) 
   
   const res = await client.query(sql_calendars) 
@@ -3161,9 +3167,6 @@ function calendar_cutter(calendar, fromDate ,endDate ,lockDates, remove_lock_day
     {
       date_end = new Date(endDate)
     }
-  //NOTE IMPORTANT
-  //I SEE BACKEND set by default Monday as first day of week, NOT Sunday as documentation.
-  // Not sure why, but i will reflect it in code, in a different  environment it could change  getDay()+1
 
   let cal_day_active = [] ;
     if (calendar.sunday)    { cal_day_active.push(0) }   
@@ -3174,54 +3177,41 @@ function calendar_cutter(calendar, fromDate ,endDate ,lockDates, remove_lock_day
     if (calendar.friday)    { cal_day_active.push(5) }
     if (calendar.saturday)  { cal_day_active.push(6) }
    
-  // CALCULATE DAYS EXIST IN CALENDAR
-      console.log("------------ DAY Pre Cycle     :"+date_start.toUTCString() );
-  for (var d = new Date(date_start); (d <= date_end && d <= new Date(calendar.date_end)  )  ; d.setDate(new Date(d).getDate() + 1)) 
+    // **************************
+    // ****** CUTTER DAYS ******
+    // **************************
+    console.log("DAY CUTTER :" );
+    for (var d = new Date(date_start); (d <= date_end && d <= new Date(calendar.date_end)  )  ; d.setDate(new Date(d).getDate() + 1)) 
     { 
-      console.log("------------ DAY Number:"+d.getUTCDay()   );
-      console.log("------------ DAY       :"+d.toUTCString() );
-      
       if(cal_day_active.includes( d.getUTCDay()) )
       {
         cal_days.push(new Date(d))
       }   
     }
-    
-   /*
-    for (var dat = new Date(date_start); dat <= date_end; dat.setDate(dat.getDate() + 1)) 
-    { 
-      console.log("**************************************************")
-      console.log("*********** DIA CALENDARIO "+dat.toISOString())
-      console.log("**************************************************")
-     
-        cal_days.push(dat.toISOString)
-      
-    } 
-    */
-    
-    // CALCULATE HOURS EXIST IN DAY CALENDAR newDateObj.setTime(oldDateObj.getTime() + (30 * 60 * 1000));
-//    let time_start = new Date('Thu, 01 Jan 1970 '+calendar.start_time ) ;
-//    let time_end = new Date('Thu, 01 Jan 1970 '+calendar.end_time ) ;
+    cal_days.forEach(day => console.log("cal_days:"+day.toUTCString()  ) );
+    //**************************/
 
+
+    // **************************
+    // ****** CUTTER HOURS ******
+    // **************************
+    console.log(" HOUR CUTTER :" );
     let time_start = new Date('Thu, 01 Jan 1970 '+calendar.start_time ) ;
     let time_end = new Date('Thu, 01 Jan 1970 '+calendar.end_time ) ;
-
     for (var t = new Date(time_start); t.getTime() <= ( time_end.getTime() - (calendar.time_between*60*1000)  ); t.setTime(t.getTime() + ((calendar.duration + calendar.time_between)*60*1000) ) ) 
     { 
     //let aux_hour=new String( ((t.getHours()).toString().padStart(2, '0') )+":"+(t.getMinutes().toString().padStart(2, '0')) ) ;
-     //let aux_hour= t.toISOString()  ;
-     cal_hours.push(new Date(t) ) 
+     let aux_hour= new Date(t.getTime())  ;
+     cal_hours.push(aux_hour) 
     }
-    console.log("Calendar Start Time"+calendar.start_time );
-    console.log("Calendar End   Time"+calendar.end_time);
+    cal_hours.forEach(hour => console.log("cal_hours:"+hour.toUTCString()  ) );
+    //********************** */
 
-    console.log("time_start"+time_start );
-    console.log("time_end"+time_end);
-
-    cal_hours.forEach(hour => console.log("++++++++ LISTA CAL HOURS:"+hour.toUTCString()  ) );
-
-   // console.log("LISTA CAL HOURS:"+cal_hours);
- 
+    // *********************************
+    // ****** REMOVE LOCKED DAYS  ******
+    // *********************************
+    console.log("Remove_lock_days ONLY PUBLIC SEARCH :"+remove_lock_days  );
+    lockDates.forEach(date => console.log("Lock_Day:"+date.toUTCString()  ) );
     if (remove_lock_days == true) 
     {
     cal_days.forEach( function filterApp(day) { 
@@ -3230,47 +3220,41 @@ function calendar_cutter(calendar, fromDate ,endDate ,lockDates, remove_lock_day
         cal_days = cal_days_noBlock ;
       })
     }
-    console.log("---------- Calendar days After = "+cal_days );
-    console.log("---------- Calendar Days Block = "+lockDates );
-    console.log("---------- Calendar days NO BLOCK = "+cal_days_noBlock);
+    //********************************** */
+    console.log("After remove lock days:");
+    cal_days.forEach(date => console.log("cal_day:"+date.toUTCString()  ) );
 
-    console.log("------------cal_days = "+cal_days);
+
+
+    // **************************************
+    // ****** CICLE TO BUILD APP LIST  ******
+    // **************************************
     let lock_day=false ; 
     for (let d=0 ; d < cal_days.length ; d++ )
     {  
-      /*
-      if ( lockDates.includes( cal_days[d] ) )
-      {
-      lock_day=true ; 
-      }
-      else
-      {
-      lock_day=false ; 
-      }
-      */
-      const lock_date_found = lockDates.find(element => element.getTime() === cal_days[d].getTime()  );
-      if (lock_date_found != null )
-        {
-        lock_day=true ; 
-        }
-      else
-        {
-        lock_day=false ; 
-        }
+        let aux_date = new Date(cal_days[d])
+        aux_date.setHours(0,0,0,0);
+        
+        const lock_date_found = lockDates.find(element => new Date(element).getTime() === aux_date.getTime()  );
+        console.log("lockDates:"+ lockDates );
+        console.log("day match ?:"+ new Date(cal_days[d]) );
+
+        if (lock_date_found != null )
+        { lock_day=true ; }
+        else
+        {lock_day=false ; }
+
+        console.log("Is a Lock Date ?  :"+ lock_day );
+
       
-
-
         for (let t=0 ; t < cal_hours.length ; t++ )
             {
-              //let time_start_set = new Date( cal_hours[t] )
               //first set date
               let time_start_set = cal_days[d];
               time_start_set.setUTCHours(0,0,0) 
-              //Get Miliseconds since day start. 
-              //let miliseconds = cal_hours[t].getTime() - cal_hours[t].setUTCHours(0,0,0) 
-              time_start_set.setTime(time_start_set.getTime() + cal_hours[t].getTime() ) 
-             // time_start_set.setUTCHours( cal_hours[t].getUTCHours() ) 
-             // time_start_set.setTime(time_start_set.getTime() + miliseconds)  
+              //time_start_set.setTime(time_start_set.getTime() + cal_hours[t].getTime() ) 
+              let time_app_json = new Date(time_start_set.getTime() + cal_hours[t].getTime() )
+              time_app_json.setMilliseconds(0)
               
              console.log("********* cal_days[d]     ="+cal_days[d].toUTCString() )
              console.log("********* cal_hours[t]    ="+cal_hours[t].toUTCString() )
@@ -3278,26 +3262,19 @@ function calendar_cutter(calendar, fromDate ,endDate ,lockDates, remove_lock_day
            
               var appointment_slot = {
                 calendar_id : calendar.id , 
-                date : time_start_set ,
+                date : time_app_json ,
                 specialty : calendar.specialty1 , 
                 duration : calendar.duration ,
-               // professional_id : calendars[i].professional_id , 
                 center_id :calendar.center_id ,
-                //start_time : cal_hours[t] , 
-                start_time : time_start_set  , 
-                /*
-date.setHours(0);
-date.setMinutes(0);
-date.setSeconds(0);
-                */
+                start_time : time_app_json  , 
                 time_between : calendar.time_between ,
                 professional_id : calendar.professional_id ,
                 lock_day :lock_day ,
                 app_available : true ,
                 app_blocked : null , 
-               }
+                }
                cal_appointments.push(appointment_slot) ;
-            }           
+              }           
     } 
 
    cal_appointments.forEach(a => console.log("Appointment :"+JSON.stringify(a) ))
