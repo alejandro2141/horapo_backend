@@ -2517,7 +2517,7 @@ async function get_appointments_available(json)
     let date_end  = new Date(json.date);
     //******************************************** */
     //***** SETTING How many days GET   ***************** */ 
-    date_end.setDate(date_end.getDate() + 6);
+    date_end.setDate(date_end.getDate() + 0);
     // *********************************************************************
     // 6 - 2  CUTTER CALENDAR   
     //**********************************************************************
@@ -2563,7 +2563,7 @@ async function get_calendars_available_by_specialty(json)
   const { Client } = require('pg')
   const client = new Client(conn_data)
   await client.connect()
-    
+ 
   const sql_calendars  = "SELECT * FROM professional_calendar WHERE specialty1 = "+json.specialty+" AND  active = true AND deleted_professional = false AND status = 1  AND date_start <= '"+json.date+"'  AND date_end >= '"+json.date+"'  " ;  
 
   console.log("PUBLIC get_calendars_available  SQL:"+sql_calendars) 
@@ -3191,6 +3191,8 @@ function calendar_cutter(calendar, fromDate ,endDate ,lockDates, remove_lock_day
   //get days available in calendar
   let date_start = new Date(fromDate); 
   let date_end = new Date(calendar.date_end);
+
+
     if (endDate != null)
     {
       date_end = new Date(endDate)
@@ -3211,7 +3213,7 @@ function calendar_cutter(calendar, fromDate ,endDate ,lockDates, remove_lock_day
     console.log("DAY CUTTER :" );
     for (var d = new Date(date_start); (d <= date_end && d <= new Date(calendar.date_end)  )  ; d.setDate(new Date(d).getDate() + 1)) 
     { 
-      if(cal_day_active.includes( d.getUTCDay()) )
+      if(cal_day_active.includes( d.getDay()) )
       {
         cal_days.push(new Date(d))
       }   
