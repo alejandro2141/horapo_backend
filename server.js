@@ -2498,7 +2498,6 @@ async function get_appointments_available(json)
   console.log("Calendars MATCH Search parameters : "+calendars_ids);
   console.log("Professional IDS in Calendars: "+professional_ids);
   
-
   // *********************************************************************
   // 6.- CYCLE CUTTING CALENDARS FOUND   
   //**********************************************************************
@@ -2675,8 +2674,77 @@ app.route('/professional_get_appointments_day3')
 
   appointments_available.then( v => {  console.log("professional_get_appointments_day3  RESPONSE: "+JSON.stringify(v)) ; return (res.status(200).send(JSON.stringify(v))) } )
 })
+
+// GET APPOINTMENTS New Method
+async function professional_get_appointments_from_calendars(prof_id, date,remove_lock_days )
+{
+  //***** response message *****/
+  let json_response = {
+    appointments : [] ,
+    centers : [] ,
+    calendars : [] ,
+    lock_dates : [] ,
+    error : []
+      }
+  //*****************************************/
+  // 1.- GET Lock Dates
+  //*************************************** */
+  let lockDates = await get_professional_lock_days(prof_id);
+  lockDates = lockDates.map(lockDates => (new Date(lockDates.date) )) ;
+  console.log("LOCK DAYS:"+JSON.stringify(lockDates));
+
+  let aux_date_midnight  = new Date(date)
+  aux_date_midnight.setHours(0,0,0,0)
+
+  const lock_date_found = lockDates.find(element => new Date(element).getTime() === aux_date_midnight.getTime()  );
+      if (lock_date_found != null )
+      {  
+        console.log("LOCK DAY FOUND, SO EXIT: ERROR 1")
+        json_response.error = 1
+        return(json_response); 
+      }
+
+  // ***********************************************************/
+  // 2.- GET PROFESSIONAL CALENDARS AVAILABLE FOR REQUIRED DAY
+  /*************************************************************/
+  let calendars = await get_calendars_available_by_professional_date(prof_id, date) ;
+  console.log("CALENDARS:"+JSON.stringify(calendars));
+  /*********************************************************** */
+  // 3.- GET APPOINTMENTS TAKEN BELONG TO PROFESSIONAL FOR A REQUIRED DAY
+  /************************************************************ */
+      //first set day end
+      let aux_date_start = new Date(date)
+      aux_date_start.setHours(0,0,0,0)
+      let aux_date_end = new Date( aux_date_start.getTime()  + (1000*60*60*24) )
+   // date_end.setDate(date_end.getDate()+1)
+   let appointments_reserved = await get_professional_appointments_by_date( prof_id , aux_date_start , aux_date_end)
+   console.log("RESERVED:"+JSON.stringify(appointments_reserved));
+   
+  /************************************************************ */
+  // 4.- GET CENTERS
+  /************************************************************ */
+  let centers_professional = await get_professional_centers(prof_id);
+  let centers_professional_ids = centers_professional.map(center => center.id ) ;
+
+  /************************************************************ */
+  // 5.- FILTER CALENDARS, JUST MANTAIN CALENDARS BELONG TO A CENTERS IS ACTIVE
+  /************************************************************ */
+  let calendars_filtered =  calendars.filter(cal =>  centers_professional_ids.includes(cal.center_id) ) 
+
+  // 6 - SEND CALENDAR TO CUTTER 
+  let app_calendars = [] ;
+  
+  for (let i = 0; i < calendars_filtered.length; i++) {
+    app_calendars = app_calendars.concat( calendar_cutter_day(calendars_filtered[i],date )) 
+    }
+
+//return(app_calendar_filtered); 
+return(app_calendars); 
+}
+
+
 // CALLED FROM PROFESSIONAL APPOINTMENT VIEW DAY 3 
-async function professional_get_appointments_from_calendars(prof_id, date_start,remove_lock_days )
+async function professional_get_appointments_from_calendars_bkp(prof_id, date_start,remove_lock_days )
 {
   // 1.- get Calendar
   let calendars = await get_calendars_available_by_ProfessionalId(prof_id, date_start) ;
@@ -2700,6 +2768,7 @@ async function professional_get_appointments_from_calendars(prof_id, date_start,
   // 4.- GET CENTERS
   let centers_professional = await get_professional_centers(prof_id);
   let centers_professional_ids = centers_professional.map(center => center.id ) ;
+  
   // 5.- GET CALENDARS
   //let calendars_professional = await get_professional_calendars(prof_id);
   
@@ -3099,6 +3168,24 @@ async function get_professional_centers(id)
   
 }
 
+//GET CALENDARS BY Professional and Date
+async function get_calendars_available_by_professional_date(prof_id,date)
+{
+  const { Client } = require('pg')
+  const client = new Client(conn_data)
+  await client.connect()  
+  //END IF LOCATION
+  //const sql_calendars  = "SELECT * FROM professional_calendar WHERE id = 139 AND date_start <='2022-06-02' AND date_end >= '2022-06-01' AND  active = true AND deleted_professional = false AND status = 1  " ;  
+  const sql_calendars  = "SELECT * FROM professional_calendar WHERE professional_id = "+prof_id+" AND  active = true AND deleted_professional = false AND status = 1  AND date_start <= '"+date+"'  AND date_end >= '"+date+"'  " ;  
+
+  console.log("get_calendar_available_by_ProfessionalId  SQL:"+sql_calendars) 
+  
+  const res = await client.query(sql_calendars) 
+  client.end() 
+  return res.rows ;
+}
+
+
 //GET CALENDARS BY Professional ID
 async function get_calendars_available_by_ProfessionalId(prof_id,date)
 {
@@ -3115,6 +3202,8 @@ async function get_calendars_available_by_ProfessionalId(prof_id,date)
   client.end() 
   return res.rows ;
 }
+
+
 
 //GET CALENDARS BY ID
 async function get_calendar_available_by_id(cal_id)
@@ -3172,12 +3261,92 @@ async function get_professional_lock_days(prof_id)
   return res.rows ;
 }
 
-
 //******************************************************* */
+//*******************  NEW CUTTER *********************** */
 //************** UNIQUE AND IMPORTAN ******************** */
 //**************   CALENDAR CUTTER  ********************* */
 //******************************************************* */
 //let apps = calendar_cutter(calendars[i],json.date, date_end.toISOString() , lockDates, true) ;  
+//******************************************************* */
+function calendar_cutter_day(calendar, date_to_cut)
+{
+  console.log("Calendar Cutter : "+calendar.id);
+  let cal_days = [] ; // ARRAY TO STORE DAYS
+  let cal_hours = [] ; //ARRAY TO STORE TIMES
+  let cal_appointments = [] ; //ARRAY TO STORE TIMES
+  let cal_days_noBlock = []
+ 
+  /***************************** */
+  /*** IF CALENDAR EXIST ******* */
+  /***************************** */
+  if (calendar != null){
+
+  //get days available in calendar
+  let date = new Date(date_to_cut); 
+  date.setHours(0,0,0,0)
+    
+  let cal_day_active = [] ;
+    if (calendar.sunday)    { cal_day_active.push(0) }   
+    if (calendar.monday)    { cal_day_active.push(1) }
+    if (calendar.tuesday)   { cal_day_active.push(2) }
+    if (calendar.wednesday) { cal_day_active.push(3) }
+    if (calendar.thursday)  { cal_day_active.push(4) }
+    if (calendar.friday)    { cal_day_active.push(5) }
+    if (calendar.saturday)  { cal_day_active.push(6) }
+   
+    // **************************
+    // *** IF DAY IS ACTIVE ******
+    // **************************
+      if(cal_day_active.includes( date.getDay()) )
+      {
+    // **************************
+    // ****** CUTTER HOURS ******
+    // **************************
+     console.log("Calendar Start Time: "+calendar.start_time)
+     console.log("Calendar End   Time: "+calendar.end_time)
+
+      let string_start_date = date.toString().slice(0,16)+" "+calendar.start_time
+      let string_end_date = date.toString().slice(0,16)+" "+calendar.end_time
+
+      let time_start = new Date(string_start_date) ;
+      let time_end = new Date(string_end_date ) ;
+
+      console.log("time_start: "+ time_start) 
+      console.log("time_end: "+ time_end) 
+
+      for (var t = new Date(time_start); t.getTime() <= ( time_end.getTime() - (calendar.time_between*60*1000)  ); t.setTime(t.getTime() + ((calendar.duration + calendar.time_between)*60*1000) ) ) 
+      { 
+            var appointment_slot = {
+              calendar_id : calendar.id , 
+              date : new Date(t.getTime()) ,
+              specialty : calendar.specialty1 , 
+              duration : calendar.duration ,
+              center_id :calendar.center_id ,
+              start_time : new Date(t.getTime())  , 
+              time_between : calendar.time_between ,
+              professional_id : calendar.professional_id ,
+              //lock_day :lock_day ,
+              app_available : true ,
+              app_blocked : null , 
+              }
+              cal_appointments.push(appointment_slot)
+      }
+      console.log("Appointments: "+cal_appointments ) 
+      
+      var appointments_json = {
+            date :  date ,
+            appointments : cal_appointments 
+             }
+      }//end if is active
+    
+       return (appointments_json) ;
+      }
+} 
+
+
+//******************************************************* */
+//************** UNIQUE AND IMPORTAN ******************** */
+//**************   CALENDAR CUTTER  ********************* */
 //******************************************************* */
 function calendar_cutter(calendar, fromDate ,endDate ,lockDates, remove_lock_days )
 {
