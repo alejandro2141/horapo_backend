@@ -2680,7 +2680,7 @@ async function professional_get_appointments_from_calendars(prof_id, date,remove
 {
   //***** response message *****/
   let json_response = {
-    appointments : [] ,
+    appointments_list : [] ,
     centers : [] ,
     calendars : [] ,
     lock_dates : [] ,
@@ -2709,6 +2709,10 @@ async function professional_get_appointments_from_calendars(prof_id, date,remove
   /*************************************************************/
   let calendars = await get_calendars_available_by_professional_date(prof_id, date) ;
   console.log("CALENDARS:"+JSON.stringify(calendars));
+  json_response.calendars = calendars 
+
+
+
   /*********************************************************** */
   // 3.- GET APPOINTMENTS TAKEN BELONG TO PROFESSIONAL FOR A REQUIRED DAY
   /************************************************************ */
@@ -2725,7 +2729,7 @@ async function professional_get_appointments_from_calendars(prof_id, date,remove
   /************************************************************ */
   let centers_professional = await get_professional_centers(prof_id);
   let centers_professional_ids = centers_professional.map(center => center.id ) ;
-
+  json_response.centers =  centers_professional
   /************************************************************ */
   // 5.- FILTER CALENDARS, JUST MANTAIN CALENDARS BELONG TO A CENTERS IS ACTIVE
   /************************************************************ */
@@ -2738,8 +2742,12 @@ async function professional_get_appointments_from_calendars(prof_id, date,remove
     app_calendars = app_calendars.concat( calendar_cutter_day(calendars_filtered[i],date )) 
     }
 
-//return(app_calendar_filtered); 
-return(app_calendars); 
+  // 7.- INCLUDE APP TAKEN per day 
+  //let app_calendar_filtered = filter_app_from_appTaken(app_calendars[0].appointments , appointments_reserved, true )
+
+
+  json_response.appointments_list = app_calendars
+  return(json_response); 
 }
 
 
@@ -3482,9 +3490,9 @@ function calendar_cutter(calendar, fromDate ,endDate ,lockDates, remove_lock_day
 } 
 
 // filter app from app taken
-function filter_app_from_appTaken(apps,appsTaken, includeAppTaken)
+function filter_app_from_appTaken(apps , appsTaken, includeAppTaken)
 {
-  console.log("FILTER FUNCTION APPS:"+JSON.stringify(apps));
+  console.log("FILTER FUNCTION APPS:"+JSON.stringify(apps ));
   console.log("FILTER FUNCTION APPS TAKEN:"+JSON.stringify(appsTaken));
  
   let apps_taken_array = [] ;  
@@ -3534,7 +3542,7 @@ function filter_app_from_appTaken(apps,appsTaken, includeAppTaken)
 
   let apps_taken_plus_available = apps.concat(apps_taken_array);
 
-  console.log("APPS RETURN "+apps_taken_plus_available);
+  console.log("APPS RETURN "+JSON.stringify(apps_taken_plus_available));
   return (apps_taken_plus_available)
 
 }
