@@ -2711,8 +2711,6 @@ async function professional_get_appointments_from_calendars(prof_id, date,remove
   console.log("CALENDARS:"+JSON.stringify(calendars));
   json_response.calendars = calendars 
 
-
-
   /*********************************************************** */
   // 3.- GET APPOINTMENTS TAKEN BELONG TO PROFESSIONAL FOR A REQUIRED DAY
   /************************************************************ */
@@ -2741,12 +2739,17 @@ async function professional_get_appointments_from_calendars(prof_id, date,remove
   for (let i = 0; i < calendars_filtered.length; i++) {
     app_calendars = app_calendars.concat( calendar_cutter_day(calendars_filtered[i],date )) 
     }
-
   // 7.- INCLUDE APP TAKEN per day 
-  //let app_calendar_filtered = filter_app_from_appTaken(app_calendars[0].appointments , appointments_reserved, true )
-
+   let app_calendar_filtered = filter_app_from_appTaken(app_calendars , appointments_reserved, true )
+   
+   let appointments  = {
+            date: aux_date_midnight , 
+            appointments :  app_calendar_filtered
+            }
 
   json_response.appointments_list = app_calendars
+  json_response.appointments = appointments   
+
   return(json_response); 
 }
 
@@ -3342,7 +3345,6 @@ function calendar_cutter_day(calendar, date_to_cut)
       console.log("Appointments: "+cal_appointments ) 
       
       var appointments_json = {
-            date :  date ,
             appointments : cal_appointments 
              }
       }//end if is active
