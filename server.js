@@ -2681,7 +2681,12 @@ async function professional_get_appointments_from_calendars(prof_id, date,remove
 {
   //***** response message *****/
   let json_response = {
-    appointments_list : [] ,
+    appointments_list : { 
+                  appointments  : {
+                        date: null , 
+                        appointments :  null
+                            } ,
+                        },
     centers : [] ,
     calendars : [] ,
     specialties : [],
@@ -2689,8 +2694,42 @@ async function professional_get_appointments_from_calendars(prof_id, date,remove
     error : [],
     lock_date: false,
       }
+
+  /*********************************************************** */
+  // 1.- GET APPOINTMENTS TAKEN BELONG TO PROFESSIONAL FOR A REQUIRED DAY
+  /************************************************************ */
+      //first set day end
+      let aux_date_start = new Date(date)
+      aux_date_start.setHours(0,0,0,0)
+      let aux_date_end = new Date( aux_date_start.getTime()  + (1000*60*60*24) )
+   // date_end.setDate(date_end.getDate()+1)
+   let appointments_reserved = await get_professional_appointments_by_date( prof_id , aux_date_start , aux_date_end)
+   console.log("RESERVED:"+JSON.stringify(appointments_reserved));
+   
+  // ***********************************************************/
+  // 2.- GET PROFESSIONAL CALENDARS AVAILABLE FOR REQUIRED DAY
+  /*************************************************************/
+  let calendars = await get_calendars_available_by_professional_date(prof_id, date) ;
+  console.log("CALENDARS:"+JSON.stringify(calendars));
+  json_response.calendars = calendars 
+
+  //************************************************************ */
+  // 3.- GET CENTERS
+  /************************************************************ */
+  let centers_professional = await get_professional_centers(prof_id);
+  let centers_professional_ids = centers_professional.map(center => center.id ) ;
+  json_response.centers =  centers_professional
+  /************************************************************ */
+  // 4.- FILTER CALENDARS, JUST MANTAIN CALENDARS BELONG TO A CENTERS IS ACTIVE
+  /************************************************************ */
+  let calendars_filtered =  calendars.filter(cal =>  centers_professional_ids.includes(cal.center_id) ) 
+
+   // 5.- INCLUDE SPECIALTY LIST 
+   let specialties = await get_professional_specialties(prof_id)
+   json_response.specialties = specialties 
+
   //*****************************************/
-  // 1.- GET Lock Dates
+  // 6.- GET Lock Dates
   //*************************************** */
   let lockDates = await get_professional_lock_days(prof_id);
   lockDates = lockDates.map(lockDates => (new Date(lockDates.date) )) ;
@@ -2702,51 +2741,27 @@ async function professional_get_appointments_from_calendars(prof_id, date,remove
   const lock_date_found = lockDates.find(element => new Date(element).getTime() === aux_date_midnight.getTime()  );
       if (lock_date_found != null )
       {  
+        //sort to display properly
+        appointments_reserved = appointments_reserved.sort(function(b, a){ return ( new Date(b.start_time).getTime() - new Date(a.start_time ).getTime() ) } ) 
+  
         console.log("LOCK DAY FOUND, SO EXIT: ERROR 1")
+        json_response.appointments_list.date  = aux_date_midnight
+        json_response.appointments_list.appointments  = appointments_reserved
         json_response.error = 1
         json_response.lock_date = true 
         return(json_response); 
       }
 
-  // ***********************************************************/
-  // 2.- GET PROFESSIONAL CALENDARS AVAILABLE FOR REQUIRED DAY
-  /*************************************************************/
-  let calendars = await get_calendars_available_by_professional_date(prof_id, date) ;
-  console.log("CALENDARS:"+JSON.stringify(calendars));
-  json_response.calendars = calendars 
-
-  /*********************************************************** */
-  // 3.- GET APPOINTMENTS TAKEN BELONG TO PROFESSIONAL FOR A REQUIRED DAY
-  /************************************************************ */
-      //first set day end
-      let aux_date_start = new Date(date)
-      aux_date_start.setHours(0,0,0,0)
-      let aux_date_end = new Date( aux_date_start.getTime()  + (1000*60*60*24) )
-   // date_end.setDate(date_end.getDate()+1)
-   let appointments_reserved = await get_professional_appointments_by_date( prof_id , aux_date_start , aux_date_end)
-   console.log("RESERVED:"+JSON.stringify(appointments_reserved));
-   
-  /************************************************************ */
-  // 4.- GET CENTERS
-  /************************************************************ */
-  let centers_professional = await get_professional_centers(prof_id);
-  let centers_professional_ids = centers_professional.map(center => center.id ) ;
-  json_response.centers =  centers_professional
-  /************************************************************ */
-  // 5.- FILTER CALENDARS, JUST MANTAIN CALENDARS BELONG TO A CENTERS IS ACTIVE
-  /************************************************************ */
-  let calendars_filtered =  calendars.filter(cal =>  centers_professional_ids.includes(cal.center_id) ) 
-
-  // 6 - SEND CALENDAR TO CUTTER 
+  // 7 - SEND CALENDAR TO CUTTER 
   let app_day_calendar = [] ;
   
   for (let i = 0; i < calendars_filtered.length; i++) {
    // app_calendars = app_calendars.concat( calendar_cutter_day(calendars_filtered[i],date )) 
-      // 6.1 CUTTER
+      // 7.1 CUTTER
     let app_calendars = calendar_cutter_day(calendars_filtered[i],date )
     app_day_calendar = app_day_calendar.concat(app_calendars)
     //app_day_calendar = app_day_calendar.concat(app_calendars)
-      // 6.2 CUTER FILTER APPOINTMENTS FROM TAKEN 
+      // 7.2 CUTER FILTER APPOINTMENTS FROM TAKEN 
     //let app_calendar_filtered = filter_app_from_appTaken(app_calendars , appointments_reserved, true )
     /*
       let json_day_apps = {
@@ -2757,19 +2772,19 @@ async function professional_get_appointments_from_calendars(prof_id, date,remove
     app_day_calendar = app_day_calendar.concat(json_day_apps)
     */
   }
-  // 7.- INCLUDE APP TAKEN per day 
+  // 8.- INCLUDE APP TAKEN per day 
    let app_calendar_filtered = filter_app_from_appTaken(app_day_calendar , appointments_reserved, true )
    
-  // 8.- INCLUDE SPECIALTY LIST 
-   let specialties = await get_professional_specialties(prof_id)
-  json_response.specialties = specialties 
-
+   app_calendar_filtered = app_calendar_filtered.sort(function(b, a){ return ( new Date(b.start_time).getTime() - new Date(a.start_time ).getTime() ) } ) 
+  
+            /*
    let appointments  = {
             date: aux_date_midnight , 
             appointments :  app_calendar_filtered
             }
-
-  json_response.appointments_list = appointments
+            */
+  json_response.appointments_list.date  = aux_date_midnight
+  json_response.appointments_list.appointments = app_calendar_filtered
  
   return(json_response); 
 }
