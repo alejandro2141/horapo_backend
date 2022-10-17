@@ -167,7 +167,7 @@ app.route('/get_public_token')
     res.status(200).send(JSON.stringify(json_response) );
 })
 
-// GET ASSISTANTS
+/*
 app.route('/get_professional_specialty')
 .post(function (req, res) {
  
@@ -185,7 +185,7 @@ const client = new Client({
 
 client.connect()
 // ****** Run query to bring appointment
-const sql  = "SELECT * from  specialty where id IN  (SELECT specialty_id FROM professional_specialty WHERE professional_id="+req.body. professional_id+") ;" ;
+const sql  = "SELECT * from  specialty where id IN  (SELECT specialty_id FROM professional_specialty WHERE professional_id="+req.body.professional_id+") ;" ;
 console.log('get_professional_specialty: SQL GET PROFESSIONAL SPECIALTY = '+sql ) ;
 const resultado = client.query(sql, (err, result) => {
 
@@ -199,6 +199,7 @@ const resultado = client.query(sql, (err, result) => {
 })
 
 })
+*/
 
 // SAVE APPOINTMENT
 app.route('/save_appointment')
@@ -2683,6 +2684,7 @@ async function professional_get_appointments_from_calendars(prof_id, date,remove
     appointments_list : [] ,
     centers : [] ,
     calendars : [] ,
+    specialties : [],
     lock_dates : [] ,
     error : [],
     lock_date: false,
@@ -2758,6 +2760,10 @@ async function professional_get_appointments_from_calendars(prof_id, date,remove
   // 7.- INCLUDE APP TAKEN per day 
    let app_calendar_filtered = filter_app_from_appTaken(app_day_calendar , appointments_reserved, true )
    
+  // 8.- INCLUDE SPECIALTY LIST 
+   let specialties = await get_professional_specialties(prof_id)
+  json_response.specialties = specialties 
+
    let appointments  = {
             date: aux_date_midnight , 
             appointments :  app_calendar_filtered
@@ -2767,7 +2773,6 @@ async function professional_get_appointments_from_calendars(prof_id, date,remove
  
   return(json_response); 
 }
-
 
 // CALLED FROM PROFESSIONAL APPOINTMENT VIEW DAY 3 
 async function professional_get_appointments_from_calendars_bkp(prof_id, date_start,remove_lock_days )
@@ -2840,6 +2845,36 @@ async function professional_get_appointments_from_calendars_bkp(prof_id, date_st
 //******************************************************************** */
 //***************       TOOLS Servicios   **************************** */
 //******************************************************************** */
+
+// PROFESSIONAL GET SPECIALT 
+app.route('/get_professional_specialty')
+.post(function (req, res) {
+ 
+    console.log('get_professional_specialty:', req.body );
+ 
+// ****** Connect to postgre
+// ****** Connect to postgre
+const { Client } = require('pg')
+const client = new Client(conn_data)
+client.connect()
+
+
+// ****** Run query to bring appointment
+const sql  = "SELECT * from  specialty where id IN  (SELECT specialty_id FROM professional_specialty WHERE professional_id="+req.body.professional_id+") ;" ;
+console.log('get_professional_specialty: SQL GET PROFESSIONAL SPECIALTY = '+sql ) ;
+const resultado = client.query(sql, (err, result) => {
+
+  if (err) {
+      console.log('get_professional_specialty ERR:'+err ) ;
+    }
+
+  console.log('get_professional_specialty : '+JSON.stringify(result) ) ;
+  res.status(200).send(JSON.stringify(result) );
+  client.end()
+})
+
+})
+
 
 // PROFESSIONAL TAKE APPOINTMENT
 app.route('/professional_take_appointment')
@@ -2939,7 +2974,6 @@ const resultado = client.query(sql, (err, result) => {
 })
 
 })
-
 
 //PROFESSIONAL UPDATE CENTER
 app.route('/professional_update_center')
@@ -3121,6 +3155,29 @@ console.log('professional_lock_day SQL:'+sql ) ;
 //******************************************************************** */
 //***************    Funciones        ******************************** */
 //******************************************************************** */
+
+//GET PROFESSIONAL Calendars
+async function get_professional_specialties(prof_id)
+{
+  const { Client } = require('pg')
+  const client = new Client(conn_data)
+  await client.connect()
+  //console.log("ids:"+ids+" dates:"+dates)
+
+  const sql_calendars  =  "SELECT * from  specialty where id IN  (SELECT specialty_id FROM professional_specialty WHERE professional_id="+prof_id+") ;" ;
+
+
+  //const sql_calendars  = "SELECT * FROM professional_calendar WHERE professional_id ='"+prof_id+"' AND  deleted_professional = false  ORDER BY id DESC  " ;
+
+ // const sql_apps_taken  = "SELECT * FROM appointment WHERE date IN ("+aux_dates+")  and professional_id  IN ("+ids+") ;";
+  console.log("SQL QUERY: "+sql_calendars)
+  const res = await client.query(sql_calendars)
+  client.end() 
+  console.log("get_professional_specialties Return: "+JSON.stringify(res.rows));
+  return res.rows;
+}
+
+
 async function professional_block_appointments(apps_list)
 {  
   console.log("Blocking appointment:"+JSON.stringify(apps_list))
