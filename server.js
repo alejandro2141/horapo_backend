@@ -2374,6 +2374,45 @@ const resultado = client.query(sql, (err, result) => {
 })
 
 //***************************************************** */
+//************* PUBLIC SEARCH   *********************** */
+//******* PUBLIC APPOINTMENTS IN CALENDAR ID ********** */
+//***************************************************** */
+//PATIENT GET APPOINTMENTS  SEARCH BY CALENDAR
+app.route('/patient_get_appointments_calendar')
+.post(function (req, res) {
+ 
+    console.log('patient_get_appointments_calendar : INPUT : ', req.body );
+    //get Appointments and remove the lock days from the response adding true to last parameter. 
+    let calendars = [req.body.cal_id]
+    let appointments_available = get_appointments_available_from_calendar(calendars,req.body.date,true  ) ;
+
+    appointments_available.then( v => {  console.log("patient_get_appointments_calendar  RESPONSE: "+JSON.stringify(v)) ; return (res.status(200).send(JSON.stringify(v))) } )
+})
+// CALLED FROM PUBLIC CALENDAR VIEWS
+async function get_appointments_available_from_calendar(cal_ids, date_start,remove_lock_days )
+{
+  // 1.- get Calendar
+  let calendars = await get_calendar_available_by_id(cal_ids) ;
+  console.log("patient_get_appointments_calendars : INPUT"+JSON.stringify(calendars));
+  // 2.- get Professional Appointment
+  // 
+  let appointments_reserved = await get_professional_appointments_by_date( calendars[0].professional_id , date_start , '2023-06-04')
+  console.log("get_professional_appointments_by_date : OUTPUT "+JSON.stringify(appointments_reserved));
+ 
+  // 3.- GET Lock Dates
+  let lockDates = await get_professional_lock_days(calendars[0].professional_id);
+  lockDates = lockDates.map(lockDates => (new Date(lockDates.date) )) ;
+  console.log("getLockDays:"+JSON.stringify(lockDates));
+
+  // 4.- cutter calendar from date, remove_lock_days = true
+  // calendar_cutter(calendar, fromDate ,endDate ,lockDates, remove_lock_days )
+  let app_calendar = calendar_cutter(calendars[0],date_start, null , lockDates, remove_lock_days );
+  let app_calendar_filtered = filter_app_from_appTaken(app_calendar,appointments_reserved)
+
+  return(app_calendar_filtered); 
+}
+
+//***************************************************** */
 //****************    VIEW       ********************** */
 //********** GET DATA FOR PROFESSIONAL CALENDARS VIEW * */
 //***************************************************** */
@@ -2415,10 +2454,163 @@ app.route('/patient_get_appointments_day2')
  
     console.log('patient_get_appointments_day2 : INPUT : ', req.body );
     //res.status(200).send(JSON.stringify( get_appointments_available(req.body)));
-    let resp_app_available = get_appointments_available(req.body);
+    let resp_app_available = get_public_appointments_available(req.body);
     resp_app_available.then( v => {  console.log("patient_get_appointments_day2  RESPONSE: "+JSON.stringify(v)) ; return (res.status(200).send(JSON.stringify(v))) } )
 })
 
+async function get_public_appointments_available(json)
+{
+  //************************************* */
+  let is_lock_day=false ; 
+  let calendars_ids = [] ;
+  let professional_ids = [] ;
+  let date =new Date(json.date) ;
+  date.setHours(0,0,0,0)
+  let centers_ids = [] ;
+  let centers = [] ;
+
+  //*********** response message *********/
+    let json_response = {
+          appointments_list : { 
+                        appointments  : {
+                              date: null , 
+                              appointments :  null
+                                  } ,
+                              },
+          centers : [] ,
+          calendars : [] ,
+          specialties : [],
+          lock_dates : [] ,
+          error : [],
+          lock_date: false,
+          }
+   //*********************************** */   
+
+  // **************************************************
+  // 1.-  GET CALENDAR AVAILABLE BY DATE & SPECIALTY  
+  // **************************************************
+   let calendars = await get_calendars_available_by_date_specialty(date.toISOString(),json.specialty)
+   if (calendars.length <= 0 )
+   {
+     return []
+   }
+   //extract Calendard Ids
+   calendars_ids = calendars.map(val => val.id)
+   console.log("calendars_ids: "+calendars_ids);
+   //extract Professional_Ids
+   professional_ids = calendars.map(val => val.professional_id)
+   console.log("Professional_ids: "+professional_ids);
+   //extract Center_Ids
+   centers_ids = calendars.map(val => val.center_id)
+
+  // *********************************************************************
+  // 2.-  GET CENTERS belong to professional IDs obtained from calendars  
+  // *********************************************************************
+  centers = await get_public_centers(centers_ids)
+  let centers_ids_filtered = centers.map(val => val.id)
+  console.log("Centers : "+JSON.stringify(centers))
+  
+  // *********************************************************************
+  // 3.- REMOVE CALENDARS LINKED TO DELETED CENTERS
+  //**********************************************************************
+  //filter CALENDARS have only active centers.
+  calendars =  calendars.filter(cal =>  centers_ids_filtered.includes(cal.center_id) ) 
+  //**********************************************************************
+  
+  // *********************************************************************
+  // 4.- REMOVE CALENDARS NOT MATCH with Search Parameters 
+  //**********************************************************************
+  // remove CALENDARS not match with Location parameter search
+  if ( json.location != null )
+  {
+    console.log("Location filter TRUE "+json.location);
+    //Reduce centers list based in LOCATION
+    centers = centers.filter(obj => 
+        (json.location == obj.comuna || json.location == obj.home_comuna1 || json.location == obj.home_comuna2 || json.location == obj.home_comuna3 || json.location == obj.home_comuna4 || json.location == obj.home_comuna5 || json.location == obj.home_comuna6  )  );
+    //regenerate center ids list
+    centers_ids = centers.map(val => val.id)
+    console.log("Centers IDS Filtered by LOCATION : "+JSON.stringify(centers_ids))  
+    calendars = calendars.filter( calendar  =>  centers_ids.includes(calendar.center_id) )
+    console.log("calendars Filtered by LOCATION: "+JSON.stringify(calendars));
+    calendars_ids = calendars.map(val => val.id)
+    console.log("calendars_ids Filtered by LOCATION: "+calendars_ids);
+    professional_ids = calendars.map(val => val.professional_id)
+  }
+  console.log("calendars Filtered by LOCATION LATER: "+JSON.stringify(calendars));
+  //*************************************** */
+
+  // *********************************************************************
+  // 5.- REMOVE DUPLICATED PROFESSIONAL IDS  
+  //**********************************************************************
+  professional_ids = professional_ids.sort().filter(function(item, pos, ary) {
+    return !pos || item != ary[pos - 1];
+    });
+  console.log("Professional_ids NO DUP: "+professional_ids);
+  //***********************************************************************
+  //SUMMARY
+  console.log("Public Search :"+JSON.stringify(json));
+  console.log("Calendars MATCH Search parameters : "+calendars_ids);
+  console.log("Professional IDS in Calendars: "+professional_ids);
+  
+  // *********************************************************************
+  // 6.- CYCLE CUTTING CALENDARS FOUND   
+  //**********************************************************************
+  let app_calendars = [] 
+//  let lockDates = [] 
+  let appointments_reserved = [] 
+  let app_calendar_filtered = []
+
+  for (let i = 0; i < calendars.length; i++) {
+    // *********************************************************************
+    // 6 - 1  GET PROFESSIONAL LOCK DAYS    
+    //**********************************************************************
+      let lockDates_aux = await is_professional_lock_day(calendars[i].professional_id , date.toISOString()  );
+      if (lockDates_aux  != null && lockDates_aux.length >= 1 )
+      {
+        console.log("IS A DAY BLOCK !!! Calendar:"+calendars[i].id+" Skip Calendar");
+        continue;
+      }
+    
+    let app_calendars = calendar_cutter_day(calendars[i] ,date )
+    app_calendar_filtered = app_calendar_filtered.concat(app_calendars)
+    }
+
+    //END 6 CYCLE
+    // *********************************************************************
+    // 7 - SORT BY DATE TIME     
+    //**********************************************************************  
+    app_calendar_filtered.sort((a, b) => a.start_time - b.start_time) 
+    console.log("PUBLIC SEARCH Response DATE:"+date+"  APPOINTMENTS:"+JSON.stringify(app_calendar_filtered));
+    
+    json_response.appointments_list.date = date
+    json_response.appointments_list.appointments = app_calendar_filtered
+    json_response.centers = centers
+    json_response.calendars = calendars
+   //json_response.specialties = 
+
+    /*
+    let json_response = {
+      appointments_list : { 
+                    appointments  : {
+                          date: null , 
+                          appointments :  null
+                              } ,
+                          },
+      centers : [] ,
+      calendars : [] ,
+      specialties : [],
+      lock_dates : [] ,
+      error : [],
+      lock_date: false,
+      }
+    */
+      
+    //return  app_calendar_filtered ;
+    return  json_response ;
+}
+
+
+//***OLD FUNCTION */
 async function get_appointments_available(json)
 {
   let calendars_ids = [] ;
@@ -2557,7 +2749,24 @@ async function get_appointments_available(json)
   return  json_return ;
 }
 
+
 // 1.-  PUBLIC GET CALENDARS 
+async function get_calendars_available_by_date_specialty(date,specialty)
+{
+  const { Client } = require('pg')
+  const client = new Client(conn_data)
+  await client.connect()
+ 
+  const sql_calendars  = "SELECT * FROM professional_calendar WHERE specialty1 = "+specialty+" AND  active = true AND deleted_professional = false AND status = 1  AND date_start <= '"+date+"'  AND date_end >= '"+date+"'  " ;  
+
+  console.log("PUBLIC get_calendars_available_by_date_specialty  SQL:"+sql_calendars) 
+  
+  //console.log ("QUERY GET CALENDAR = "+sql_calendars);
+  const res = await client.query(sql_calendars) 
+  client.end() 
+  return res.rows ;
+}
+
 async function get_calendars_available_by_specialty(json)
 {
   const { Client } = require('pg')
@@ -2618,45 +2827,6 @@ async function get_public_centers(center_ids)
   const res = await client.query(sql)
   client.end() 
   return res.rows;
-}
-
-//***************************************************** */
-//************* PUBLIC SEARCH   *********************** */
-//******* PUBLIC APPOINTMENTS IN CALENDAR ID ********** */
-//***************************************************** */
-//PATIENT GET APPOINTMENTS  SEARCH BY CALENDAR
-app.route('/patient_get_appointments_calendar')
-.post(function (req, res) {
- 
-    console.log('patient_get_appointments_calendar : INPUT : ', req.body );
-    //get Appointments and remove the lock days from the response adding true to last parameter. 
-    let calendars = [req.body.cal_id]
-    let appointments_available = get_appointments_available_from_calendar(calendars,req.body.date,true  ) ;
-
-    appointments_available.then( v => {  console.log("patient_get_appointments_calendar  RESPONSE: "+JSON.stringify(v)) ; return (res.status(200).send(JSON.stringify(v))) } )
-})
-// CALLED FROM PUBLIC CALENDAR VIEWS
-async function get_appointments_available_from_calendar(cal_ids, date_start,remove_lock_days )
-{
-  // 1.- get Calendar
-  let calendars = await get_calendar_available_by_id(cal_ids) ;
-  console.log("patient_get_appointments_calendars : INPUT"+JSON.stringify(calendars));
-  // 2.- get Professional Appointment
-  // 
-  let appointments_reserved = await get_professional_appointments_by_date( calendars[0].professional_id , date_start , '2023-06-04')
-  console.log("get_professional_appointments_by_date : OUTPUT "+JSON.stringify(appointments_reserved));
- 
-  // 3.- GET Lock Dates
-  let lockDates = await get_professional_lock_days(calendars[0].professional_id);
-  lockDates = lockDates.map(lockDates => (new Date(lockDates.date) )) ;
-  console.log("getLockDays:"+JSON.stringify(lockDates));
-
-  // 4.- cutter calendar from date, remove_lock_days = true
-  // calendar_cutter(calendar, fromDate ,endDate ,lockDates, remove_lock_days )
-  let app_calendar = calendar_cutter(calendars[0],date_start, null , lockDates, remove_lock_days );
-  let app_calendar_filtered = filter_app_from_appTaken(app_calendar,appointments_reserved)
-
-  return(app_calendar_filtered); 
 }
 
 /*****************************************************
@@ -2817,7 +2987,6 @@ async function professional_get_appointments_from_calendars_bkp(prof_id, date_st
   
   // 5.- GET CALENDARS
   //let calendars_professional = await get_professional_calendars(prof_id);
-  
   //filter CALENDARS have only active centers.
   let calendars_filtered =  calendars.filter(cal =>  centers_professional_ids.includes(cal.center_id) ) 
 
@@ -2889,7 +3058,6 @@ const resultado = client.query(sql, (err, result) => {
 })
 
 })
-
 
 // PROFESSIONAL TAKE APPOINTMENT
 app.route('/professional_take_appointment')
@@ -3353,6 +3521,23 @@ async function get_professional_lock_days(prof_id)
 
   const sql_calendars  = "SELECT * FROM professional_day_locked WHERE professional_id = "+prof_id ; 
   console.log("************* get_professional_lock_days  SQL:"+sql_calendars) 
+  const res = await client.query(sql_calendars) 
+  client.end() 
+  console.log ("LOCK DAYS: PID:"+prof_id+" DLOCK:"+JSON.stringify(res.rows));
+  return res.rows ;
+}
+
+// IS PROFESSIONAL LOCK DAYS
+async function is_professional_lock_day(prof_id,date)
+{
+  const { Client } = require('pg')
+  const client = new Client(conn_data)
+  await client.connect()  
+  //END IF LOCATION
+  //const sql_calendars SELECT * FROM professional_day_locked WHERE professional_id = 1 ;  = "SELECT * FROM professional_calendar WHERE id = 139 AND date_start <='2022-06-02' AND date_end >= '2022-06-01' AND  active = true AND deleted_professional = false AND status = 1  " ;  
+
+  const sql_calendars  = "SELECT * FROM professional_day_locked WHERE professional_id ="+prof_id+" AND date ='"+date+"'" ; 
+  console.log("************* get_professional_lock_days SQL:"+sql_calendars) 
   const res = await client.query(sql_calendars) 
   client.end() 
   console.log ("LOCK DAYS: PID:"+prof_id+" DLOCK:"+JSON.stringify(res.rows));
