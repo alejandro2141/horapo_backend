@@ -2460,6 +2460,183 @@ app.route('/patient_get_appointments_day2')
 
 async function get_public_appointments_available(json)
 {
+  let date =new Date(json.date) ;
+  date.setHours(0,0,0,0)
+
+   //*********** response message *********/
+   let appointments  = {
+    date: null , 
+    appointments :  null
+        } 
+    
+   let json_response = {
+    appointments_list : [] , //here we put the appointments object
+    centers : [] ,
+    calendars : [] ,
+    specialties : [],
+    lock_dates : [] ,
+    error : [],
+    lock_date: false,
+    }
+  //*********************************** */   
+
+   // Cicle for days we will first search
+   let days_list = []
+   days_list.push(date)
+   days_list.push(new Date(date.getTime()+(1000*60*60*24)) )
+   console.log("-----------Days to search:"+days_list)
+
+   for (let i = 0; i < days_list.length; i++) {
+     console.log("-----------Day to get:"+days_list[i])
+     let aux_appointments = get_public_appointments_available_of_a_day(json, days_list[i] )
+     json_response.appointments_list.push(aux_appointments.appointments_list)  
+     json_response.centers = json_response.centers.concat(aux_appointments.centers)
+    }
+
+   return (json_response)
+  
+}
+
+async function get_public_appointments_available_of_a_day(json, date_to_get)
+{
+    //************************************* */
+    let is_lock_day=false ; 
+    let calendars_ids = [] ;
+    let professional_ids = [] ;
+    let date =new Date(date_to_get) ;
+    date.setHours(0,0,0,0)
+    let centers_ids = [] ;
+    let centers = [] ;
+    //*********** response message *********/
+      let json_response = {
+            appointments_list : { 
+                          appointments  : {
+                                date: null , 
+                                appointments :  null
+                                    } ,
+                                },
+            centers : [] ,
+            calendars : [] ,
+            specialties : [],
+            lock_dates : [] ,
+            error : [],
+            lock_date: false,
+            }
+     //*********************************** */   
+  
+   
+  
+    // **************************************************
+    // 1.-  GET CALENDAR AVAILABLE BY DATE & SPECIALTY  
+    // **************************************************
+     let calendars = await get_calendars_available_by_date_specialty(date.toISOString(),json.specialty)
+     if (calendars.length <= 0 )
+     {
+       return []
+     }
+     //extract Calendard Ids
+     calendars_ids = calendars.map(val => val.id)
+     console.log("calendars_ids: "+calendars_ids);
+     //extract Professional_Ids
+     professional_ids = calendars.map(val => val.professional_id)
+     console.log("Professional_ids: "+professional_ids);
+     //extract Center_Ids
+     centers_ids = calendars.map(val => val.center_id)
+  
+    // *********************************************************************
+    // 2.-  GET CENTERS belong to professional IDs obtained from calendars  
+    // *********************************************************************
+    centers = await get_public_centers(centers_ids)
+    let centers_ids_filtered = centers.map(val => val.id)
+    console.log("Centers : "+JSON.stringify(centers))
+    
+    // *********************************************************************
+    // 3.- REMOVE CALENDARS LINKED TO DELETED CENTERS
+    //**********************************************************************
+    //filter CALENDARS have only active centers.
+    calendars =  calendars.filter(cal =>  centers_ids_filtered.includes(cal.center_id) ) 
+    //**********************************************************************
+    
+    // *********************************************************************
+    // 4.- REMOVE CALENDARS NOT MATCH with Search Parameters 
+    //**********************************************************************
+    // remove CALENDARS not match with Location parameter search
+    if ( json.location != null )
+    {
+      console.log("Location filter TRUE "+json.location);
+      //Reduce centers list based in LOCATION
+      centers = centers.filter(obj => 
+          (json.location == obj.comuna || json.location == obj.home_comuna1 || json.location == obj.home_comuna2 || json.location == obj.home_comuna3 || json.location == obj.home_comuna4 || json.location == obj.home_comuna5 || json.location == obj.home_comuna6  )  );
+      //regenerate center ids list
+      centers_ids = centers.map(val => val.id)
+      console.log("Centers IDS Filtered by LOCATION : "+JSON.stringify(centers_ids))  
+      calendars = calendars.filter( calendar  =>  centers_ids.includes(calendar.center_id) )
+      console.log("calendars Filtered by LOCATION: "+JSON.stringify(calendars));
+      calendars_ids = calendars.map(val => val.id)
+      console.log("calendars_ids Filtered by LOCATION: "+calendars_ids);
+      professional_ids = calendars.map(val => val.professional_id)
+    }
+    console.log("calendars Filtered by LOCATION LATER: "+JSON.stringify(calendars));
+    //*************************************** */
+  
+    // *********************************************************************
+    // 5.- REMOVE DUPLICATED PROFESSIONAL IDS  
+    //**********************************************************************
+    professional_ids = professional_ids.sort().filter(function(item, pos, ary) {
+      return !pos || item != ary[pos - 1];
+      });
+    console.log("Professional_ids NO DUP: "+professional_ids);
+    //***********************************************************************
+    //SUMMARY
+    console.log("Public Search :"+JSON.stringify(json));
+    console.log("Calendars MATCH Search parameters : "+calendars_ids);
+    console.log("Professional IDS in Calendars: "+professional_ids);
+    
+    // *********************************************************************
+    // 6.- CYCLE CUTTING CALENDARS FOUND   
+    //**********************************************************************
+    let app_calendars = [] 
+  //  let lockDates = [] 
+    let appointments_reserved = [] 
+    let app_calendar_filtered = []
+  
+    for (let i = 0; i < calendars.length; i++) {
+      // *********************************************************************
+      // 6 - 1  GET PROFESSIONAL LOCK DAYS    
+      //**********************************************************************
+        let lockDates_aux = await is_professional_lock_day(calendars[i].professional_id , date.toISOString()  );
+        if (lockDates_aux  != null && lockDates_aux.length >= 1 )
+        {
+          console.log("IS A DAY BLOCK !!! Calendar:"+calendars[i].id+" Skip Calendar");
+          continue;
+        }
+      
+      let app_calendars = calendar_cutter_day(calendars[i] ,date )
+      app_calendar_filtered = app_calendar_filtered.concat(app_calendars)
+      }
+  
+      //END 6 CYCLE
+      // *********************************************************************
+      // 7 - SORT BY DATE TIME     
+      //**********************************************************************  
+      app_calendar_filtered.sort((a, b) => a.start_time - b.start_time) 
+      console.log("PUBLIC SEARCH Response DATE:"+date+"  APPOINTMENTS:"+JSON.stringify(app_calendar_filtered));
+      
+      json_response.appointments_list.date = date
+      json_response.appointments_list.appointments = app_calendar_filtered
+  
+      json_response.centers = centers
+      json_response.calendars = calendars
+     //json_response.specialties = 
+       
+      //return  app_calendar_filtered ;
+      console.log("get_public_appointments_available_of_a_day"+json_response)
+      return  json_response ;
+
+}
+
+async function get_public_appointments_available_of_a_day_bkp(json)
+{
   //************************************* */
   let is_lock_day=false ; 
   let calendars_ids = [] ;
@@ -2468,7 +2645,6 @@ async function get_public_appointments_available(json)
   date.setHours(0,0,0,0)
   let centers_ids = [] ;
   let centers = [] ;
-
   //*********** response message *********/
     let json_response = {
           appointments_list : { 
@@ -2485,6 +2661,8 @@ async function get_public_appointments_available(json)
           lock_date: false,
           }
    //*********************************** */   
+
+ 
 
   // **************************************************
   // 1.-  GET CALENDAR AVAILABLE BY DATE & SPECIALTY  
@@ -2584,30 +2762,22 @@ async function get_public_appointments_available(json)
     
     json_response.appointments_list.date = date
     json_response.appointments_list.appointments = app_calendar_filtered
+
     json_response.centers = centers
     json_response.calendars = calendars
    //json_response.specialties = 
-
-    /*
-    let json_response = {
-      appointments_list : { 
-                    appointments  : {
-                          date: null , 
-                          appointments :  null
-                              } ,
-                          },
-      centers : [] ,
-      calendars : [] ,
-      specialties : [],
-      lock_dates : [] ,
-      error : [],
-      lock_date: false,
-      }
-    */
-      
+     
     //return  app_calendar_filtered ;
     return  json_response ;
 }
+
+
+async function get_public_appointments_available_of_a_day(json)
+{
+
+}
+
+
 
 
 //***OLD FUNCTION */
