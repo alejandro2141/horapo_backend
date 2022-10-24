@@ -2451,7 +2451,6 @@ async function professional_get_data_for_calendars_view(json)
 
 app.route('/patient_get_appointments_day2')
 .post(function (req, res) {
- 
     console.log('patient_get_appointments_day2 : INPUT : ', req.body );
     //res.status(200).send(JSON.stringify( get_appointments_available(req.body)));
     let resp_app_available = get_public_appointments_available(req.body);
@@ -2464,23 +2463,21 @@ async function get_public_appointments_available(json)
   date.setHours(0,0,0,0)
 
    //*********** response message *********/
-   let appointments  = {
-    date: null , 
-    appointments :  null
-        } 
-    
    let json_response = {
-    appointments_list : [] , //here we put the appointments object
-    centers : [] ,
-    calendars : [] ,
-    specialties : [],
+    appointments_list: [] , //here we put the appointments object
+    //centers : [] ,
+    //calendars : [] ,
+    //specialties : [],
+    //date : null ,
+    /*
     lock_dates : [] ,
     error : [],
     lock_date: false,
+    */
     }
   //*********************************** */   
 
-   // Cicle for days we will first search
+   // DAYS CICLE
    let days_list = []
    days_list.push(date)
    days_list.push(new Date(date.getTime()+(1000*60*60*24)) )
@@ -2488,48 +2485,47 @@ async function get_public_appointments_available(json)
 
    for (let i = 0; i < days_list.length; i++) {
      console.log("-----------Day to get:"+days_list[i])
-     let aux_appointments = get_public_appointments_available_of_a_day(json, days_list[i] )
-     json_response.appointments_list.push(aux_appointments.appointments_list)  
-     json_response.centers = json_response.centers.concat(aux_appointments.centers)
+     let aux_appointments = await get_public_appointments_available_of_a_day(json.specialty , days_list[i], json.location )
+     console.log("-----------Appointments:"+JSON.stringify(aux_appointments))
+            let aux_app_day = {
+              date : days_list[i] ,
+              appointments : aux_appointments.appointments ,
+              centers: aux_appointments.centers  ,
+              calendars : aux_appointments.calendars  ,
+              
+            } 
+
+     json_response.appointments_list.push(aux_app_day)    
     }
 
+   console.log("-----------GET PUBLIC APPOINTMENTS AVAILABLE JSON Response :"+JSON.stringify(json_response))
    return (json_response)
-  
 }
 
-async function get_public_appointments_available_of_a_day(json, date_to_get)
+async function get_public_appointments_available_of_a_day(specialty, date_to_get,location)
 {
     //************************************* */
+    let date =new Date(date_to_get) ;
+    date.setHours(0,0,0,0)
+
     let is_lock_day=false ; 
     let calendars_ids = [] ;
     let professional_ids = [] ;
-    let date =new Date(date_to_get) ;
-    date.setHours(0,0,0,0)
+
     let centers_ids = [] ;
     let centers = [] ;
     //*********** response message *********/
       let json_response = {
-            appointments_list : { 
-                          appointments  : {
-                                date: null , 
-                                appointments :  null
-                                    } ,
-                                },
+            appointments :  [] ,
             centers : [] ,
             calendars : [] ,
-            specialties : [],
-            lock_dates : [] ,
-            error : [],
-            lock_date: false,
-            }
-     //*********************************** */   
-  
-   
+              }
+    //*********************************** */    
   
     // **************************************************
     // 1.-  GET CALENDAR AVAILABLE BY DATE & SPECIALTY  
     // **************************************************
-     let calendars = await get_calendars_available_by_date_specialty(date.toISOString(),json.specialty)
+     let calendars = await get_calendars_available_by_date_specialty(date.toISOString(),specialty)
      if (calendars.length <= 0 )
      {
        return []
@@ -2561,12 +2557,12 @@ async function get_public_appointments_available_of_a_day(json, date_to_get)
     // 4.- REMOVE CALENDARS NOT MATCH with Search Parameters 
     //**********************************************************************
     // remove CALENDARS not match with Location parameter search
-    if ( json.location != null )
+    if ( location != null )
     {
-      console.log("Location filter TRUE "+json.location);
+      console.log("Location filter TRUE "+location);
       //Reduce centers list based in LOCATION
       centers = centers.filter(obj => 
-          (json.location == obj.comuna || json.location == obj.home_comuna1 || json.location == obj.home_comuna2 || json.location == obj.home_comuna3 || json.location == obj.home_comuna4 || json.location == obj.home_comuna5 || json.location == obj.home_comuna6  )  );
+          (location == obj.comuna || location == obj.home_comuna1 || location == obj.home_comuna2 || location == obj.home_comuna3 || location == obj.home_comuna4 || location == obj.home_comuna5 || location == obj.home_comuna6  )  );
       //regenerate center ids list
       centers_ids = centers.map(val => val.id)
       console.log("Centers IDS Filtered by LOCATION : "+JSON.stringify(centers_ids))  
@@ -2588,7 +2584,7 @@ async function get_public_appointments_available_of_a_day(json, date_to_get)
     console.log("Professional_ids NO DUP: "+professional_ids);
     //***********************************************************************
     //SUMMARY
-    console.log("Public Search :"+JSON.stringify(json));
+    //console.log("Public Search :"+JSON.stringify(json));
     console.log("Calendars MATCH Search parameters : "+calendars_ids);
     console.log("Professional IDS in Calendars: "+professional_ids);
     
@@ -2622,15 +2618,14 @@ async function get_public_appointments_available_of_a_day(json, date_to_get)
       app_calendar_filtered.sort((a, b) => a.start_time - b.start_time) 
       console.log("PUBLIC SEARCH Response DATE:"+date+"  APPOINTMENTS:"+JSON.stringify(app_calendar_filtered));
       
-      json_response.appointments_list.date = date
-      json_response.appointments_list.appointments = app_calendar_filtered
-  
+      //json_response.date = date
+      json_response.appointments = app_calendar_filtered
       json_response.centers = centers
       json_response.calendars = calendars
-     //json_response.specialties = 
+      //json_response.specialties = 
        
       //return  app_calendar_filtered ;
-      console.log("get_public_appointments_available_of_a_day"+json_response)
+      console.log("get_public_appointments_available_of_a_day"+JSON.stringify(json_response))
       return  json_response ;
 
 }
@@ -2771,11 +2766,6 @@ async function get_public_appointments_available_of_a_day_bkp(json)
     return  json_response ;
 }
 
-
-async function get_public_appointments_available_of_a_day(json)
-{
-
-}
 
 
 
