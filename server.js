@@ -2481,6 +2481,12 @@ async function get_public_appointments_available(json)
    let days_list = []
    days_list.push(date)
    days_list.push(new Date(date.getTime()+(1000*60*60*24)) )
+   days_list.push(new Date(date.getTime()+(1000*60*60*48)) )
+   days_list.push(new Date(date.getTime()+(1000*60*60*72)) )
+   days_list.push(new Date(date.getTime()+(1000*60*60*96)) )
+   days_list.push(new Date(date.getTime()+(1000*60*60*120)) )
+   days_list.push(new Date(date.getTime()+(1000*60*60*148)) )
+
    console.log("-----------Days to search:"+days_list)
 
    for (let i = 0; i < days_list.length; i++) {
