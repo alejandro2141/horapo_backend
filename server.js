@@ -3362,6 +3362,13 @@ if (req.body.phone2!= null )
  sql = sql+", phone2='"+req.body.phone2+"' " ;
 }
 
+sql = sql+", home_comuna1="+req.body.home_comuna1+" " ;
+sql = sql+", home_comuna2="+req.body.home_comuna2+" " ;
+sql = sql+", home_comuna3="+req.body.home_comuna3+" " ;
+sql = sql+", home_comuna4="+req.body.home_comuna4+" " ;
+sql = sql+", home_comuna5="+req.body.home_comuna5+" " ;
+
+
 
 
 req.body.professional_id
