@@ -9,3 +9,11 @@ sudo su postgres
 dropdb conmeddb02
 psql conmeddb02 < backupNew-10-13-2021
 psql -f backupNew-11-05-2021  postgres
+
+
+NodeVersion
+alejandro@alejandro-OptiPlex-3080:~/Documents/GitHub/conmed-dockerized$ node -v
+v18.10.0
+alejandro@alejandro-OptiPlex-3080:~/Documents/GitHub/conmed-dockerized$ npm -version
+8.19.2
+
