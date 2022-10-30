@@ -3368,6 +3368,8 @@ sql = sql+", home_comuna3="+req.body.home_comuna3+" " ;
 sql = sql+", home_comuna4="+req.body.home_comuna4+" " ;
 sql = sql+", home_comuna5="+req.body.home_comuna5+" " ;
 
+sql = sql+", comuna="+req.body.center_comuna+" " ;
+
 
 
 
