@@ -2597,9 +2597,9 @@ async function get_public_appointments_available_of_a_day(specialty, date_to_get
     // *********************************************************************
     // 6.- CYCLE CUTTING CALENDARS FOUND   
     //**********************************************************************
-    let app_calendars = [] 
-  //  let lockDates = [] 
-    let appointments_reserved = [] 
+    // let app_calendars = [] 
+    //  let lockDates = [] 
+   
     let app_calendar_filtered = []
   
     for (let i = 0; i < calendars.length; i++) {
@@ -2614,10 +2614,27 @@ async function get_public_appointments_available_of_a_day(specialty, date_to_get
         }
       
       let app_calendars = calendar_cutter_day(calendars[i] ,date )
-      app_calendar_filtered = app_calendar_filtered.concat(app_calendars)
+           
+      //get appointments already reserved by professional id belong this calendar.
+
+        // *********************************************************************
+        // 6 - 4  FILTER APPS AVAILABLE FROM APP TAKEN     
+        //**********************************************************************
+        //first set day end
+        let aux_date_start = new Date(date)
+        aux_date_start.setHours(0,0,0,0)
+        let aux_date_end = new Date( aux_date_start.getTime()  + (1000*60*60*24) )
+        let appointments_reserved = await get_professional_appointments_by_date( calendars[i].professional_id , aux_date_start , aux_date_end )
+      
+        let apps_removed_reserved = filter_app_from_appTaken(app_calendars ,appointments_reserved, false )
+        //******************************************************************** */
+      
+        //finally concat the result
+        app_calendar_filtered = app_calendar_filtered.concat(apps_removed_reserved)
       }
-  
       //END 6 CYCLE
+      
+     
       // *********************************************************************
       // 7 - SORT BY DATE TIME     
       //**********************************************************************  
@@ -2772,10 +2789,6 @@ async function get_public_appointments_available_of_a_day_bkp(json)
     return  json_response ;
 }
 
-
-
-
-
 //***OLD FUNCTION */
 async function get_appointments_available(json)
 {
@@ -2915,7 +2928,6 @@ async function get_appointments_available(json)
   return  json_return ;
 }
 
-
 // 1.-  PUBLIC GET CALENDARS 
 async function get_calendars_available_by_date_specialty(date,specialty)
 {
@@ -3003,10 +3015,8 @@ async function get_public_centers(center_ids)
 *****************************************************/
 app.route('/professional_get_appointments_day3')
 .post(function (req, res) {
-  
   console.log('professional_get_appointments_day3 : INPUT : ', req.body );
   //get Appointments and remove the lock days from the response adding true to last parameter. 
-  
   let appointments_available = professional_get_appointments_from_calendars(req.body.professional_id , req.body.date,false  ) ;
 
   appointments_available.then( v => {  console.log("professional_get_appointments_day3  RESPONSE: "+JSON.stringify(v)) ; return (res.status(200).send(JSON.stringify(v))) } )
@@ -3271,7 +3281,7 @@ app.route('/professional_block_appointments')
 app.route('/professional_get_calendars')
 .post(function (req, res) {
  
-    console.log('rofessional_get_calendars :', req.body );
+    console.log('professional_get_calendars :', req.body );
  
 // ****** Connect to postgre
 const { Client } = require('pg')
@@ -3418,7 +3428,6 @@ const resultado = client.query(sql_request, (err, result) => {
   client.end()
 })
 
-
 })
 
 // GET PROFESSIONAL DATA 
@@ -3521,12 +3530,9 @@ async function get_professional_specialties(prof_id)
   const client = new Client(conn_data)
   await client.connect()
   //console.log("ids:"+ids+" dates:"+dates)
-
   const sql_calendars  =  "SELECT * from  specialty where id IN  (SELECT specialty_id FROM professional_specialty WHERE professional_id="+prof_id+") ;" ;
 
-
-  //const sql_calendars  = "SELECT * FROM professional_calendar WHERE professional_id ='"+prof_id+"' AND  deleted_professional = false  ORDER BY id DESC  " ;
-
+ //const sql_calendars  = "SELECT * FROM professional_calendar WHERE professional_id ='"+prof_id+"' AND  deleted_professional = false  ORDER BY id DESC  " ;
  // const sql_apps_taken  = "SELECT * FROM appointment WHERE date IN ("+aux_dates+")  and professional_id  IN ("+ids+") ;";
   console.log("SQL QUERY: "+sql_calendars)
   const res = await client.query(sql_calendars)
@@ -3534,7 +3540,6 @@ async function get_professional_specialties(prof_id)
   console.log("get_professional_specialties Return: "+JSON.stringify(res.rows));
   return res.rows;
 }
-
 
 async function professional_block_appointments(apps_list)
 {  
@@ -3573,7 +3578,6 @@ async function professional_block_appointment(app)
   console.log("Blocking appointment : "+res );
   return 200 ;
 }
-
 
 //GET PROFESSIONAL Calendars
 async function get_professional_calendars(prof_id)
@@ -3626,7 +3630,6 @@ async function get_calendars_available_by_professional_date(prof_id,date)
   return res.rows ;
 }
 
-
 //GET CALENDARS BY Professional ID
 async function get_calendars_available_by_ProfessionalId(prof_id,date)
 {
@@ -3643,8 +3646,6 @@ async function get_calendars_available_by_ProfessionalId(prof_id,date)
   client.end() 
   return res.rows ;
 }
-
-
 
 //GET CALENDARS BY ID
 async function get_calendar_available_by_id(cal_id)
