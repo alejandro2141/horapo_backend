@@ -1001,7 +1001,8 @@ app.route('/professional_create_center')
 .post(function (req, res) {
     console.log('professional_create_center INPUT:', req.body );
 // ****** Connect to postgre
-const { Pool, Client } = require('pg')
+/*
+    const { Pool, Client } = require('pg')
 const client = new Client({
   user: 'conmeddb_user',
   host: '127.0.0.1',
@@ -1010,7 +1011,14 @@ const client = new Client({
   port: 5432,
 })
 client.connect() ;
-// GET PROFESSIONAL DATA
+*/
+
+  // ****** Connect to postgre
+  const { Client } = require('pg')
+  const client = new Client(conn_data)
+  client.connect()
+  // GET PROFESSIONAL DATA
+
 var sql  = null;
 var json_response = { result_status : 1 };
 //var res = null; 	
@@ -1020,30 +1028,46 @@ var json_response = { result_status : 1 };
 //INSERT APP TYPE  CENTER
 if (req.body.app_type == 1 )
 {
-  sql = " WITH ids AS (  INSERT INTO center ( name ,  address , phone1, phone2, comuna , center_visit, home_visit, remote_care, center_color ) VALUES (  '"+req.body.center_name+"' , '"+req.body.center_address+"', '"+req.body.center_phone1+"' ,'"+req.body.center_phone2+"' ,"+req.body.center_comuna+" , true, false, false, '"+req.body.center_color+"' ) RETURNING id as center_id ) INSERT INTO center_professional (professional_id, center_id) VALUES ('"+req.body.professional_id+"', (SELECT center_id from ids) ) RETURNING * ;  ";
+  let location = req.body.locations[0]
+  sql = "INSERT INTO center ( name ,  address , phone1, phone2, comuna , center_visit, home_visit, remote_care, center_color , professional_id ) VALUES (  '"+req.body.name+"' , '"+req.body.address+"', '"+req.body.phone1+"' ,'"+req.body.phone2+"' ,"+location+" , true, false, false, '"+req.body.center_color+"' , '"+req.body.professional_id+"'  ) RETURNING  *";
 }
 //INSERT APP TYPE HOME VISIT
 if (req.body.app_type == 2 )
-{
+{ 
+  let comuna1 = null
+  let comuna2 = null
+  let comuna3 = null
+  let comuna4 = null
+  let comuna5 = null 
+  let comuna6 = null 
+
+  if (req.body.locations[0]!=null) { comuna1=req.body.locations[0] ;}
+  if (req.body.locations[1]!=null) { comuna2=req.body.locations[1] ;}
+  if (req.body.locations[2]!=null) { comuna3=req.body.locations[2] ;}
+  if (req.body.locations[3]!=null) { comuna4=req.body.locations[3] ;}
+  if (req.body.locations[4]!=null) { comuna5=req.body.locations[4] ;}
+  if (req.body.locations[5]!=null) { comuna6=req.body.locations[5] ;}
+
+  /*
   let comuna1 = null ;
-  if (req.body.comunas_ids[0]!=null) { comuna1=req.body.comunas_ids[0] ;}
+  if (req.body.locations[0]!=null) { comuna1=req.body.locations[0] ;}
   let comuna2 = null ;
-  if (req.body.comunas_ids[1]!=null) { comuna2=req.body.comunas_ids[1] ;}
+  if (req.body.locations[1]!=null) { comuna2=req.body.locations[1] ;}
   let comuna3 = null ;
-  if (req.body.comunas_ids[2]!=null) { comuna3=req.body.comunas_ids[2] ;}
+  if (req.body.locations[2]!=null) { comuna3=req.body.locations[2] ;}
   let comuna4 = null ;
-  if (req.body.comunas_ids[3]!=null) { comuna4=req.body.comunas_ids[3] ;}
+  if (req.body.locations[3]!=null) { comuna4=req.body.locations[3] ;}
   let comuna5 = null ;
-  if (req.body.comunas_ids[4]!=null) { comuna5=req.body.comunas_ids[4] ;}
+  if (req.body.locations[4]!=null) { comuna5=req.body.locations[4] ;}
   let comuna6 = null ;
-  if (req.body.comunas_ids[5]!=null) { comuna6=req.body.comunas_ids[5] ;}
+  if (req.body.locations[5]!=null) { comuna6=req.body.locations[5] ;}
+  */
   
-  
-  sql = " WITH ids AS (  INSERT INTO center ( name ,  phone1, phone2,  center_visit, home_visit, remote_care , home_comuna1, home_comuna2, home_comuna3, home_comuna4, home_comuna5, home_comuna6  , center_color ) VALUES (  '"+req.body.center_name+"' ,  '"+req.body.center_phone1+"' ,'"+req.body.center_phone2+"' , false, true , false , "+comuna1+", "+comuna2+" , "+comuna3+" , "+comuna4+" , "+comuna5+" , "+comuna6+" , '"+req.body.center_color+"'   ) RETURNING id as center_id ) INSERT INTO center_professional (professional_id, center_id) VALUES ('"+req.body.professional_id+"', (SELECT center_id from ids) ) RETURNING * ;  ";
+  sql = " INSERT INTO center ( name ,  phone1, phone2,  center_visit, home_visit, remote_care , home_comuna1, home_comuna2, home_comuna3, home_comuna4, home_comuna5, home_comuna6  , center_color , professional_id ) VALUES (  '"+req.body.name+"' ,  '"+req.body.phone1+"' ,'"+req.body.phone2+"' , false, true , false , "+comuna1+", "+comuna2+" , "+comuna3+" , "+comuna4+" , "+comuna5+" , "+comuna6+" , '"+req.body.center_color+"' ,'"+req.body.professional_id+"'  ) ;  ";
 }
 if (req.body.app_type == 3 )
 {
-  sql = " WITH ids AS (  INSERT INTO center ( name , phone1, phone2, center_visit, home_visit, remote_care  , center_color ) VALUES (  '"+req.body.center_name+"' ,  '"+req.body.center_phone1+"' ,'"+req.body.center_phone2+"' , false, false, true , '"+req.body.center_color+"' ) RETURNING id as center_id ) INSERT INTO center_professional (professional_id, center_id) VALUES ('"+req.body.professional_id+"', (SELECT center_id from ids) ) RETURNING * ;  ";
+  sql = " INSERT INTO center ( name , phone1, phone2, center_visit, home_visit, remote_care  , center_color , professional_id ) VALUES (  '"+req.body.name+"' ,  '"+req.body.phone1+"' ,'"+req.body.phone2+"' , false, false, true , '"+req.body.center_color+"' ,'"+req.body.professional_id+"' ) ;";
 }
 
 
@@ -1070,7 +1094,7 @@ console.log('create_center SQL:'+sql ) ;
 
 
 
-
+/*
 // PROFESSIONAL delete Center
 app.route('/professional_delete_center')
 .post(function (req, res) {
@@ -1104,6 +1128,8 @@ const resultado = client.query(sql, (err, result) => {
 })
 
 })
+
+*/
 
 // PPROFESSIONAL CREATE APPOINTMENT SIN S
 app.route('/professional_create_appointment')
@@ -1242,7 +1268,7 @@ const resultado = client.query(SQL_VALUES, (err, result) => {
 
 
 })
-  
+/*  
 // PROFESSIONAL COPY CALENDAR DAY
 app.route('/professional_copy_calendar_day')
 .post(function (req, res) {
@@ -1277,6 +1303,7 @@ const resultado = client.query(sql, (err, result) => {
 })
 
 })
+*/
 
 // PROFESSIONAL GET CENTERS
 app.route('/professional_get_data')
@@ -3319,7 +3346,7 @@ const client = new Client(conn_data)
 client.connect()
 
 // ****** Run query to bring appointment
-const sql  = "SELECT * FROM center WHERE id IN  (SELECT center_id FROM center_professional where professional_id='"+req.body.professional_id+"' ) AND center_deleted!='true'  ORDER BY id ASC  " ;
+const sql  = "SELECT * FROM center WHERE  professional_id='"+req.body.professional_id+"' ORDER BY id ASC  " ;
 console.log('professional_get_centers: SQL :'+sql ) ;
 const resultado = client.query(sql, (err, result) => {
 
@@ -3603,7 +3630,7 @@ async function get_professional_centers(id)
   const client = new Client(conn_data)
   await client.connect()
   //console.log("ids:"+ids+" dates:"+dates)
-  const sql_centers  = "SELECT * FROM center WHERE id IN  (SELECT center_id FROM center_professional where professional_id='"+id+"' ) AND center_deleted!='true'  ORDER BY id ASC  " ;
+  const sql_centers  = "SELECT * FROM center WHERE professional_id ='"+id+"' AND center_deleted!='true'  ORDER BY id ASC  " ;
 
  // const sql_apps_taken  = "SELECT * FROM appointment WHERE date IN ("+aux_dates+")  and professional_id  IN ("+ids+") ;";
   console.log("SQL QUERY: "+sql_centers)
