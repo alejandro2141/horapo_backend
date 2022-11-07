@@ -336,43 +336,7 @@ console.log('professional_lock_day SQL:'+sql ) ;
 */
 
 
-// SHUT DOWN FIRST LOGIN
-app.route('/professional_shutdown_firstlogin')
-.post(function (req, res) {
-    console.log('professional_shutdown_firstlogin INPUT : ', req.body );
-// ****** Connect to postgre
-const { Pool, Client } = require('pg')
-const client = new Client({
-  user: 'conmeddb_user',
-  host: '127.0.0.1',
-  database: 'conmeddb02',
-  password: 'paranoid',
-  port: 5432,
-})
-client.connect()
-const query_update = "UPDATE professional SET first_time = 'false' WHERE id = '"+req.body.professional_id+"' RETURNING * " ;
 
-console.log(query_update);
-const resultado = client.query(query_update, (err, result) => {
-
-     console.log('RESULTADO '+JSON.stringify(resultado))
-     var json_response_ok = { 
-			    result_status : 'Updated', 
-			    result_code: '200',
-			    	  };
-  
-    res.status(200).send(JSON.stringify(json_response_ok));
-    console.log("JSON RESPONSE BODY : "+JSON.stringify(json_response_ok));
-    console.log ("ERROR LOG : "+err);
-
-  client.end()
-})
-
- //console.log(JSON.stringify(JSON.stringify(req))) ;
- //res.send("saludos terricolas");
- //res.status(200).json(resultado.rows) ;
- // res.send(JSON.stringify(result));
-})
 
 // PROFESSIONAL CANCEL APPOINTMENT 
 app.route('/professional_cancel_appointment')
@@ -3346,7 +3310,7 @@ const client = new Client(conn_data)
 client.connect()
 
 // ****** Run query to bring appointment
-const sql  = "SELECT * FROM center WHERE  professional_id='"+req.body.professional_id+"' ORDER BY id ASC  " ;
+const sql  = "SELECT * FROM center WHERE  professional_id='"+req.body.professional_id+"' AND center_deleted='false' ORDER BY id ASC  " ;
 console.log('professional_get_centers: SQL :'+sql ) ;
 const resultado = client.query(sql, (err, result) => {
 
@@ -3543,6 +3507,39 @@ console.log('professional_lock_day SQL:'+sql ) ;
 	  client.end()
 	})
   
+})
+
+// PROFESSIONAL SHUTDOWN TUTORIAL
+app.route('/professional_shutdown_tutorial')
+.post(function (req, res) {
+    console.log('professional_shutdown_tutorial INPUT : ', req.body );
+// ****** Connect to postgre
+const { Client } = require('pg')
+const client = new Client(conn_data)
+client.connect() 
+
+const query_update = "UPDATE professional SET first_time = 'false' WHERE id = '"+req.body.professional_id+"' RETURNING * " ;
+
+console.log(query_update);
+const resultado = client.query(query_update, (err, result) => {
+
+     console.log('RESULTADO '+JSON.stringify(resultado))
+     var json_response_ok = { 
+			    result_status : 'Updated', 
+			    result_code: '200',
+			    	  };
+  
+    res.status(200).send(JSON.stringify(json_response_ok));
+    console.log("JSON RESPONSE BODY : "+JSON.stringify(json_response_ok));
+    console.log ("ERROR LOG : "+err);
+
+  client.end()
+})
+
+ //console.log(JSON.stringify(JSON.stringify(req))) ;
+ //res.send("saludos terricolas");
+ //res.status(200).json(resultado.rows) ;
+ // res.send(JSON.stringify(result));
 })
 
 
