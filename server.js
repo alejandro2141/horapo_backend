@@ -2440,7 +2440,7 @@ async function professional_get_data_for_calendars_view(json)
 //********** PUBLIC APPOINTMENTS               ******** */
 //***************************************************** */
 
-app.route('/patient_get_appointments_day2')
+app.route('/patient_get_appointments_generic')
 .post(function (req, res) {
     console.log('patient_get_appointments_day2 : INPUT : ', req.body );
     //res.status(200).send(JSON.stringify( get_appointments_available(req.body)));
@@ -2482,7 +2482,7 @@ async function get_public_appointments_available(json)
 
    for (let i = 0; i < days_list.length; i++) {
      console.log("-----------Day to get:"+days_list[i])
-     let aux_appointments = await get_public_appointments_available_of_a_day(json.specialty , days_list[i], json.location )
+     let aux_appointments = await get_public_appointments_available_of_a_day(json.specialty , days_list[i], json.location, json.type_center, json.type_home, json.type_remote ) //type_center,type_home,type_remote
      console.log("-----------Appointments:"+JSON.stringify(aux_appointments))
             let aux_app_day = {
               date : days_list[i] ,
@@ -2499,7 +2499,7 @@ async function get_public_appointments_available(json)
    return (json_response)
 }
 
-async function get_public_appointments_available_of_a_day(specialty, date_to_get,location)
+async function get_public_appointments_available_of_a_day(specialty, date_to_get,location,type_center,type_home,type_remote)
 {
     //************************************* */
     let date =new Date(date_to_get) ;
@@ -2540,9 +2540,18 @@ async function get_public_appointments_available_of_a_day(specialty, date_to_get
     // 2.-  GET CENTERS belong to professional IDs obtained from calendars  
     // *********************************************************************
     centers = await get_public_centers(centers_ids)
+
+    // *********************************************************************
+    // 2.1 - FILTER CENTERS only MATCH WITH type_center,type_home,type_remote  
+    // *********************************************************************
+    if (type_center)
+    { centers =  centers.filter(center =>  center.center_visit === 'true') }
+    //aqui me quede
+
+
     let centers_ids_filtered = centers.map(val => val.id)
     console.log("Centers : "+JSON.stringify(centers))
-    
+        
     // *********************************************************************
     // 3.- REMOVE CALENDARS LINKED TO DELETED CENTERS
     //**********************************************************************
