@@ -2483,19 +2483,18 @@ async function get_public_appointments_available(json)
    for (let i = 0; i < days_list.length; i++) {
      console.log("-----------Day to get:"+days_list[i])
      let aux_appointments = await get_public_appointments_available_of_a_day(json.specialty , days_list[i], json.location, json.type_center, json.type_home, json.type_remote ) //type_center,type_home,type_remote
-     console.log("-----------Appointments:"+JSON.stringify(aux_appointments))
+     //console.log("-----------Appointments:"+JSON.stringify(aux_appointments))
             let aux_app_day = {
               date : days_list[i] ,
               appointments : aux_appointments.appointments ,
               centers: aux_appointments.centers  ,
               calendars : aux_appointments.calendars  ,
-              
             } 
 
      json_response.appointments_list.push(aux_app_day)    
     }
 
-   console.log("-----------GET PUBLIC APPOINTMENTS AVAILABLE JSON Response :"+JSON.stringify(json_response))
+   //console.log("-----------GET PUBLIC APPOINTMENTS AVAILABLE JSON Response :"+JSON.stringify(json_response))
    return (json_response)
 }
 
@@ -2545,7 +2544,17 @@ async function get_public_appointments_available_of_a_day(specialty, date_to_get
     // 2.1 - FILTER CENTERS only MATCH WITH type_center,type_home,type_remote  
     // *********************************************************************
     if (type_center)
-    { centers =  centers.filter(center =>  center.center_visit === 'true') }
+    { console.log("Filter Center Active :"+JSON.stringify(centers))
+      centers =  centers.filter(center =>  center.center_visit == 1 ) 
+    }
+    if (type_home)
+    { console.log("Filter Home Active :"+JSON.stringify(centers))
+      centers =  centers.filter(center =>  center.home_visit == 1 ) 
+    }
+    if (type_remote)
+    { console.log("Filter REMOTE CARE Active :"+JSON.stringify(centers))
+      centers =  centers.filter(center =>  center.remote_care == 1 ) 
+    }
     //aqui me quede
 
 
@@ -2633,13 +2642,12 @@ async function get_public_appointments_available_of_a_day(specialty, date_to_get
         app_calendar_filtered = app_calendar_filtered.concat(apps_removed_reserved)
       }
       //END 6 CYCLE
-      
      
       // *********************************************************************
       // 7 - SORT BY DATE TIME     
       //**********************************************************************  
       app_calendar_filtered.sort((a, b) => a.start_time - b.start_time) 
-      console.log("PUBLIC SEARCH Response DATE:"+date+"  APPOINTMENTS:"+JSON.stringify(app_calendar_filtered));
+      //console.log("PUBLIC SEARCH Response DATE:"+date+"  APPOINTMENTS:"+JSON.stringify(app_calendar_filtered));
       
       //json_response.date = date
       json_response.appointments = app_calendar_filtered
@@ -2648,9 +2656,8 @@ async function get_public_appointments_available_of_a_day(specialty, date_to_get
       //json_response.specialties = 
        
       //return  app_calendar_filtered ;
-      console.log("get_public_appointments_available_of_a_day"+JSON.stringify(json_response))
+      //console.log("get_public_appointments_available_of_a_day"+JSON.stringify(json_response))
       return  json_response ;
-
 }
 
 async function get_public_appointments_available_of_a_day_bkp(json)
