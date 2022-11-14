@@ -2303,7 +2303,7 @@ async function get_access_login(req)
   const client = new Client(conn_data)
   await client.connect()
     
-  const sql = "INSERT INTO session (name, user_id,last_login , last_activity_time , user_type , first_time ) SELECT   name, user_id , now() as last_login ,now() as last_activity_time, 1 as user_type , first_time  FROM (SELECT * FROM (SELECT * FROM professional WHERE email ='"+req.body.form_email+"' )P LEFT JOIN account ON P.id = account.user_id) J WHERE j.pass = '"+req.body.form_pass+"'   RETURNING * ";
+  const sql = "INSERT INTO session (name, user_id,last_login , last_activity_time , user_type , first_time ,tutorial_start, tutorial_center, tutorial_calendar, tutorial_menu ) SELECT   name, user_id , now() as last_login ,now() as last_activity_time, 1 as user_type , first_time ,tutorial_start, tutorial_center, tutorial_calendar, tutorial_menu  FROM (SELECT * FROM (SELECT * FROM professional WHERE email ='"+req.body.form_email+"' )P LEFT JOIN account ON P.id = account.user_id) J WHERE j.pass = '"+req.body.form_pass+"'   RETURNING * ";
   console.log('professionalLogin SQL:'+sql ) ;
   //set default error
   var json_response = {  professional_id: null , result_code : 33 };
@@ -2317,6 +2317,10 @@ async function get_access_login(req)
           professional_name: result.rows[0].name ,
           token : result.rows[0].id,
           first_time : result.rows[0].first_time,
+          tutorial_start : result.rows[0].tutorial_start,
+          tutorial_center : result.rows[0].tutorial_center,
+          tutorial_calendar : result.rows[0].tutorial_calendar,
+          tutorial_menu : result.rows[0].tutorial_menu,
     };
   }
   
@@ -3534,7 +3538,10 @@ const { Client } = require('pg')
 const client = new Client(conn_data)
 client.connect() 
 
-const query_update = "UPDATE professional SET first_time = 'false' WHERE id = '"+req.body.professional_id+"' RETURNING * " ;
+//first_time = 0 ;tutorial_star = 1 ; tutorial_center = 2
+let tutorials = ["first_time","tutorial_start","tutorial_center","tutorial_calendar","tutorial_menu"]
+
+const query_update = "UPDATE professional SET "+tutorials[req.body.tutorial]+" = 'false' WHERE id = '"+req.body.professional_id+"' RETURNING * " ;
 
 console.log(query_update);
 const resultado = client.query(query_update, (err, result) => {
