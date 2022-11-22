@@ -1692,101 +1692,6 @@ console.log('get_professional_data_by_agenda_id  SQL:'+sql ) ;
 })
  
 //********************************************* 
-// PUBLIC POST get Professioal GET CALENDAR
-//********************************************* 
-/*
-app.route('/get_calendar')
-.post(function (req, res) {
-	console.log('get_calendar INPUT:', req.body );
- 
- const json_response = { 
-"version": "Chilean Calendar v1.0",
-"years" : [ 
-        {"year_number" : "2021", months : [
-					{"name" : "abril", "month_number" : "4" , days : [ 
-					
-						    {day_number: "", " " : " " } ,
-						    {day_number: "", " " : " " } ,
-							 {day_number: "1", "special_comment" : "Holyday New Year" } ,
-							 {day_number: "2", "special_comment" : "" } ,
-							 {day_number: "3", "special_comment" : "" } ,
-							 {day_number: "4", "special_comment" : "" } ,
-							 {day_number: "5", "special_comment" : "" } ,
-							 {day_number: "6", "special_comment" : "" } ,
-							 {day_number: "7", "special_comment" : "" } ,
-							 {day_number: "8", "special_comment" : "" } ,
-							 {day_number: "9", "special_comment" : "" } ,
-							{day_number: "10", "special_comment" : "" } ,
-							{day_number: "11", "special_comment" : "" } ,
-							{day_number: "12", "special_comment" : "" } ,
-							{day_number: "13", "special_comment" : "" } ,
-							{day_number: "14", "special_comment" : "" } ,
-							{day_number: "15", "special_comment" : "" } ,
-							{day_number: "16", "special_comment" : "" } ,
-							{day_number: "17", "special_comment" : "" } ,
-							{day_number: "18", "special_comment" : "" } ,
-							{day_number: "19", "special_comment" : "" } ,
-
-
-
-                                                                ] 
-					}, 
-					{"name" : "Junio", "month_number" : "6" , days : [ 
-							{day_number: "1", "special_comment" : "Holyday New Year" } ,
-							{day_number: "2", "special_comment" : "Holyday New Year" } ,
-							{day_number: "3", "special_comment" : "Holyday New Year" } 
-                                                                 ] 
-					}, 
-					{"name" : "Julio", "month_number" : "7" , days : [ 
-							{day_number: "1", "special_comment" : "Holyday New Year" } ,
-							{day_number: "2", "special_comment" : "Holyday New Year" } ,
-							{day_number: "3", "special_comment" : "Holyday New Year" } 
-                                                                 ] 
-					} 
-                                           ]        
-       
-		},  
-		
-		{"year_number" : "2022", months : [  
-					{"name" : "Enero", "month_number" : "1" , days : [ 
-						    {day_number: " ", "special_comment" : "Holyday New Year" } ,
-						    {day_number: " ", "special_comment" : "Holyday New Year" } ,
-							 {day_number: "1", "special_comment" : "Holyday New Year" } ,
-							 {day_number: "2", "special_comment" : "" } ,
-							 {day_number: "3", "special_comment" : "" } ,
-							 {day_number: "4", "special_comment" : "" } ,
-							 {day_number: "5", "special_comment" : "" } ,
-							 {day_number: "6", "special_comment" : "" } ,
-							 {day_number: "7", "special_comment" : "" } ,
-							 {day_number: "8", "special_comment" : "" } ,
-							 {day_number: "9", "special_comment" : "" } ,
-							 
-                                                                ] 
-					}, 
-					{"name" : "Febrero", "month_number" : "2" , days : [ 
-							{day_number: "1", "special_comment" : "Holyday New Year" } ,
-							{day_number: "2", "special_comment" : "Holyday New Year" } ,
-							{day_number: "3", "special_comment" : "Holyday New Year" } 
-                                                                 ] 
-					}, 
-					{"name" : "Marzo", "month_number" : "3" , days : [ 
-							{day_number: "1", "special_comment" : "Holyday New Year" } ,
-							{day_number: "2", "special_comment" : "Holyday New Year" } ,
-							{day_number: "3", "special_comment" : "Holyday New Year" } 
-                                                                 ] 
-					} 
-                                           ]        
-       
-		},  
-		
-		]
-  
-} ;
-	res.status(200).send(json_response);
-})
-
-*/
-//********************************************* 
 // PUBLIC POST get AGENDA
 //********************************************* 
 app.route('/get_agenda')
@@ -1824,7 +1729,6 @@ console.log('get_calendar  SQL:'+sql ) ;
 
 })
  
-
 //********************************************* 
 // PUBLIC POST get Appointments
 //********************************************* 
@@ -1863,7 +1767,6 @@ console.log('get_appointments  SQL:'+sql ) ;
 
 })
  
-
 //********************************************* 
 // PUBLIC POST CANCEL AND BLOCK APPOINTMENT
 //********************************************* 
@@ -1908,8 +1811,6 @@ const resultado = client.query(query_update, (err, result) => {
  
 })
 
-
-
 //********************************************* 
 // patient search appointment
 //********************************************* 
@@ -1941,7 +1842,6 @@ const resultado = client.query(query_search, (err, result) => {
 client.end()
  
 })
-
 
 //********************************************* 
 // patient search appointment
@@ -3018,6 +2918,36 @@ async function get_public_centers(center_ids)
   return res.rows;
 }
 
+//***************************************************** */
+//********** PROFESSIONAL GET MONT SUMMARY   ******* */
+//**********                                   ******** */
+//***************************************************** */
+app.route('/professional_get_month_summary')
+.post(function (req, res) {
+  
+  let month_summary = professional_get_month_summary(req) ;
+
+  month_summary.then( v => {  console.log("professional_get_month_summary RESPONSE: "+JSON.stringify(v)) ; return (res.status(200).send(JSON.stringify(v))) } )
+
+})
+
+async function professional_get_month_summary(req)
+{
+  const { Client } = require('pg')
+  const client = new Client(conn_data)
+  await client.connect()  
+  //END IF LOCATION
+  //const sql_calendars SELECT * FROM professional_day_locked WHERE professional_id = 1 ;  = "SELECT * FROM professional_calendar WHERE id = 139 AND date_start <='2022-06-02' AND date_end >= '2022-06-01' AND  active = true AND deleted_professional = false AND status = 1  " ;  
+  console.log("professional_get_month_summary REQUEST "+JSON.stringify(req.body));
+
+  const sql_calendars  = "SELECT * FROM appointment WHERE Professional_id='"+req.body.professional_id+"'  AND date > '"+req.body.start_date+"'  AND date < '"+req.body.end_date+"'  " 
+  console.log("professional_get_month_summary  SQL:"+sql_calendars) 
+  const response = await client.query(sql_calendars) 
+  client.end() 
+  return response.rows ;
+}
+
+
 /*****************************************************
 ******************************************************
 *    LIST APPOINTMENTS IN PROFESSIONAL BACKEND 
@@ -3564,7 +3494,6 @@ const resultado = client.query(query_update, (err, result) => {
  //res.status(200).json(resultado.rows) ;
  // res.send(JSON.stringify(result));
 })
-
 
 //******************************************************************** */
 //***************    Funciones        ******************************** */
