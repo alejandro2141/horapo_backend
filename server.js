@@ -2934,11 +2934,13 @@ async function professional_get_month_summary(req)
 {
   let appointments  = await professional_get_appointments(req) ;
   let lock_days = await get_professional_lock_days(req.body.professional_id)
+  let calendars = await get_all_calendars_available_by_professional_id(req.body.professional_id)
 
   let json_response = {
     appointments: appointments,
     lock_days: lock_days ,
-    }
+    calendars : calendars ,
+  }
 
   return json_response ;
 }
@@ -3645,6 +3647,25 @@ async function get_calendars_available_by_ProfessionalId(prof_id,date)
   client.end() 
   return res.rows ;
 }
+
+//GET ALL ACTIVE CALENDARS BY Professional ID
+async function get_all_calendars_available_by_professional_id(prof_id)
+{
+  const { Client } = require('pg')
+  const client = new Client(conn_data)
+  await client.connect()  
+  //END IF LOCATION
+  //const sql_calendars  = "SELECT * FROM professional_calendar WHERE id = 139 AND date_start <='2022-06-02' AND date_end >= '2022-06-01' AND  active = true AND deleted_professional = false AND status = 1  " ;  
+  const sql_calendars  = "SELECT * FROM professional_calendar WHERE professional_id = "+prof_id+" AND  active = true AND deleted_professional = false AND status = 1  " ;  
+
+  console.log("get_all_calendars_available_by_professional_id SQL:"+sql_calendars) 
+  
+  const res = await client.query(sql_calendars) 
+  client.end() 
+  return res.rows ;
+}
+
+
 
 //GET CALENDARS BY ID
 async function get_calendar_available_by_id(cal_id)
