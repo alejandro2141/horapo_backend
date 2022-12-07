@@ -2374,13 +2374,27 @@ async function get_public_appointments_available(json)
 
    // DAYS CICLE
    let days_list = []
-   days_list.push(date)
-   days_list.push(new Date(date.getTime()+(1000*60*60*24)) )
-   days_list.push(new Date(date.getTime()+(1000*60*60*48)) )
-   days_list.push(new Date(date.getTime()+(1000*60*60*72)) )
-   days_list.push(new Date(date.getTime()+(1000*60*60*96)) )
+  //days_list.push(date)
+    
+  // HOW MANY DAYS ???
+   for (let i = 1; i < 40 ; i++) {
+    days_list.push(new Date(date.getTime()+( (1000*60*60*24)*i ) ) )
+  }
+
+/*
+   days_list.push(new Date(date.getTime()+(1000*60*60*24 )) )
+   days_list.push(new Date(date.getTime()+(1000*60*60*48 )) )
+   days_list.push(new Date(date.getTime()+(1000*60*60*72 )) )
+   days_list.push(new Date(date.getTime()+(1000*60*60*96 )) )
    days_list.push(new Date(date.getTime()+(1000*60*60*120)) )
    days_list.push(new Date(date.getTime()+(1000*60*60*148)) )
+   days_list.push(new Date(date.getTime()+(1000*60*60*172)) )
+   days_list.push(new Date(date.getTime()+(1000*60*60*196)) )
+   days_list.push(new Date(date.getTime()+(1000*60*60*220)) )
+   days_list.push(new Date(date.getTime()+(1000*60*60*244)) )
+   days_list.push(new Date(date.getTime()+(1000*60*60*268)) )
+   days_list.push(new Date(date.getTime()+(1000*60*60*292)) )
+*/
 
    console.log("-----------Days to search:"+days_list)
 
