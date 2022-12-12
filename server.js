@@ -2144,9 +2144,10 @@ async function get_calendars_available_professional(json)
   
 }
 
-//LOGIN FUNCTIONS
-
-// PROFESSIONAL LOGIN 
+//***************************************************** */
+//**********       PROFESSIONA LOGIN            ******* */
+//**********                                   ******** */
+//***************************************************** */
 app.route('/professional_login')
 .post(function (req, res) {
   console.log ("professional_login REQUEST",req.body);
@@ -2578,6 +2579,7 @@ async function get_public_appointments_available_of_a_day(specialty, date_to_get
       return  json_response ;
 }
 
+//***OLD FUNCTION */
 async function get_public_appointments_available_of_a_day_bkp(json)
 {
   //************************************* */
@@ -2715,6 +2717,7 @@ async function get_public_appointments_available_of_a_day_bkp(json)
 }
 
 //***OLD FUNCTION */
+
 async function get_appointments_available(json)
 {
   let calendars_ids = [] ;
@@ -2853,6 +2856,7 @@ async function get_appointments_available(json)
   return  json_return ;
 }
 
+
 // 1.-  PUBLIC GET CALENDARS 
 async function get_calendars_available_by_date_specialty(date,specialty)
 {
@@ -2932,6 +2936,34 @@ async function get_public_centers(center_ids)
   return res.rows;
 }
 
+//************************************************************* */
+//********** PROFESSIONAL GET ALL APPOINTMENTS TAKEN    ******* */
+//**********                                           ******** */
+//************************************************************* */
+
+app.route('/professional_get_appointments_taken')
+.post(function (req, res) {  
+  let appsTaken = professional_get_appointments_taken(req)
+  appsTaken.then( v => {  console.log("professional_get_appointments_taken RESPONSE: "+JSON.stringify(v)) ; return (res.status(200).send(JSON.stringify(v))) } )
+})
+
+async function professional_get_appointments_taken(req)
+{
+  const { Client } = require('pg')
+  const client = new Client(conn_data)
+  await client.connect()  
+  //END IF LOCATION
+  //const sql_calendars SELECT * FROM professional_day_locked WHERE professional_id = 1 ;  = "SELECT * FROM professional_calendar WHERE id = 139 AND date_start <='2022-06-02' AND date_end >= '2022-06-01' AND  active = true AND deleted_professional = false AND status = 1  " ;  
+  console.log("professional_get_appointments_taken REQUEST "+JSON.stringify(req.body));
+
+  const sql  = "SELECT * FROM appointment WHERE Professional_id='"+req.body.professional_id+"' AND app_blocked = 0 " 
+  console.log("professional_get_appointments_taken  SQL:"+sql) 
+  const response = await client.query(sql) 
+  client.end() 
+  
+  return response.rows ;
+}
+
 //***************************************************** */
 //********** PROFESSIONAL GET MONT SUMMARY   ******* */
 //**********                                   ******** */
@@ -2975,7 +3007,6 @@ async function professional_get_appointments(req)
   
   return response.rows ;
 }
-
 
 
 /*****************************************************
@@ -3104,7 +3135,7 @@ async function professional_get_appointments_from_calendars(prof_id, date,remove
  
   return(json_response); 
 }
-
+/*
 // CALLED FROM PROFESSIONAL APPOINTMENT VIEW DAY 3 
 async function professional_get_appointments_from_calendars_bkp(prof_id, date_start,remove_lock_days )
 {
@@ -3164,6 +3195,7 @@ async function professional_get_appointments_from_calendars_bkp(prof_id, date_st
   //return(app_calendar_filtered); 
   return(json_response); 
 }
+*/
 
 /******************************************************************** */
 /******************************************************************** */
