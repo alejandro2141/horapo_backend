@@ -708,7 +708,6 @@ console.log('create_calendar SQL:'+sql ) ;
 
 })
 
-
 // PROFESSIONAL ACTIVATE  CALENDAR 
 app.route('/professional_activate_calendar')
 .post(function (req, res) {
@@ -911,8 +910,6 @@ console.log('Professional UPDATE calendar  SQL:'+sql ) ;
 
 })
 
-
-
 // PROFESIONAL GET APPOINTMENT DAY
 app.route('/professional_get_appointments_day2')
 .post(function (req, res) {
@@ -922,7 +919,6 @@ app.route('/professional_get_appointments_day2')
      resp_app_available.then( v => {  console.log("RESPONSE: "+JSON.stringify(v)) ; return (res.status(200).send(JSON.stringify(v))) } )
      
 })
-
  
 // PROFESSIONAL CREATE CENTER 
 app.route('/professional_create_center')
@@ -1007,10 +1003,6 @@ console.log('create_center SQL:'+sql ) ;
 	})
 
 })
-
-
-
-
 
 // PPROFESSIONAL CREATE APPOINTMENT SIN S
 app.route('/professional_create_appointment')
@@ -1268,7 +1260,6 @@ async function professional_pwsite_get_calendar(req)
             calendars : calendar_data ,
             centers : center_data ,
             specialties : specialties
-            
                 }
       return jsonresp 
 
@@ -1329,6 +1320,49 @@ async function get_specialties()
   client.end() 
   return res.rows;
 }
+
+//****************************************************************************
+//********   PROFESSIONAL WEB SITE                                  **********
+//********        GET CALENDAR                                      **********
+//********  professional_pwsite_get_appointments_calendar           **********
+//********                                                          **********
+//****************************************************************************
+//****************************************************************************
+app.route('/professional_pwsite_get_appointments_calendar')
+.post(function (req, res) {
+ 
+  console.log('professional_pwsite_get_appointments_calendar INPUT :', JSON.stringify(req.body) );
+  
+  let json_response=professional_pwsite_get_appointments_calendar(req.body)
+
+  json_response.then( v => {  console.log("----------------------------  professional_pwsite_get_appointments_calendar RESPONSE: "+JSON.stringify(v)) ; return (res.status(200).send(JSON.stringify(v))) } )   
+})
+
+
+async function professional_pwsite_get_appointments_calendar(params)
+{
+  console.log("--------------------------- professional_pwsite_get_appointments_calendar "+JSON.stringify(params) );
+ 
+  let apps = await get_appointments_available_from_calendar( [params.calendar_id], params.date ,true )
+
+  let jsonresp = {
+    appointments : apps ,
+    other : "bbbb",
+        }
+  
+  console.log("--------------------------- professional_pwsite_get_appointments_calendar response "+JSON.stringify(jsonresp) );
+ 
+  return jsonresp 
+ 
+}
+
+//***************************************************************
+//***************************************************************
+//***************************************************************
+//***************************************************************
+
+
+
 
 //********************************************* 
 // PUBLIC POST TAKE APPOINTMENT
@@ -3329,6 +3363,7 @@ async function get_calendars_available_by_professional_date(prof_id,date)
   return res.rows ;
 }
 
+/*
 //GET CALENDARS BY Professional ID
 async function get_calendars_available_by_ProfessionalId(prof_id,date)
 {
@@ -3345,6 +3380,7 @@ async function get_calendars_available_by_ProfessionalId(prof_id,date)
   client.end() 
   return res.rows ;
 }
+*/
 
 //GET ALL ACTIVE CALENDARS BY Professional ID
 async function get_all_calendars_available_by_professional_id(prof_id)
@@ -3362,8 +3398,6 @@ async function get_all_calendars_available_by_professional_id(prof_id)
   client.end() 
   return res.rows ;
 }
-
-
 
 //GET CALENDARS BY ID
 async function get_calendar_available_by_id(cal_id)
@@ -3522,7 +3556,6 @@ function calendar_cutter_day(calendar, date_to_cut)
       }
 } 
 
-
 //******************************************************* */
 //************** UNIQUE AND IMPORTAN ******************** */
 //**************   CALENDAR CUTTER  ********************* */
@@ -3566,7 +3599,7 @@ function calendar_cutter(calendar, fromDate ,endDate ,lockDates, remove_lock_day
         cal_days.push(new Date(d))
       }   
     }
-    cal_days.forEach(day => console.log("cal_days:"+day.toUTCString()  ) );
+   // cal_days.forEach(day => console.log("cal_days:"+day.toUTCString()  ) );
     //**************************/
 
 
@@ -3589,7 +3622,7 @@ function calendar_cutter(calendar, fromDate ,endDate ,lockDates, remove_lock_day
     // ****** REMOVE LOCKED DAYS  ******
     // *********************************
     console.log("Remove_lock_days ONLY PUBLIC SEARCH :"+remove_lock_days  );
-    lockDates.forEach(date => console.log("Lock_Day:"+date.toUTCString()  ) );
+    //lockDates.forEach(date => console.log("Lock_Day:"+date.toUTCString()  ) );
     if (remove_lock_days == true) 
     {
     cal_days.forEach( function filterApp(day) { 
@@ -3599,8 +3632,8 @@ function calendar_cutter(calendar, fromDate ,endDate ,lockDates, remove_lock_day
       })
     }
     //********************************** */
-    console.log("After remove lock days:");
-    cal_days.forEach(date => console.log("cal_day:"+date.toUTCString()  ) );
+    //console.log("After remove lock days:");
+    //cal_days.forEach(date => console.log("cal_day:"+date.toUTCString()  ) );
 
 
 
@@ -3614,15 +3647,15 @@ function calendar_cutter(calendar, fromDate ,endDate ,lockDates, remove_lock_day
         aux_date.setHours(0,0,0,0);
         
         const lock_date_found = lockDates.find(element => new Date(element).getTime() === aux_date.getTime()  );
-        console.log("lockDates:"+ lockDates );
-        console.log("day match ?:"+ new Date(cal_days[d]) );
+       // console.log("lockDates:"+ lockDates );
+       // console.log("day match ?:"+ new Date(cal_days[d]) );
 
         if (lock_date_found != null )
         { lock_day=true ; }
         else
         {lock_day=false ; }
 
-        console.log("Is a Lock Date ?  :"+ lock_day );
+      //  console.log("Is a Lock Date ?  :"+ lock_day );
 
       
         for (let t=0 ; t < cal_hours.length ; t++ )
@@ -3633,11 +3666,11 @@ function calendar_cutter(calendar, fromDate ,endDate ,lockDates, remove_lock_day
               //time_start_set.setTime(time_start_set.getTime() + cal_hours[t].getTime() ) 
               let time_app_json = new Date(time_start_set.getTime() + cal_hours[t].getTime() )
               time_app_json.setMilliseconds(0)
-              
+           /*   
              console.log("********* cal_days[d]     ="+cal_days[d].toUTCString() )
              console.log("********* cal_hours[t]    ="+cal_hours[t].toUTCString() )
              console.log("********* time_start_set  ="+time_start_set.toUTCString() )
-           
+           */
               var appointment_slot = {
                 calendar_id : calendar.id , 
                 date : time_app_json ,
@@ -3655,7 +3688,7 @@ function calendar_cutter(calendar, fromDate ,endDate ,lockDates, remove_lock_day
               }           
     } 
 
-   cal_appointments.forEach(a => console.log("Appointment :"+JSON.stringify(a) ))
+   //cal_appointments.forEach(a => console.log("Appointment :"+JSON.stringify(a) ))
   }
    return (cal_appointments) ;
 } 
@@ -3663,8 +3696,8 @@ function calendar_cutter(calendar, fromDate ,endDate ,lockDates, remove_lock_day
 // filter app from app taken
 function filter_app_from_appTaken(apps , appsTaken, includeAppTaken)
 {
-  console.log("FILTER FUNCTION APPS:"+JSON.stringify(apps ));
-  console.log("FILTER FUNCTION APPS TAKEN:"+JSON.stringify(appsTaken));
+  //console.log("FILTER FUNCTION APPS:"+JSON.stringify(apps ));
+  //console.log("FILTER FUNCTION APPS TAKEN:"+JSON.stringify(appsTaken));
  
   let apps_taken_array = [] ;  
   if (appsTaken != null)
@@ -3704,7 +3737,7 @@ function filter_app_from_appTaken(apps , appsTaken, includeAppTaken)
       let matchAPP = apps.findIndex( (element) => new Date(element.start_time).getTime()  === new Date(appointment_slot.start_time).getTime() );
       if (matchAPP != -1 )
       {
-      console.log ("MATCH To be removed from APPS available list:  "+matchAPP+" apps:"+JSON.stringify(apps[matchAPP]) )
+      //console.log ("MATCH To be removed from APPS available list:  "+matchAPP+" apps:"+JSON.stringify(apps[matchAPP]) )
       apps.splice(matchAPP,1);
       }
 
