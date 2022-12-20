@@ -23,9 +23,12 @@ app.use(bodyParser.urlencoded({ extended: true }));
 app.use(bodyParser.json());
 
 
-// **************************************
-// ********* PUBLIC API ******************
-// **************************************
+// *******************************************************
+// *********                                  ************
+// *********   PUBLIC API                     ************
+// *********                                  ************
+// *******************************************************
+// *******************************************************
 
 // RECOVER APPOINTMENTS
 app.route('/recover_appointments')
@@ -582,6 +585,7 @@ const resultado = client.query(sql, (err, result) => {
 
 })
 
+/*
 // GET INSURANCE LIST
 app.route('/common_get_insurance_list')
 .post(function (req, res) {
@@ -613,6 +617,7 @@ const resultado = client.query(sql, (err, result) => {
 })
 
 })
+*/
 
 //***************************************
 //******** PROFESIONAL API  *************
@@ -1342,9 +1347,13 @@ app.route('/professional_pwsite_get_appointments_calendar')
 async function professional_pwsite_get_appointments_calendar(params)
 {
   console.log("--------------------------- professional_pwsite_get_appointments_calendar "+JSON.stringify(params) );
- 
   let apps = await get_appointments_available_from_calendar( [params.calendar_id], params.date ,true )
-
+  /*
+  let aux_date_start = new Date(params.date) 
+  let aux_date_end = new Date(aux_date_start.getTime()+( (1000*60*60*24)* 40 ) )
+  let appointments_reserved = await get_professional_appointments_by_date( params.professional_id , aux_date_start , aux_date_end )
+  */  
+  
   let jsonresp = {
     appointments : apps ,
     other : "bbbb",
@@ -2381,15 +2390,6 @@ async function get_public_appointments_available(json)
    //*********** response message *********/
    let json_response = {
     appointments_list: [] , //here we put the appointments object
-    //centers : [] ,
-    //calendars : [] ,
-    //specialties : [],
-    //date : null ,
-    /*
-    lock_dates : [] ,
-    error : [],
-    lock_date: false,
-    */
     }
   //*********************************** */   
 
@@ -2397,25 +2397,10 @@ async function get_public_appointments_available(json)
    let days_list = []
   //days_list.push(date)
     
-  // HOW MANY DAYS ???
+  // HOW MANY DAYS  40 ???
    for (let i = 1; i < 40 ; i++) {
     days_list.push(new Date(date.getTime()+( (1000*60*60*24)*i ) ) )
   }
-
-/*
-   days_list.push(new Date(date.getTime()+(1000*60*60*24 )) )
-   days_list.push(new Date(date.getTime()+(1000*60*60*48 )) )
-   days_list.push(new Date(date.getTime()+(1000*60*60*72 )) )
-   days_list.push(new Date(date.getTime()+(1000*60*60*96 )) )
-   days_list.push(new Date(date.getTime()+(1000*60*60*120)) )
-   days_list.push(new Date(date.getTime()+(1000*60*60*148)) )
-   days_list.push(new Date(date.getTime()+(1000*60*60*172)) )
-   days_list.push(new Date(date.getTime()+(1000*60*60*196)) )
-   days_list.push(new Date(date.getTime()+(1000*60*60*220)) )
-   days_list.push(new Date(date.getTime()+(1000*60*60*244)) )
-   days_list.push(new Date(date.getTime()+(1000*60*60*268)) )
-   days_list.push(new Date(date.getTime()+(1000*60*60*292)) )
-*/
 
    console.log("-----------Days to search:"+days_list)
 
@@ -2664,6 +2649,7 @@ async function get_public_centers(center_ids)
 }
 
 //************************************************************* */
+//************************************************************* */
 //********** PROFESSIONAL GET ALL APPOINTMENTS TAKEN    ******* */
 //**********                                           ******** */
 //************************************************************* */
@@ -2707,9 +2693,6 @@ async function professional_get_all_appointments_by_prof_id(req)
   
   return response.rows ;
 }
-
-
-
 
 
 //***************************************************** */
@@ -2756,12 +2739,12 @@ async function professional_get_appointments(req)
   return response.rows ;
 }
 
-/*****************************************************
-******************************************************
-*    LIST APPOINTMENTS IN PROFESSIONAL BACKEND 
-*        PROFESIONAL GET APPOINTMENT DAY 3
-*****************************************************
-*****************************************************/
+//******************************************************************
+//******************************************************************
+//*        LIST APPOINTMENTS IN PROFESSIONAL BACKEND 
+//*            PROFESIONAL GET APPOINTMENT DAY 3
+//*****************************************************************
+//*****************************************************************
 app.route('/professional_get_appointments_day3')
 .post(function (req, res) {
   console.log('professional_get_appointments_day3 : INPUT : ', req.body );
@@ -2888,11 +2871,6 @@ async function professional_get_appointments_from_calendars(prof_id, date,remove
 /****************       TOOLS UTILS  ******************************** */
 /******************************************************************** */
 /******************************************************************** */
-
-
-//******************************************************************** */
-//***************       TOOLS Servicios   **************************** */
-//******************************************************************** */
 
 // PROFESSIONAL GET SPECIALT 
 app.route('/get_professional_specialty')
