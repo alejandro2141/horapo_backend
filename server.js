@@ -1257,17 +1257,19 @@ async function professional_pwsite_get_calendar(req)
   {
   center_data = await get_center_data( calendar_data[0].center_id  )
   }
-
+  
   let specialties = await get_specialties()
+  let locations = await get_locations()
 
   let jsonresp = {
             professional_data : professional_data[0],
             calendars : calendar_data ,
             centers : center_data ,
-            specialties : specialties
+            specialties : specialties ,
+            locations : locations ,
                 }
-      return jsonresp 
 
+  return jsonresp 
 }
 
 async function get_professional_public_data(id)
@@ -1320,6 +1322,21 @@ async function get_specialties()
   //console.log("ids:"+ids+" dates:"+dates)
 
   const centerdata  = "SELECT * FROM specialty ";
+  console.log("SQL QUERY: "+centerdata)
+  const res = await client.query(centerdata)
+  client.end() 
+  return res.rows;
+}
+
+
+async function get_locations()
+{
+  const { Client } = require('pg')
+  const client = new Client(conn_data)
+  await client.connect()
+  //console.log("ids:"+ids+" dates:"+dates)
+
+  const centerdata  = "SELECT * FROM comuna ";
   console.log("SQL QUERY: "+centerdata)
   const res = await client.query(centerdata)
   client.end() 
