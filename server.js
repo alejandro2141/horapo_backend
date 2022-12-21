@@ -1225,14 +1225,14 @@ const resultado = client.query(sql, (err, result) => {
 })
 
 
-//***************************************************************
-//***************************************************************
-//********   PROFESSIONAL WEB SITE              *****************
-//*********                                           **********
-//********  professional_pwsite_get_calendar           **********
-//********                                      *****************
-//***************************************************************
-//***************************************************************
+//*******************************************************************************
+//*******************************************************************************
+//********   PROFESSIONAL WEB SITE    publicSiteProfessional    *****************
+//*********                                                     *****************
+//********  professional_pwsite_get_calendar                    *****************
+//********                                                      *****************
+//*******************************************************************************
+//*******************************************************************************
 
 // PROFESSIONAL GET TimeTable
 app.route('/professional_pwsite_get_calendar')
@@ -1344,7 +1344,7 @@ async function get_locations()
 }
 
 //****************************************************************************
-//********   PROFESSIONAL WEB SITE                                  **********
+//********   PROFESSIONAL WEB SITE   publicSiteProfessional         **********
 //********        GET CALENDAR                                      **********
 //********  professional_pwsite_get_appointments_calendar           **********
 //********                                                          **********
@@ -1363,22 +1363,57 @@ app.route('/professional_pwsite_get_appointments_calendar')
 
 async function professional_pwsite_get_appointments_calendar(params)
 {
-  console.log("--------------------------- professional_pwsite_get_appointments_calendar "+JSON.stringify(params) );
-  let apps = await get_appointments_available_from_calendar( [params.calendar_id], params.date ,true )
+  console.log(" professional_pwsite_get_appointments_calendar "+JSON.stringify(params) );
+  //let apps = await get_appointments_available_from_calendar( [params.calendar_id], params.date ,true )
+  let calendar_data = await get_calendar_data(params.calendar_id)
+  console.log("calendar_data = "+JSON.stringify(calendar_data))
+  
+  let json_response = {
+    appointments : [] ,
+    other : "bbbb",
+        }
+  // DAYS CICLE
+   let days_list = []
+  // HOW MANY DAYS in PUBLIC CALENDAR SEARCH  40 ???
+  let aux_date = new Date(params.date) 
+   for (let i = 1; i < 4 ; i++) {
+    days_list.push( new Date( aux_date.getTime()+ ((1000*60*60*24)*i)) ) 
+  }
+
+  for (let i = 0; i < days_list.length; i++) {
+    // console.log("-----------Day to get:"+days_list[i])
+    let app_calendars = calendar_cutter_day( calendar_data[0] , days_list[i] )
+
+    let day_apps_aux = 
+        { date:days_list[i] , 
+          appointments: app_calendars 
+        } 
+
+    json_response.appointments.push(day_apps_aux)
+
+    }
+
+    /*
+    let aux_appointments = await get_public_appointments_available_of_a_day(json.specialty , days_list[i], json.location, json.type_center, json.type_home, json.type_remote ) //type_center,type_home,type_remote
+     //console.log("-----------Appointments:"+JSON.stringify(aux_appointments))
+            let aux_app_day = {
+              date : days_list[i] ,
+              appointments : aux_appointments.appointments ,
+              centers: aux_appointments.centers  ,
+              calendars : aux_appointments.calendars  ,
+            } 
+
+     json_response.appointments.push(aux_app_day)    
+    */
   /*
   let aux_date_start = new Date(params.date) 
   let aux_date_end = new Date(aux_date_start.getTime()+( (1000*60*60*24)* 40 ) )
   let appointments_reserved = await get_professional_appointments_by_date( params.professional_id , aux_date_start , aux_date_end )
   */  
   
-  let jsonresp = {
-    appointments : apps ,
-    other : "bbbb",
-        }
-  
-  console.log("--------------------------- professional_pwsite_get_appointments_calendar response "+JSON.stringify(jsonresp) );
+  console.log("--------------------------- professional_pwsite_get_appointments_calendar response "+JSON.stringify(json_response ) );
  
-  return jsonresp 
+  return json_response 
  
 }
 
@@ -1434,6 +1469,7 @@ const resultado = client.query(query_update, (err, result) => {
 //********************************************* 
 // PUBLIC POST Login
 //********************************************* 
+/*
 app.route('/loginAssistant')
 .post(function (req, res) {
  
@@ -1479,7 +1515,7 @@ const resultado = client.query(sql, (err, result) => {
 
 
 })
-  
+  */
 //********************************************* 
 // PUBLIC POST GET APPOINTMENT AVAILABLE LIST
 //********************************************* 
@@ -2386,17 +2422,19 @@ async function professional_get_data_for_calendars_view(json)
 
 }
 
-//***************************************************** */
-//********** PUBLIC SEARCH Main Page Public    ******** */
-//********** PUBLIC APPOINTMENTS               ******** */
-//***************************************************** */
+//******************************************************** */
+//**********                                      ******** */
+//**********      PUBLIC SEARCH Main Page Public  ******** */
+//**********          PUBLIC APPOINTMENTS         ******** */
+//**********                                      ******** */
+//******************************************************** */
 
 app.route('/patient_get_appointments_generic')
 .post(function (req, res) {
-    console.log('patient_get_appointments_day2 : INPUT : ', req.body );
+    console.log('patient_get_appointments_generic : INPUT : ', req.body );
     //res.status(200).send(JSON.stringify( get_appointments_available(req.body)));
     let resp_app_available = get_public_appointments_available(req.body);
-    resp_app_available.then( v => {  console.log("patient_get_appointments_day2  RESPONSE: "+JSON.stringify(v)) ; return (res.status(200).send(JSON.stringify(v))) } )
+    resp_app_available.then( v => {  console.log("patient_get_appointments_generic  RESPONSE: "+JSON.stringify(v)) ; return (res.status(200).send(JSON.stringify(v))) } )
 })
 
 async function get_public_appointments_available(json)
@@ -2419,10 +2457,10 @@ async function get_public_appointments_available(json)
     days_list.push(new Date(date.getTime()+( (1000*60*60*24)*i ) ) )
   }
 
-   console.log("-----------Days to search:"+days_list)
+  // console.log("-----------Days to search:"+days_list)
 
    for (let i = 0; i < days_list.length; i++) {
-     console.log("-----------Day to get:"+days_list[i])
+    // console.log("-----------Day to get:"+days_list[i])
      let aux_appointments = await get_public_appointments_available_of_a_day(json.specialty , days_list[i], json.location, json.type_center, json.type_home, json.type_remote ) //type_center,type_home,type_remote
      //console.log("-----------Appointments:"+JSON.stringify(aux_appointments))
             let aux_app_day = {
@@ -2496,8 +2534,6 @@ async function get_public_appointments_available_of_a_day(specialty, date_to_get
     { console.log("Filter REMOTE CARE Active :"+JSON.stringify(centers))
       centers =  centers.filter(center =>  center.remote_care == 1 ) 
     }
-    //aqui me quede
-
 
     let centers_ids_filtered = centers.map(val => val.id)
     console.log("Centers : "+JSON.stringify(centers))
@@ -3474,9 +3510,18 @@ async function is_professional_lock_day(prof_id,date)
 //******************************************************* */
 //let apps = calendar_cutter(calendars[i],json.date, date_end.toISOString() , lockDates, true) ;  
 //******************************************************* */
+
+
+//******************************************************* */
+//**********                                ************* */
+//**********     CALENDAR CUTTER DAY        ************* */
+//**********       12/12/2022 
+//**********      From Public Search        ************* */
+//**********                                ************* */
+//******************************************************* */
 function calendar_cutter_day(calendar, date_to_cut)
 {
-  console.log("Calendar Cutter : "+calendar.id);
+  console.log("Calendar Cutter:"+calendar.id +" dateToCut:"+date_to_cut );
   let cal_days = [] ; // ARRAY TO STORE DAYS
   let cal_hours = [] ; //ARRAY TO STORE TIMES
   let cal_appointments = [] ; //ARRAY TO STORE TIMES
