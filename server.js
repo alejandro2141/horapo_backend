@@ -1363,32 +1363,69 @@ app.route('/professional_pwsite_get_appointments_calendar')
 
 async function professional_pwsite_get_appointments_calendar(params)
 {
-  console.log(" professional_pwsite_get_appointments_calendar "+JSON.stringify(params) );
-  //let apps = await get_appointments_available_from_calendar( [params.calendar_id], params.date ,true )
-  let calendar_data = await get_calendar_data(params.calendar_id)
-  console.log("calendar_data = "+JSON.stringify(calendar_data))
+  let days_list = []
+  let lock_days = []
+  let days_list_filtered = []
   
   let json_response = {
     appointments : [] ,
     other : "bbbb",
         }
-  // DAYS CICLE
-   let days_list = []
-  // HOW MANY DAYS in PUBLIC CALENDAR SEARCH  40 ???
+  
+
+  console.log(" professional_pwsite_get_appointments_calendar "+JSON.stringify(params) );
+  //let apps = await get_appointments_available_from_calendar( [params.calendar_id], params.date ,true )
+  // 1.- GET CALENDAR DATA
+  let calendar_data = await get_calendar_data(params.calendar_id)
+  console.log("calendar_data = "+JSON.stringify(calendar_data))
+  
+  // 2.- GET LOCK DAYS PROFESSIONAL
+  lock_days = await get_professional_lock_days(calendar_data[0].professional_id)
+  console.log("LOCK DAYS:"+JSON.stringify(lock_days))
+
+  // 3.- HOW MANY DAYS in PUBLIC CALENDAR SEARCH  40 ???
   let aux_date = new Date(params.date) 
-   for (let i = 1; i < 4 ; i++) {
+   for (let i = 1; i < 40 ; i++) {
     days_list.push( new Date( aux_date.getTime()+ ((1000*60*60*24)*i)) ) 
   }
-
+  
+  // FILTER DAYS ONLY IF ACTIVE IN CALENDAR 
+  let day_cal_start = new Date(calendar_data[0].date_start)
+  let day_cal_end   = new Date(calendar_data[0].date_end  )
+  
   for (let i = 0; i < days_list.length; i++) {
+    
+      let day_eval = new Date(days_list[i])
+      //check if day[i] is in BLockDays list
+      const lock_date_found = lock_days.find(elem => (new Date(elem.date).getDate() ==  day_eval.getDate() && new Date(elem.date).getMonth() ==  day_eval.getMonth() && new Date(elem.date).getFullYear() ==  day_eval.getFullYear()     ));
+   
+      //let findInBlockedDays = lock_days.find(elem => Date(elem.date).getTime() ==  Date(day_eval).getTime()  )
+
+      if ( day_cal_start.getTime() < day_eval.getTime() && day_eval.getTime()  < day_cal_end.getTime() && lock_date_found== undefined  )   
+      {
+      // let lockDates_aux = await is_professional_lock_day(calendars[i].professional_id , date.toISOString()  );
+       
+        console.log("lock_date_found:"+lock_date_found+"    day_cal_start.getTime()"+day_cal_start.getTime()+" < day_eval.getTime()"+day_eval.getTime()+" <  day_cal_end.getTime()"+day_cal_end.getTime() )
+        days_list_filtered.push(day_eval)
+      }   
+  }
+
+  // FILTER FROM BLOCKER DAYS  
+
+
+  //********************************************************* */
+  
+  for (let i = 0; i < days_list_filtered.length; i++) {
     // console.log("-----------Day to get:"+days_list[i])
-    let app_calendars = calendar_cutter_day( calendar_data[0] , days_list[i] )
+      let app_calendars = calendar_cutter_day( calendar_data[0] , days_list_filtered[i] )
+      //LOOK FOR APPOINTMENT RESERVED FOR THIS DAY PROFESSIONAL ID and DAY
+      let appointments_reserved = await get_professional_appointments_by_date(calendar_data[0].professional_id , days_list_filtered[i] , days_list_filtered[i] )     
+      let app_calendar_filtered = filter_app_from_appTaken(app_calendars,appointments_reserved)
 
     let day_apps_aux = 
-        { date:days_list[i] , 
-          appointments: app_calendars 
+        { date : days_list_filtered[i] , 
+          appointments : app_calendar_filtered
         } 
-
     json_response.appointments.push(day_apps_aux)
 
     }
@@ -2426,7 +2463,7 @@ async function professional_get_data_for_calendars_view(json)
 //**********                                      ******** */
 //**********      PUBLIC SEARCH Main Page Public  ******** */
 //**********          PUBLIC APPOINTMENTS         ******** */
-//**********                                      ******** */
+//**********                21/12/2022            ******** */
 //******************************************************** */
 
 app.route('/patient_get_appointments_generic')
