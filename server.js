@@ -1328,7 +1328,6 @@ async function get_specialties()
   return res.rows;
 }
 
-
 async function get_locations()
 {
   const { Client } = require('pg')
@@ -1458,8 +1457,6 @@ async function professional_pwsite_get_appointments_calendar(params)
 //***************************************************************
 //***************************************************************
 //***************************************************************
-
-
 
 
 //********************************************* 
@@ -2831,10 +2828,18 @@ async function professional_get_appointments(req)
 
 //******************************************************************
 //******************************************************************
-//*        LIST APPOINTMENTS IN PROFESSIONAL BACKEND 
-//*            PROFESIONAL GET APPOINTMENT DAY 3
+//******************************************************************
+//*
+//*          PROFESSIONAL BACKEND 
+//*          LIST APPOINTMENTS DAY 
+//*  
+//*          PROFESIONAL GET APPOINTMENT DAY 3
+//*           V 23-12-22
+//*
 //*****************************************************************
 //*****************************************************************
+//*****************************************************************
+
 app.route('/professional_get_appointments_day3')
 .post(function (req, res) {
   console.log('professional_get_appointments_day3 : INPUT : ', req.body );
@@ -2876,8 +2881,9 @@ async function professional_get_appointments_from_calendars(prof_id, date,remove
    
   // ***********************************************************/
   // 2.- GET PROFESSIONAL CALENDARS AVAILABLE FOR REQUIRED DAY
+  //  (prof_id, date , includeCalendars Not Available )
   /*************************************************************/
-  let calendars = await get_calendars_available_by_professional_date(prof_id, date) ;
+  let calendars = await get_calendars_available_by_professional_date(prof_id, date ) ;
   console.log("CALENDARS:"+JSON.stringify(calendars));
   json_response.calendars = calendars 
 
@@ -3423,6 +3429,7 @@ async function get_calendars_available_by_professional_date(prof_id,date)
   //END IF LOCATION
   //const sql_calendars  = "SELECT * FROM professional_calendar WHERE id = 139 AND date_start <='2022-06-02' AND date_end >= '2022-06-01' AND  active = true AND deleted_professional = false AND status = 1  " ;  
   const sql_calendars  = "SELECT * FROM professional_calendar WHERE professional_id = "+prof_id+" AND  active = true AND deleted_professional = false AND status = 1  AND date_start <= '"+date+"'  AND date_end >= '"+date+"'  " ;  
+  //const sql_calendars  = "SELECT * FROM professional_calendar WHERE professional_id = "+prof_id+"  AND deleted_professional = false AND status = 1  AND date_start <= '"+date+"'  AND date_end >= '"+date+"'  " ;  
 
   console.log("get_calendar_available_by_ProfessionalId  SQL:"+sql_calendars) 
   
