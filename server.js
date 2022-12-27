@@ -2885,7 +2885,8 @@ async function professional_get_appointments_from_calendars(prof_id, date,remove
   /*************************************************************/
   let calendars = await get_calendars_available_by_professional_date(prof_id, date ) ;
   console.log("CALENDARS:"+JSON.stringify(calendars));
-  json_response.calendars = calendars 
+  json_response.calendars = await get_calendars_by_professional(prof_id) 
+  //json_response.calendars = calendars 
 
   //************************************************************ */
   // 3.- GET CENTERS
@@ -3331,6 +3332,7 @@ app.route('/professional_get_lock_days')
 //******************************************************************** */
 
 //GET PROFESSIONAL Calendars
+
 async function get_professional_specialties(prof_id)
 {
   const { Client } = require('pg')
@@ -3418,6 +3420,24 @@ async function get_professional_centers(id)
   client.end() 
   return res.rows;
   
+}
+
+//GET ALL CALENDARS  BY Professional and Date
+async function get_calendars_by_professional(prof_id)
+{
+  const { Client } = require('pg')
+  const client = new Client(conn_data)
+  await client.connect()  
+  //END IF LOCATION
+  //const sql_calendars  = "SELECT * FROM professional_calendar WHERE id = 139 AND date_start <='2022-06-02' AND date_end >= '2022-06-01' AND  active = true AND deleted_professional = false AND status = 1  " ;  
+  const sql_calendars  = "SELECT * FROM professional_calendar WHERE professional_id = "+prof_id+"  " ;  
+  //const sql_calendars  = "SELECT * FROM professional_calendar WHERE professional_id = "+prof_id+"  AND deleted_professional = false AND status = 1  AND date_start <= '"+date+"'  AND date_end >= '"+date+"'  " ;  
+
+  console.log("get_calendar_available_by_ProfessionalId  SQL:"+sql_calendars) 
+  
+  const res = await client.query(sql_calendars) 
+  client.end() 
+  return res.rows ;
 }
 
 //GET CALENDARS BY Professional and Date
