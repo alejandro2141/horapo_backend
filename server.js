@@ -2928,6 +2928,7 @@ async function professional_get_appointments_from_calendars(prof_id, date,remove
         json_response.lock_date = true 
         return(json_response); 
       }
+  // CONTINUE NEXT STEPS IF NOT A LOCK DATE 
 
   // 7 - SEND CALENDAR TO CUTTER 
   let app_day_calendar = [] ;
@@ -3859,7 +3860,8 @@ function filter_app_from_appTaken(apps , appsTaken, includeAppTaken)
         patient_doc_id : appsTaken[i].patient_doc_id , 
         patient_age : appsTaken[i].patient_age, 
         patient_address : appsTaken[i].patient_address , 
-        patient_doc_id : appsTaken[i].patient_doc_id , 
+        patient_email : appsTaken[i].patient_email , 
+        patient_phone1 : appsTaken[i].patient_phone1 ,
 
         app_blocked : appsTaken[i].app_blocked ,
        }
