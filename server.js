@@ -623,6 +623,41 @@ const resultado = client.query(sql, (err, result) => {
 //******** PROFESIONAL API  *************
 //***************************************
 
+// RECOVER APPOINTMENTS
+app.route('/professional_request_confirmation')
+.post(function (req, res) {
+    console.log('recover_appointments INPUT:', req.body );
+// ****** Connect to postgre
+const { Pool, Client } = require('pg')
+const client = new Client({
+  user: 'conmeddb_user',
+  host: '127.0.0.1',
+  database: 'conmeddb02',
+  password: 'paranoid',
+  port: 5432,
+})
+client.connect() ;
+// GET RECOVER APPOINTMENTS 
+var sql  = null;
+sql = "insert into request_app_confirm ( app_id ,email ) values ('"+req.body.app_id+"'  ,'"+req.body.patient_email+"') RETURNING * ;  ";
+
+console.log('professional_request_confirmation SQL :'+sql ) ;
+	client.query(sql, (err, result) => {
+	  if (err) {
+	     // throw err ;
+	      console.log('professional_request_confirmation ERROR CENTER CREATION QUERY:'+sql ) ;
+	      console.log(err ) ;
+	    }
+	    else
+	    {
+	  res.status(200).send(JSON.stringify(result));
+	  console.log('professional_request_confirmation  SUCCESS INSERT ' ) ; 
+    console.log('professional_request_confirmation  OUTPUT  :'+JSON.stringify(result) ) ; 
+	   }
+	   
+	  client.end()
+	})
+})
 
 // PROFESSIONAL CREATE CALENDAR 
 app.route('/professional_create_calendar')
@@ -1500,56 +1535,7 @@ const resultado = client.query(query_update, (err, result) => {
 
 })
 
-//********************************************* 
-// PUBLIC POST Login
-//********************************************* 
-/*
-app.route('/loginAssistant')
-.post(function (req, res) {
- 
-    console.log('POST LOGIN - JSON REQUEST : ', req.body );
- 
-// ****** Connect to postgre
-const { Pool, Client } = require('pg')
-const client = new Client({
-  user: 'conmeddb_user',
-  host: '127.0.0.1',
-  database: 'conmeddb01',
-  password: 'paranoid',
-  port: 5432,
-})
 
-client.connect()
-// ****** Run query to bring appointment
-const sql  = "SELECT * FROM users WHERE email='"+req.body.form_email+"'  AND password='"+req.body.form_pass+"'" ;
-console.log('SQL  = '+sql ) ;
-var json_response = { result_status : 'noset', result_code: 'noset', token: 'noset', user_id: 'noset', };
-const resultado = client.query(sql, (err, result) => {
-
-  if (err) {
-      throw error ;
-      console.log(' ERROR QUERY  = '+sql ) ;
-    }
-    
-  if (result.rowCount == 1 )
-  {
-  console.log ("LOGIN MATCH!!");
-  json_response = { login_result : 'Login Success', result_code: '200', token: '11234', user_id: +result.user_id  };
-  }
-  else
-  {
-  console.log ("LOGIN NO MATCH!!");
-  json_response = { login_result : 'Login Failed', result_code: '700', token: '11234',  user_id: '0' };
-  }
-  
-  res.status(200).send(JSON.stringify(json_response));
-  console.log('JSON RESPONSE  = '+JSON.stringify(json_response) ) ;
-  client.end()
-})
-
-
-})
-  */
 //********************************************* 
 // PUBLIC POST GET APPOINTMENT AVAILABLE LIST
 //********************************************* 
@@ -3407,7 +3393,7 @@ app.route('/professional_get_lock_days')
 //***************    Funciones        ******************************** */
 //******************************************************************** */
 
-//GET PROFESSIONAL Calendars */
+//GET PROFESSIONAL Calendars 
 
 async function get_professional_specialties(prof_id)
 {
