@@ -619,11 +619,17 @@ const resultado = client.query(sql, (err, result) => {
 })
 */
 
+
 //***************************************
-//******** PROFESIONAL API  *************
+//*****                      ************
+//*****    REQUEST EMAILS    ************
+//*****                      ************
 //***************************************
 
-// RECOVER APPOINTMENTS
+
+//***************************************/
+//  RECOVER APPOINTMENTS  01/02/2022
+//***************************************/
 app.route('/professional_request_confirmation')
 .post(function (req, res) {
     console.log('recover_appointments INPUT:', req.body );
@@ -658,6 +664,49 @@ console.log('professional_request_confirmation SQL :'+sql ) ;
 	  client.end()
 	})
 })
+
+//*** EMAIL to share Calendar *****/
+//  01/02/2022
+//****************************/
+app.route('/professional_send_calendar_to_patient')
+.post(function (req, res) {
+    console.log('recover_appointments INPUT:', req.body );
+// ****** Connect to postgre
+const { Pool, Client } = require('pg')
+const client = new Client({
+  user: 'conmeddb_user',
+  host: '127.0.0.1',
+  database: 'conmeddb02',
+  password: 'paranoid',
+  port: 5432,
+})
+client.connect() ;
+// GET RECOVER APPOINTMENTS 
+var sql  = null;
+sql = "insert into send_calendar_patient ( email, calendar_id ) values ('"+req.body.email+"'  ,'"+req.body.calendar_id+"') RETURNING * ;  ";
+
+console.log('professional_send_calendar_to_patient SQL :'+sql ) ;
+	client.query(sql, (err, result) => {
+	  if (err) {
+	     // throw err ;
+	      console.log('professional_send_calendar_to_patient ERROR CENTER CREATION QUERY:'+sql ) ;
+	      console.log(err ) ;
+	    }
+	    else
+	    {
+	  res.status(200).send(JSON.stringify(result));
+	  console.log('professional_send_calendar_to_patient  SUCCESS INSERT ' ) ; 
+    console.log('professional_send_calendar_to_patient  OUTPUT  :'+JSON.stringify(result) ) ; 
+	   }
+	   
+	  client.end()
+	})
+})
+
+
+//***************************************
+//******** PROFESIONAL API  *************
+//***************************************
 
 // PROFESSIONAL CREATE CALENDAR 
 app.route('/professional_create_calendar')
