@@ -3208,6 +3208,36 @@ const resultado = client.query(sql, (err, result) => {
 
 })
 
+// PROFESSIONAL GET CENTERS Return even deleted
+
+app.route('/professional_get_config_data')
+.post(function (req, res) {
+ 
+    console.log('professional_get_config_data :', req.body );
+
+// ****** Connect to postgre
+const { Client } = require('pg')
+const client = new Client(conn_data)
+client.connect()
+
+// ****** Run query to bring appointment
+const sql  = "SELECT * FROM center WHERE  professional_id='"+req.body.professional_id+"'  ORDER BY id ASC  " ;
+console.log('professional_get_config_data: SQL :'+sql ) ;
+const resultado = client.query(sql, (err, result) => {
+
+  if (err) {
+      console.log('professional_get_config_data ERR:'+err ) ;
+    }
+
+  console.log('professional_get_config_data : '+JSON.stringify(result) ) ;
+  res.status(200).send(JSON.stringify(result) );
+  client.end()
+})
+
+})
+
+
+
 //PROFESSIONAL UPDATE CENTER
 app.route('/professional_update_center')
 .post(function (req, res) {
@@ -3392,6 +3422,10 @@ console.log('professional_lock_day SQL:'+sql ) ;
   
 })
 
+// ***************************************************
+// ******   TUTORIAL  02-03-2923    ****************** 
+// ***************************************************
+
 // PROFESSIONAL SHUTDOWN TUTORIAL
 app.route('/professional_shutdown_tutorial')
 .post(function (req, res) {
@@ -3422,12 +3456,15 @@ const resultado = client.query(query_update, (err, result) => {
   client.end()
 })
 
-
- //console.log(JSON.stringify(JSON.stringify(req))) ;
- //res.send("saludos terricolas");
- //res.status(200).json(resultado.rows) ;
- // res.send(JSON.stringify(result));
 })
+
+
+
+// ***************************************************
+// ****************  END TUTORIAL   ****************** 
+// ***************************************************
+
+
 
 // PROFESSIONAL GET LOCK DAYS 
 app.route('/professional_get_lock_days')
