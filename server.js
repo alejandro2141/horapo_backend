@@ -357,9 +357,11 @@ const client = new Client({
 client.connect()
 //const query_update = "UPDATE appointment SET app_status = '0' , app_available = true , patient_doc_id = null , patient_name = null , patient_phone1 = null , patient_phone2 = null , patient_email = null , confirmation_status = null      WHERE id = '"+req.body.appointment_id+"' RETURNING * " ;
 
-const query_update = "DELETE  FROM appointment WHERE id = '"+req.body.appointment_id+"' RETURNING * " ;
+/* const query_update = "DELETE  FROM appointment WHERE id = '"+req.body.appointment_id+"' RETURNING * " ;
+*/
 
-
+const query_update = "WITH app AS (DELETE FROM appointment  WHERE id = "+req.body.appointment_id+" RETURNING *) INSERT INTO appointment_cancelled  SELECT * FROM app";
+console.log("SQL professional_cancel_appointment :"+query_update)
 
 console.log(query_update);
 const resultado = client.query(query_update, (err, result) => {
