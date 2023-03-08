@@ -2809,7 +2809,7 @@ async function professional_get_all_appointments_by_prof_id(req)
   //const sql_calendars SELECT * FROM professional_day_locked WHERE professional_id = 1 ;  = "SELECT * FROM professional_calendar WHERE id = 139 AND date_start <='2022-06-02' AND date_end >= '2022-06-01' AND  active = true AND deleted_professional = false AND status = 1  " ;  
   console.log("professional_get_appointments_taken REQUEST "+JSON.stringify(req.body));
 
-  const sql  = "SELECT * FROM appointment WHERE Professional_id='"+req.body.professional_id+"' AND app_blocked = 0  ORDER BY start_time ASC" 
+  const sql  = "SELECT *, id as app_id FROM appointment WHERE Professional_id='"+req.body.professional_id+"' AND app_blocked = 0  ORDER BY start_time ASC" 
   console.log("professional_get_appointments_taken  SQL:"+sql) 
   const response = await client.query(sql) 
   client.end() 
