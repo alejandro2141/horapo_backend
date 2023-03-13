@@ -2385,6 +2385,48 @@ async function get_access_login(req)
 }
 
 //***************************************************** */
+//********** PROFESSIONAL SEND COMMENTS HELP    ******* */
+//**********                                   ******** */
+//***************************************************** */
+
+app.route('/professional_send_comments')
+.post(function (req, res) {
+  console.log('professional_send_comments  REQUEST : ', req.body );
+
+// ****** Connect to postgre
+const { Client } = require('pg')
+const client = new Client(conn_data)
+client.connect()
+
+// ****** Run query to bring appointment
+const sql = "INSERT INTO customers_messages (professional_id, message ) VALUES ("+req.body.professional_id+", '"+req.body.message+"') "
+//const sql  = "SELECT * FROM center where id IN ( "+req.body.centers_ids+" )  " ;
+console.log('SQL professional_send_comments : '+sql ) ;
+const resultado = client.query(sql, (err, result) => {
+
+  if (err) {
+      console.log(' ERROR QUERY = '+sql ) ;
+      console.log(' ERR = '+err ) ;
+    }
+
+  if (result !=null)
+  {
+  console.log('RESULT professional_send_comments '+JSON.stringify(result.rows) ) ;
+  res.status(200).send(JSON.stringify(result.rows) );
+  }
+  else
+  {
+    res.status(200).send( null ) ;
+  }
+  
+  client.end()
+})
+
+
+})
+
+
+//***************************************************** */
 //********** PUBLIC GET CENTERS ARRAY from ids  ******* */
 //**********                                   ******** */
 //***************************************************** */
