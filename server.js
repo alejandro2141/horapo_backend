@@ -2399,7 +2399,7 @@ const client = new Client(conn_data)
 client.connect()
 
 // ****** Run query to bring appointment
-const sql = "INSERT INTO customers_messages (professional_id, message ) VALUES ("+req.body.professional_id+", '"+req.body.message+"') "
+const sql = "INSERT INTO customers_messages (professional_id, message , animo ) VALUES ("+req.body.professional_id+", '"+req.body.message+"', '"+req.body.animo+"') "
 //const sql  = "SELECT * FROM center where id IN ( "+req.body.centers_ids+" )  " ;
 console.log('SQL professional_send_comments : '+sql ) ;
 const resultado = client.query(sql, (err, result) => {
