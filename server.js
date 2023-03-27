@@ -30,9 +30,13 @@ app.use(bodyParser.json());
 // *******************************************************
 // *******************************************************
 
-// RECOVER APPOINTMENTS
+//*****  RECOVER APPOINTMENTS  ******************** */
+// sanitized 24-03-2023
+//*************************************************** */
 app.route('/recover_appointments')
 .post(function (req, res) {
+
+  req=sntz_json(req)
     console.log('recover_appointments INPUT:', req.body );
 // ****** Connect to postgre
 const { Pool, Client } = require('pg')
@@ -88,7 +92,7 @@ var json_response = { result_status : 1 };
 // CHECK INPUT PARAMETERS TO IDENTIFY IF  REQUEST IS TO CREATE CENTER
 // CREATE DIRECTLY AGENDA 
 //const sql  = "INSERT INTO centers ( name ,  address , phone1, phone2 ) VALUES (  '"+req.body.center_name+"', '"+req.body.center_address+"' , '"+req.body.center_phone1+"', '"+req.body.center_phone2+"' ) RETURNING id " ;
-sql = "INSERT INTO professional_register ( name ,  last_name1 , last_name2 , email , doc_id , passwd , personal_address , personal_phone , specialty  ) VALUES (  '"+req.body.name+"' , '"+req.body.last_name1+"', '"+req.body.last_name2+"' ,'"+req.body.email+"' ,'"+req.body.doc_id+"'  ,'"+req.body.passwd+"' ,'"+req.body.personal_address+"' ,'"+req.body.personal_phone+"' ,'"+req.body.specialty+"'  ) RETURNING *  ";
+sql = "INSERT INTO professional_register ( name ,  last_name1 , last_name2 , email , doc_id , passwd , personal_address , personal_phone , specialty  ) VALUES (  '"+sntz(req.body.name)+"' , '"+sntz(req.body.last_name1)+"', '"+req.body.last_name2+"' ,'"+req.body.email+"' ,'"+req.body.doc_id+"'  ,'"+req.body.passwd+"' ,'"+req.body.personal_address+"' ,'"+req.body.personal_phone+"' ,'"+req.body.specialty+"'  ) RETURNING *  ";
 
 console.log('public_register_professional SQL :'+sql ) ;
 	client.query(sql, (err, result) => {
@@ -4074,18 +4078,47 @@ function filter_app_from_appTaken(apps , appsTaken, includeAppTaken)
 
 
 
-    // **************************************
-    // ******       SECURITY           ******
-    // **************************************
+// ***************************************************************
+// ***********    SECURITY    ************************************
+//              24-03-2023
+// ***************************************************************
 
     function sntz(inputdata , flaw )
     {
+    const regular_exp= /[^a-z0-9,' ',-,@,.]/ig
     
-    return inputdata.replace(/[a-zA-Z0-9.,?]*/ , "" );
-
+    if (  regular_exp.test(inputdata))
+    {
+      console.log ("SECURITY WARNING: INPUT includes special characters:"+JSON.stringify(inputdata) )    
+    }
+    return inputdata.replaceAll( regular_exp, "" );
+    
     }
 
 
+// ***************************************************************
+// **** SECURITY Goes Through a JSON to sanitize  every field  ***
+//              24-03-2023
+// ***************************************************************
+
+function sntz_json(json_input)
+{ 
+  console.log("sanitization JSON INPUT: "+JSON.stringify(json_input))
+  /*
+    var p = {
+      "p1": "value1",
+      "p2": "value2",
+      "p3": "value3"
+  };
+  */
+
+  for (var key in json_input) {
+      if (json_input.hasOwnProperty(key)) {
+        json_input[key] = sntz(json_input[key])
+        }
+  }
+  return json_input
+}
 
  
 
