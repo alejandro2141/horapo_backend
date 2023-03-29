@@ -23,12 +23,12 @@ app.use((req, res, next) => {
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(bodyParser.json());
 
-// ***************************************************************************
-// *********                                  ********************************
-// *********   COMMON INTERFACE               ********************************
-// *********                                  ********************************
-// ***************************************************************************
-// ***************************************************************************
+// *********************************************************************************************************
+// *********                                  **************************************************************
+// *********   COMMON INTERFACE               **************************************************************
+// *********                                  **************************************************************
+// *********************************************************************************************************
+// *********************************************************************************************************
 
 // GET SPECIALTY LIST
 // *** validated 27-03-2023
@@ -81,12 +81,12 @@ const resultado = client.query(sql, (err, result) => {
 
 })
 
-// ***************************************************************************
-// *********                                  ********************************
-// *********   PUBLIC INTERFACE               ********************************
-// *********                                  ********************************
-// ***************************************************************************
-// ***************************************************************************
+// *********************************************************************************************************
+// *********                                  **************************************************************
+// *********   PUBLIC INTERFACE               **************************************************************
+// *********                                  **************************************************************
+// *********************************************************************************************************
+// *********************************************************************************************************
 
 //*****  RECOVER APPOINTMENTS  ******************** */
 // sanitized 27-03-2023
@@ -235,6 +235,387 @@ const resultado = client.query(sql, (err, result) => {
 })
 
 })
+
+
+//***************************************************** */
+// COMMON GET CENTERS                                   */
+// sanitized 29-03-2023 
+// TO BE ELIMINATED  29-03-2023
+//***************************************************** */
+app.route('/common_get_centers')
+.post(function (req, res) {
+  req.body=sntz_json(req.body,"TO BE ELIMINATED INPUT /common_get_centers")
+//  console.log('common_get_centers REQUEST : ', req.body );
+ 
+// ****** Connect to postgre
+const { Client } = require('pg')
+const client = new Client(conn_data)
+client.connect()
+
+// ****** Run query to bring appointment
+const sql  = "SELECT * FROM center where id IN ( "+req.body.centers_ids+" )  " ;
+console.log('SQL common_get_centers : '+sql ) ;
+const resultado = client.query(sql, (err, result) => {
+
+  if (err) {
+      console.log(' ERROR QUERY = '+sql ) ;
+      console.log(' ERR = '+err ) ;
+    }
+
+  if (result !=null)
+  {
+  console.log('GET common_get_centers '+JSON.stringify(result.rows) ) ;
+  res.status(200).send(JSON.stringify(result.rows) );
+  }
+  else
+  {
+    res.status(200).send( null ) ;
+  }
+  
+  client.end()
+})
+
+})
+
+
+//******************************************************** */
+//**********                                      ******** */
+//**********      PUBLIC SEARCH Main Page Public  ******** */
+//**********          PUBLIC APPOINTMENTS         ******** */
+//**********                21/12/2022            ******** */
+//******************************************************** */
+
+//***************************************************** */
+// PATIENT GET APPOINTMETS GENERIC                      */
+// sanitized 29-03-2023 
+// validated 29-03-2023
+//***************************************************** */
+app.route('/patient_get_appointments_generic')
+.post(function (req, res) {
+    //console.log('patient_get_appointments_generic : INPUT : ', req.body );
+    req.body=sntz_json(req.body,"INPUT /patient_get_appointments_generic")
+    //res.status(200).send(JSON.stringify( get_appointments_available(req.body)));
+    let resp_app_available = get_public_appointments_available(req.body);
+    resp_app_available.then( v => {  console.log("patient_get_appointments_generic  RESPONSE: "+JSON.stringify(v)) ; return (res.status(200).send(JSON.stringify(v))) } )
+})
+
+//***************************************************** */
+// validated 29-03-2023
+async function get_public_appointments_available(json)
+{
+  let date =new Date(json.date) ;
+  date.setHours(0,0,0,0)
+
+   //*********** response message *********/
+   let json_response = {
+    appointments_list: [] , //here we put the appointments object
+    }
+  //*********************************** */   
+
+   // DAYS CICLE
+   let days_list = []
+  //days_list.push(date)
+    
+  // HOW MANY DAYS  40 ???
+   for (let i = 1; i < 40 ; i++) {
+    days_list.push(new Date(date.getTime()+( (1000*60*60*24)*i ) ) )
+  }
+
+  // console.log("-----------Days to search:"+days_list)
+
+   for (let i = 0; i < days_list.length; i++) {
+    // console.log("-----------Day to get:"+days_list[i])
+     let aux_appointments = await get_public_appointments_available_of_a_day(json.specialty , days_list[i], json.location, json.type_center, json.type_home, json.type_remote ) //type_center,type_home,type_remote
+     //console.log("-----------Appointments:"+JSON.stringify(aux_appointments))
+            let aux_app_day = {
+              date : days_list[i] ,
+              appointments : aux_appointments.appointments ,
+              centers: aux_appointments.centers  ,
+              calendars : aux_appointments.calendars  ,
+            } 
+
+     json_response.appointments_list.push(aux_app_day)    
+    }
+
+   //console.log("-----------GET PUBLIC APPOINTMENTS AVAILABLE JSON Response :"+JSON.stringify(json_response))
+   return (json_response)
+}
+//***************************************************** */
+// validated 29-03-2023
+async function get_public_appointments_available_of_a_day(specialty, date_to_get,location,type_center,type_home,type_remote)
+{
+    //************************************* */
+    let date =new Date(date_to_get) ;
+    date.setHours(0,0,0,0)
+
+    let is_lock_day=false ; 
+    let calendars_ids = [] ;
+    let professional_ids = [] ;
+
+    let centers_ids = [] ;
+    let centers = [] ;
+    //*********** response message *********/
+      let json_response = {
+            appointments :  [] ,
+            centers : [] ,
+            calendars : [] ,
+              }
+    //*********************************** */    
+  
+    // **************************************************
+    // 1.-  GET CALENDAR AVAILABLE BY DATE & SPECIALTY  
+    // **************************************************
+     let calendars = await get_calendars_available_by_date_specialty(date.toISOString(),specialty)
+     if (calendars.length <= 0 )
+     {
+       return []
+     }
+     //extract Calendard Ids
+     calendars_ids = calendars.map(val => val.id)
+     console.log("calendars_ids: "+calendars_ids);
+     //extract Professional_Ids
+     professional_ids = calendars.map(val => val.professional_id)
+     console.log("Professional_ids: "+professional_ids);
+     //extract Center_Ids
+     centers_ids = calendars.map(val => val.center_id)
+  
+    // *********************************************************************
+    // 2.-  GET CENTERS belong to professional IDs obtained from calendars  
+    // *********************************************************************
+    centers = await get_public_centers(centers_ids)
+
+    // *********************************************************************
+    // 2.1 - FILTER CENTERS only MATCH WITH type_center,type_home,type_remote  
+    // *********************************************************************
+    if (type_center)
+    { console.log("Filter Center Active :"+JSON.stringify(centers))
+      centers =  centers.filter(center =>  center.center_visit == 1 ) 
+    }
+    if (type_home)
+    { console.log("Filter Home Active :"+JSON.stringify(centers))
+      centers =  centers.filter(center =>  center.home_visit == 1 ) 
+    }
+    if (type_remote)
+    { console.log("Filter REMOTE CARE Active :"+JSON.stringify(centers))
+      centers =  centers.filter(center =>  center.remote_care == 1 ) 
+    }
+
+    let centers_ids_filtered = centers.map(val => val.id)
+    console.log("Centers : "+JSON.stringify(centers))
+        
+    // *********************************************************************
+    // 3.- REMOVE CALENDARS LINKED TO DELETED CENTERS
+    //**********************************************************************
+    //filter CALENDARS have only active centers.
+    calendars =  calendars.filter(cal =>  centers_ids_filtered.includes(cal.center_id) ) 
+    //**********************************************************************
+    
+    // *********************************************************************
+    // 4.- REMOVE CALENDARS NOT MATCH with Search Parameters 
+    //**********************************************************************
+    // remove CALENDARS not match with Location parameter search
+    if ( location != null )
+    {
+      console.log("Location filter TRUE "+location);
+      //Reduce centers list based in LOCATION
+      centers = centers.filter(obj => 
+          (location == obj.comuna || location == obj.home_comuna1 || location == obj.home_comuna2 || location == obj.home_comuna3 || location == obj.home_comuna4 || location == obj.home_comuna5 || location == obj.home_comuna6  )  );
+      //regenerate center ids list
+      centers_ids = centers.map(val => val.id)
+      console.log("Centers IDS Filtered by LOCATION : "+JSON.stringify(centers_ids))  
+      calendars = calendars.filter( calendar  =>  centers_ids.includes(calendar.center_id) )
+      console.log("calendars Filtered by LOCATION: "+JSON.stringify(calendars));
+      calendars_ids = calendars.map(val => val.id)
+      console.log("calendars_ids Filtered by LOCATION: "+calendars_ids);
+      professional_ids = calendars.map(val => val.professional_id)
+    }
+    console.log("calendars Filtered by LOCATION LATER: "+JSON.stringify(calendars));
+    //*************************************** */
+  
+    // *********************************************************************
+    // 5.- REMOVE DUPLICATED PROFESSIONAL IDS  
+    //**********************************************************************
+    professional_ids = professional_ids.sort().filter(function(item, pos, ary) {
+      return !pos || item != ary[pos - 1];
+      });
+    console.log("Professional_ids NO DUP: "+professional_ids);
+    //***********************************************************************
+    //SUMMARY
+    //console.log("Public Search :"+JSON.stringify(json));
+    console.log("Calendars MATCH Search parameters : "+calendars_ids);
+    console.log("Professional IDS in Calendars: "+professional_ids);
+    
+    // *********************************************************************
+    // 6.- CYCLE CUTTING CALENDARS FOUND   
+    //**********************************************************************
+    // let app_calendars = [] 
+    //  let lockDates = [] 
+   
+    let app_calendar_filtered = []
+  
+    for (let i = 0; i < calendars.length; i++) {
+      // *********************************************************************
+      // 6 - 1  GET PROFESSIONAL LOCK DAYS    
+      //**********************************************************************
+        let lockDates_aux = await is_professional_lock_day(calendars[i].professional_id , date.toISOString()  );
+        if (lockDates_aux  != null && lockDates_aux.length >= 1 )
+        {
+          console.log("IS A DAY BLOCK !!! Calendar:"+calendars[i].id+" Skip Calendar");
+          continue;
+        }
+      
+      let app_calendars = calendar_cutter_day(calendars[i] ,date )
+           
+      //get appointments already reserved by professional id belong this calendar.
+
+        // *********************************************************************
+        // 6 - 4  FILTER APPS AVAILABLE FROM APP TAKEN     
+        //**********************************************************************
+        //first set day end
+        let aux_date_start = new Date(date)
+        aux_date_start.setHours(0,0,0,0)
+        let aux_date_end = new Date( aux_date_start.getTime()  + (1000*60*60*24) )
+        let appointments_reserved = await get_professional_appointments_by_date( calendars[i].professional_id , aux_date_start , aux_date_end )
+      
+        let apps_removed_reserved = filter_app_from_appTaken(app_calendars ,appointments_reserved, false )
+        //******************************************************************** */
+      
+        //finally concat the result
+        app_calendar_filtered = app_calendar_filtered.concat(apps_removed_reserved)
+      }
+      //END 6 CYCLE
+     
+      // *********************************************************************
+      // 7 - SORT BY DATE TIME     
+      //**********************************************************************  
+      app_calendar_filtered.sort((a, b) => a.start_time - b.start_time) 
+      //console.log("PUBLIC SEARCH Response DATE:"+date+"  APPOINTMENTS:"+JSON.stringify(app_calendar_filtered));
+      
+      //json_response.date = date
+      json_response.appointments = app_calendar_filtered
+      json_response.centers = centers
+      json_response.calendars = calendars
+      //json_response.specialties = 
+       
+      //return  app_calendar_filtered ;
+      //console.log("get_public_appointments_available_of_a_day"+JSON.stringify(json_response))
+      return  json_response ;
+}
+
+// 1.-  PUBLIC GET CALENDARS 
+// validated 29-03-2023
+async function get_calendars_available_by_date_specialty(date,specialty)
+{
+  const { Client } = require('pg')
+  const client = new Client(conn_data)
+  await client.connect()
+ 
+  const sql_calendars  = "SELECT * FROM professional_calendar WHERE specialty1 = "+specialty+" AND  active = true AND deleted_professional = false AND status = 1  AND date_start <= '"+date+"'  AND date_end >= '"+date+"'  " ;  
+
+  console.log("PUBLIC get_calendars_available_by_date_specialty  SQL:"+sql_calendars) 
+  
+  //console.log ("QUERY GET CALENDAR = "+sql_calendars);
+  const res = await client.query(sql_calendars) 
+  client.end() 
+  return res.rows ;
+}
+
+// 2.- PROFESSIONAL GET APPOINTMENT DAY
+// Return appointments taken in DATE belong to a PROFESSIONAL ID
+// TO DELETE 29-03-2023 
+async function get_professional_appointment_day(ids,dates)
+{
+  const { Client } = require('pg')
+  const client = new Client(conn_data)
+  await client.connect()
+  //console.log("ids:"+ids+" dates:"+dates)
+
+  let aux_dates =" ";
+  for(var i=0; i<dates.length; i++){
+      aux_dates += "'"+dates[i]+"' " ;
+      
+      if (i < dates.length-1) 
+      {
+      aux_dates += "," ;
+      }
+    //console.log ("\n Value= "+calendars[i]['professional_id']) ; 
+  }
+
+  const sql_apps_taken  = "SELECT * FROM appointment WHERE date IN ("+aux_dates+")  and professional_id  IN ("+ids+") ;";
+  console.log("SQL QUERY: "+sql_apps_taken)
+  const res = await client.query(sql_apps_taken)
+  client.end() 
+  return res.rows;
+
+}
+
+// GET CENTERS DATA
+// validated 29-03-2023
+async function get_public_centers(center_ids)
+{
+  console.log('get_public_centers  REQUEST : ', center_ids );
+ 
+  // ****** Connect to postgre
+  const { Client } = require('pg')
+  const client = new Client(conn_data)
+  client.connect()
+  
+  // ****** Run query to bring appointment
+  const sql  = "SELECT * FROM center WHERE id IN ("+center_ids+" ) and center_deleted != true" ;
+  console.log('SQL get_public_centers  : '+sql ) ;
+  console.log("SQL QUERY: "+sql)
+  const res = await client.query(sql)
+  client.end() 
+  return res.rows;
+}
+
+
+//***************************************************** */
+// PATIENT GET APPOINTMENTS  SEARCH BY CALENDAR
+// sanitized 29-03-2023 
+// TO BE ELIMINATED  29-03-2023
+//***************************************************** */
+app.route('/patient_get_appointments_calendar')
+.post(function (req, res) {
+    req.body=sntz_json(req.body,"TO BE ELIMINATED INPUT /patient_get_appointments_calendar")
+  
+    //get Appointments and remove the lock days from the response adding true to last parameter. 
+    let calendars = [req.body.cal_id]
+    let appointments_available = get_appointments_available_from_calendar(calendars,req.body.date,true  ) ;
+
+    appointments_available.then( v => {  console.log("patient_get_appointments_calendar  RESPONSE: "+JSON.stringify(v)) ; return (res.status(200).send(JSON.stringify(v))) } )
+})
+
+// CALLED FROM PUBLIC CALENDAR VIEWS
+// TO BE ELIMINATED  29-03-2023  ABOVE ROUTE IS DELETED. 
+//***************************************************** */
+async function get_appointments_available_from_calendar(cal_ids, date_start,remove_lock_days )
+{
+  // 1.- get Calendar
+  let calendars = await get_calendar_available_by_id(cal_ids) ;
+  console.log("patient_get_appointments_calendars : INPUT"+JSON.stringify(calendars));
+  // 2.- get Professional Appointment
+  // 
+  let appointments_reserved = await get_professional_appointments_by_date( calendars[0].professional_id , date_start , '2023-06-04')
+  console.log("get_professional_appointments_by_date : OUTPUT "+JSON.stringify(appointments_reserved));
+ 
+  // 3.- GET Lock Dates
+  let lockDates = await get_professional_lock_days(calendars[0].professional_id);
+  lockDates = lockDates.map(lockDates => (new Date(lockDates.date) )) ;
+  console.log("getLockDays:"+JSON.stringify(lockDates));
+
+  // 4.- cutter calendar from date, remove_lock_days = true
+  // calendar_cutter(calendar, fromDate ,endDate ,lockDates, remove_lock_days )
+  let app_calendar = calendar_cutter(calendars[0],date_start, null , lockDates, remove_lock_days );
+  let app_calendar_filtered = filter_app_from_appTaken(app_calendar,appointments_reserved)
+
+  return(app_calendar_filtered); 
+}
+
+//***************************************************** */
+//  END  PATIENT GET APPOINTMENTS  SEARCH BY CALENDAR
+//****************************************************** */
+
 
 
 
@@ -424,13 +805,181 @@ console.log('professional_lock_day SQL:'+sql ) ;
 
 })
 */
-// ***************************************************************************
-// ***************************************************************************
-// *********                                  ********************************
-// *********  PROFESSIONAL  INTERFACE         ********************************
-// *********                                  ********************************
-// ***************************************************************************
-// ***************************************************************************
+
+
+// *********************************************************************************************************
+// *********                                  **************************************************************
+// *********     END PUBLIC INTERFACE         **************************************************************
+// *********                                  **************************************************************
+// *********************************************************************************************************
+// *********************************************************************************************************
+
+
+
+
+
+
+
+// *********************************************************************************************************
+// *********************************************************************************************************
+// *********                                  **************************************************************
+// *********  PROFESSIONAL  INTERFACE         **************************************************************
+// *********                                  **************************************************************
+// *********************************************************************************************************
+// *********************************************************************************************************
+
+
+//***************************************************** */
+//**********       PROFESSIONAL LOGIN            ******* */
+//**********                                   ******** */
+//***************************************************** */
+
+//***************************************************** */
+// Professional Login
+// sanitized 29-03-2023 
+// Validated 29-03-2023 
+//********************************************* 
+app.route('/professional_login')
+.post(function (req, res) {
+
+  req.body=sntz_json(req.body,"INPUT /professional_login")
+ // console.log ("professional_login REQUEST",req.body);
+
+  if (req.body["form_email"]  && req.body["form_pass"] )
+  {
+    let json_response = access_login(req)
+    json_response.then( v => {  console.log("professional_login RESPONSE: "+JSON.stringify(v)) ; return (res.status(200).send(JSON.stringify(v))) } )
+    //res.status(200).send(JSON.stringify(json_response));
+    //console.log('professional_login RESPONSE  :'+JSON.stringify(json_response) ) ;
+  }
+  else
+  {
+    let json_response_error = { 
+      professional_id: null , 
+      result_code: 3 ,
+      professional_name: null ,
+      token : null ,
+      first_time : null,
+                  };
+    return (res.status(200).send(JSON.stringify(json_response_error))) 
+  }
+})
+
+//***************************************************** */
+// FUNCTION REQUIRED FOR LOGIN
+// Validated 29-03-2023 
+//***************************************************** */
+async function access_login(req)
+{
+  console.log("access_login REQUEST") ; 
+  //1- Get login data
+  let login_data = await get_access_login(req)
+  console.log("access_login ESPONSE "+JSON.stringify(login_data)) ;
+  //get response centers 
+  //2.- Get Centers
+  if (login_data.result_code == 0)
+  {
+  let response_centers = await get_professional_centers(login_data.professional_id);
+  //add centers to login_data
+  login_data =  { ...login_data ,  centers : response_centers };  
+  }
+  //3.- Get CALENDARS
+  if (login_data.result_code == 0)
+  {
+  let response_calendars = await get_professional_calendars(login_data.professional_id);
+  //add centers to login_data
+  login_data =  { ...login_data ,  calendars : response_calendars };  
+  }
+    
+  
+  return login_data
+}
+
+//***************************************************** */
+// FUNCTION REQUIRED FOR LOGIN 
+// Validated 29-03-2023 
+//***************************************************** */
+async function get_access_login(req)
+{
+  const { Client } = require('pg')
+  const client = new Client(conn_data)
+  await client.connect()
+    
+  const sql = "INSERT INTO session (name, user_id,last_login , last_activity_time , user_type , first_time ,tutorial_start, tutorial_center, tutorial_calendar, tutorial_menu ) SELECT   name, user_id , now() as last_login ,now() as last_activity_time, 1 as user_type , first_time ,tutorial_start, tutorial_center, tutorial_calendar, tutorial_menu  FROM (SELECT * FROM (SELECT * FROM professional WHERE email ='"+req.body.form_email+"' )P LEFT JOIN account ON P.id = account.user_id) J WHERE j.pass = '"+req.body.form_pass+"'   RETURNING * ";
+  console.log('professionalLogin SQL:'+sql ) ;
+  //set default error
+  var json_response = {  professional_id: null , result_code : 33 };
+  const result = await client.query(sql) 
+  //IF SUCCESS FOUND USER
+  if (result.rows.length>0 )
+  {
+  json_response = { 
+          professional_id: result.rows[0].user_id , 
+          result_code: 0 ,
+          professional_name: result.rows[0].name ,
+          token : result.rows[0].id,
+          first_time : result.rows[0].first_time,
+          tutorial_start : result.rows[0].tutorial_start,
+          tutorial_center : result.rows[0].tutorial_center,
+          tutorial_calendar : result.rows[0].tutorial_calendar,
+          tutorial_menu : result.rows[0].tutorial_menu,
+    };
+  }
+  
+
+  client.end() 
+  return json_response ;
+
+}
+
+//***************************************************** */
+//    end   PROFESSIONAL LOGIN                          */
+//***************************************************** */
+
+//***************************************************** */
+//      PROFESSIONAL SEND COMMENTS HELP         
+//      Validated 29-03-2023  
+//      sanitized 29-03-2023 
+// **************************************************** */
+//***************************************************** */
+
+app.route('/professional_send_comments')
+.post(function (req, res) {
+  //console.log('professional_send_comments  REQUEST : ', req.body );
+  req.body=sntz_json(req.body,"INPUT /professional_send_comments")
+
+// ****** Connect to postgre
+const { Client } = require('pg')
+const client = new Client(conn_data)
+client.connect()
+
+// ****** Run query to bring appointment
+const sql = "INSERT INTO customers_messages (professional_id, message , animo ) VALUES ("+req.body.professional_id+", '"+req.body.message+"', '"+req.body.animo+"') "
+//const sql  = "SELECT * FROM center where id IN ( "+req.body.centers_ids+" )  " ;
+console.log('SQL professional_send_comments : '+sql ) ;
+const resultado = client.query(sql, (err, result) => {
+
+  if (err) {
+      console.log(' ERROR QUERY = '+sql ) ;
+      console.log(' ERR = '+err ) ;
+    }
+
+  if (result !=null)
+  {
+  console.log('RESULT professional_send_comments '+JSON.stringify(result.rows) ) ;
+  res.status(200).send(JSON.stringify(result.rows) );
+  }
+  else
+  {
+    res.status(200).send( null ) ;
+  }
+  
+  client.end()
+})
+
+
+})
+
 
 // **************************************
 // PROFESSIONAL CANCEL APPOINTMENT 
@@ -1092,6 +1641,7 @@ const resultado = client.query(SQL_VALUES, (err, result) => {
 app.route('/professional_get_data')
 .post(function (req, res) {
   req.body=sntz_json(req.body,"/SERVICE TO DELETE professional_get_data")
+  
   // ****** Connect to postgre
   const { Client } = require('pg')
   const client = new Client(conn_data)
@@ -1112,6 +1662,46 @@ const resultado = client.query(sql, (err, result) => {
 
 })
 
+
+//***************************************************** */
+//**********    TAB  PROFESIONAL    CALENDARS    ****** */
+//***************************************************** */
+
+// PROFESSIONAL GET CALENDARS
+// sanitized  29-03-2023 
+// validated  29-03-2023 
+//********************************************* 
+app.route('/professional_get_data_for_calendars_view')
+.post(function (req, res) {
+//console.log('professional_get_data_for_calendars_view :', req.body );
+req.body=sntz_json(req.body,"INPUT /professional_get_data_for_calendars_view")
+
+let response = professional_get_data_for_calendars_view(req.body);
+response.then( v => {  console.log("professional_get_data_for_calendars_view  RESPONSE: "+JSON.stringify(v)) ; return (res.status(200).send(JSON.stringify(v))) } )
+})
+
+// ASYNC Function  PROFESSIONAL GET CALENDARS
+// validated  29-03-2023 
+//********************************************* 
+async function professional_get_data_for_calendars_view(json)
+{
+  
+  let professional_calendars = []
+  professional_calendars = await get_professional_calendars(json.professional_id)
+  
+  let professional_centers = []
+  professional_centers = await get_professional_centers(json.professional_id)
+
+  let json_response = {
+    calendars : professional_calendars ,
+    centers : professional_centers
+    }
+
+    return json_response
+}
+//***************************************************** */
+//**********  END  TAB  PROFESIONAL    CALENDARS   **** */
+//***************************************************** */
 
 
 //********************************************* */
@@ -1233,6 +1823,15 @@ const resultado = client.query(sql, (err, result) => {
 
 })
 */
+
+
+// ********************************************************************************************************
+// ********************************************************************************************************
+// *********                                  *************************************************************
+// *********  END  PROFESSIONAL  INTERFACE    *************************************************************
+// *********                                  *************************************************************
+// ********************************************************************************************************
+// ********************************************************************************************************
 
 
 
@@ -1607,10 +2206,13 @@ const resultado = client.query(sql, (err, result) => {
 
 //********************************************* 
 // Get Centers professional Day 
-//********************************************* 
+// sanitized  28-03-2023 
+// Under evaluation to be eliminated 29-03-2023 
+//*********************************************
 app.route('/get_centers_professional_day')
 .post(function (req, res) {
-  console.log('get_centers_professional_day REQUEST : ', req.body );
+  req.body=sntz_json(req.body,"TO BE ELIMINATED get_centers_professional_day")
+ // console.log('get_centers_professional_day REQUEST : ', req.body );
  
 // ****** Connect to postgre
 const { Pool, Client } = require('pg')
@@ -1674,11 +2276,14 @@ const resultado = client.query(sql, (err, result) => {
 //********************************************* 
 // candaidata a eliminar  al parecer ya no la usamos 23-03-2023
 // PUBLIC POST add_hour_agenda
+// sanitized  28-03-2023 
+// Under evaluation to be eliminated 29-03-2023 
+//*********************************************
 //********************************************* 
 app.route('/add_hour_agenda')
 .post(function (req, res) {
- 
-    console.log('add_hour_agenda - JSON REQUEST : ', req.body );
+    req.body=sntz_json(req.body,"TO BE ELIMINATED add_hour_agenda")
+   // console.log('add_hour_agenda - JSON REQUEST : ', req.body );
  
 // ****** Connect to postgre
 const { Pool, Client } = require('pg')
@@ -1751,11 +2356,14 @@ const resultado = client.query(SQL_VALUES, (err, result) => {
  
 //********************************************* 
 // PUBLIC POST get Professioal Data by  agenda id
+// sanitized  28-03-2023 
+// Under evaluation to be eliminated 29-03-2023 
+//*********************************************
 //********************************************* 
 app.route('/get_professional_from_agenda')
 .post(function (req, res) {
-	
-    console.log('get_professional_from_agenda  INPUT:', req.body );
+    req.body=sntz_json(req.body,"TO BE ELIMINATED get_professional_from_agenda")
+   // console.log('get_professional_from_agenda  INPUT:', req.body );
  
 // ****** Connect to postgre
 const { Pool, Client } = require('pg')
@@ -1791,10 +2399,15 @@ console.log('get_professional_data_by_agenda_id  SQL:'+sql ) ;
  
 //********************************************* 
 // PUBLIC POST get AGENDA
+// sanitized  28-03-2023 
+// Under evaluation to be eliminated 29-03-2023 
 //********************************************* 
 app.route('/get_agenda')
 .post(function (req, res) {
-    console.log('get_agenda INPUT:', req.body );
+    
+  req.body=sntz_json(req.body,"TO BE ELIMINATED /get_agenda")
+  //console.log('get_agenda INPUT:', req.body );
+
 // ****** Connect to postgre
 const { Pool, Client } = require('pg')
 const client = new Client({
@@ -1829,10 +2442,12 @@ console.log('get_calendar  SQL:'+sql ) ;
  
 //********************************************* 
 // PUBLIC POST get Appointments
+// sanitized  28-03-2023 
+// Under evaluation to be eliminated 29-03-2023 
 //********************************************* 
 app.route('/get_appointment')
 .post(function (req, res) {
-    console.log('get_appointment INPUT:', req.body );
+  req.body=sntz_json(req.body,"TO BE ELIMINATED INPUT /get_appointment")
 // ****** Connect to postgre
 const { Pool, Client } = require('pg')
 const client = new Client({
@@ -1867,10 +2482,13 @@ console.log('get_appointments  SQL:'+sql ) ;
  
 //********************************************* 
 // PUBLIC POST CANCEL AND BLOCK APPOINTMENT
+// sanitized  28-03-2023 
+// Under evaluation to be eliminated 29-03-2023 
+//********************************************* 
 //********************************************* 
 app.route('/cancel_block_appointment')
 .post(function (req, res) {
-    console.log('save_appointment INPUT : ', req.body );
+  req.body=sntz_json(req.body,"TO BE ELIMINATED INPUT /cancel_block_appointment")
 // ****** Connect to postgre
 const { Pool, Client } = require('pg')
 const client = new Client({
@@ -1909,12 +2527,16 @@ const resultado = client.query(query_update, (err, result) => {
  
 })
 
+
+//********************************************* 
 //********************************************* 
 // patient search appointment
+// sanitized  28-03-2023 
+// Under evaluation to be eliminated 29-03-2023 
 //********************************************* 
 app.route('/patient_search_appointment')
 .post(function (req, res) {
-    console.log('patient_search_appointment INPUT : ', req.body );
+  req.body=sntz_json(req.body,"TO BE ELIMINATED INPUT /patient_search_appointment")
 // ****** Connect to postgre
 const { Pool, Client } = require('pg')
 const client = new Client({
@@ -1943,10 +2565,12 @@ client.end()
 
 //********************************************* 
 // patient search appointment
+// sanitized  28-03-2023 
+// Under evaluation to be eliminated 29-03-2023 
 //********************************************* 
 app.route('/patient_get_appointment')
 .post(function (req, res) {
-    console.log('patient_get_appointment INPUT : ', req.body );
+    req.body=sntz_json(req.body,"TO BE ELIMINATED INPUT /patient_get_appointment")
 // ****** Connect to postgre
 const { Pool, Client } = require('pg')
 const client = new Client({
@@ -1972,14 +2596,15 @@ client.end()
  
 })
 
-app.listen(PORT, HOST);
-console.log(`Running on http://${HOST}:${PORT}`);
 
 //********************************************************************/
 //********************************************************************/
-//********************* FUNCTIONS ************************************/
+//********************* SOME CONFIG **********************************/
 //********************************************************************/
 //********************************************************************/
+
+app.listen(PORT, HOST);
+console.log(`Running on http://${HOST}:${PORT}`);
 
 const conn_data = {
   user: 'conmeddb_user',
@@ -1989,12 +2614,22 @@ const conn_data = {
   port: 5432,
 }
 
+//********************************************************************/
+//********************************************************************/
+//********************* END SOME CONFIG ******************************/
+//********************************************************************/
+//********************************************************************/
+
+
+
 
 //**************************************************************** */
 // **********  PUBLIC PATIENT SEARCH *****************************
 //**************************************************************** */
 
 //called from Both
+//*********   ELIMINATED 29-03-2023 COMENTED  ****/
+/*
 async function get_professional_appointment_day(ids,dates)
 {
   const { Client } = require('pg')
@@ -2020,7 +2655,10 @@ async function get_professional_appointment_day(ids,dates)
   return res.rows;
 
 }
+*/
 
+//*********   ELIMINATED 29-03-2023 COMENTED  ****/
+/*
 //called from  professional_get_appointment_day2
 async function get_appointments_available_professional(json)
 {
@@ -2037,11 +2675,7 @@ async function get_appointments_available_professional(json)
   console.log('1.- GET CALENDARS PROFESSIONAL Match with Search Parameters Total:'+calendars.length );
   console.log ("1.- CALENDARS  FOUND : "+JSON.stringify(calendars));
   //extract professional ids from Calendars
-  /*
-  for(var i=0; i<calendars.length; i++){
-    professional_ids.push(calendars[i]['professional_id']);
-  }
-  */
+ 
 
   professional_ids = professional_ids.sort().filter(function(item, pos, ary) {
     return !pos || item != ary[pos - 1];
@@ -2176,12 +2810,7 @@ async function get_appointments_available_professional(json)
                       //console.log("--> DRAFT SLOT "+x+"/"+app_total_slots+" Start_Time: "+appointment_slot.start_time+" Duration:"+appointment_slot.duration +" Color:"+appointment_slot.color );
                       let aux_date_slot= new Date ('Thu, 01 Jan 1970 '+appointment_slot.start_time ).getTime();
                       //CHECK IF time is taken
-                      /*
-                      if (appointments_available[0] != null)
-                      {
-                      console.log("-------------> COMPARISON  APP:"+appointments_available[0].start_time + " CALENDAR:"+appointment_slot.start_time)
-                      }
-                      */
+                   
                      let aux = appointments_available.find( x => x.start_time.substring(0,4) === appointment_slot.start_time.substring(0,4) ) ;
                      
                      if (aux != null)
@@ -2202,16 +2831,7 @@ async function get_appointments_available_professional(json)
                       appointments_available.push(appointment_slot)
                      }
 
-                      /*
-                      let found = appointment_id_filtered.find( x => x.start_date.substring(0,4) === appointment_slot.start_time.substring(0,4) )
-                        if (found != null)
-                        {
-                          console.log("----------> MATCH "+x.start_date);
-                        }
-                        else{
-                          console.log("---------->NO MATCH");
-                        }
-                        */
+                     
      
                     }
 
@@ -2224,7 +2844,10 @@ async function get_appointments_available_professional(json)
   return  appointments_available ;
 
 }
+*/
 
+//*********   ELIMINATED 29-03-2023 COMENTED  ****/
+/*
 async function get_calendars_available_professional(json)
 {
   const { Client } = require('pg')
@@ -2241,536 +2864,21 @@ async function get_calendars_available_professional(json)
   return res.rows ;
   
 }
-
-//***************************************************** */
-//**********       PROFESSIONA LOGIN            ******* */
-//**********                                   ******** */
-//***************************************************** */
-app.route('/professional_login')
-.post(function (req, res) {
-  console.log ("professional_login REQUEST",req.body);
-
-  if (req.body["form_email"]  && req.body["form_pass"] )
-  {
-    let json_response = access_login(req)
-    json_response.then( v => {  console.log("professional_login RESPONSE: "+JSON.stringify(v)) ; return (res.status(200).send(JSON.stringify(v))) } )
-    //res.status(200).send(JSON.stringify(json_response));
-    //console.log('professional_login RESPONSE  :'+JSON.stringify(json_response) ) ;
-  }
-  else
-  {
-    let json_response_error = { 
-      professional_id: null , 
-      result_code: 3 ,
-      professional_name: null ,
-      token : null ,
-      first_time : null,
-                  };
-    return (res.status(200).send(JSON.stringify(json_response_error))) 
-  }
-})
-
-async function access_login(req)
-{
-  console.log("access_login REQUEST") ; 
-  //1- Get login data
-  let login_data = await get_access_login(req)
-  console.log("access_login ESPONSE "+JSON.stringify(login_data)) ;
-  //get response centers 
-  //2.- Get Centers
-  if (login_data.result_code == 0)
-  {
-  let response_centers = await get_professional_centers(login_data.professional_id);
-  //add centers to login_data
-  login_data =  { ...login_data ,  centers : response_centers };  
-  }
-  //3.- Get CALENDARS
-  if (login_data.result_code == 0)
-  {
-  let response_calendars = await get_professional_calendars(login_data.professional_id);
-  //add centers to login_data
-  login_data =  { ...login_data ,  calendars : response_calendars };  
-  }
-    
-  
-  return login_data
-}
-
-async function get_access_login(req)
-{
-  const { Client } = require('pg')
-  const client = new Client(conn_data)
-  await client.connect()
-    
-  const sql = "INSERT INTO session (name, user_id,last_login , last_activity_time , user_type , first_time ,tutorial_start, tutorial_center, tutorial_calendar, tutorial_menu ) SELECT   name, user_id , now() as last_login ,now() as last_activity_time, 1 as user_type , first_time ,tutorial_start, tutorial_center, tutorial_calendar, tutorial_menu  FROM (SELECT * FROM (SELECT * FROM professional WHERE email ='"+req.body.form_email+"' )P LEFT JOIN account ON P.id = account.user_id) J WHERE j.pass = '"+req.body.form_pass+"'   RETURNING * ";
-  console.log('professionalLogin SQL:'+sql ) ;
-  //set default error
-  var json_response = {  professional_id: null , result_code : 33 };
-  const result = await client.query(sql) 
-  //IF SUCCESS FOUND USER
-  if (result.rows.length>0 )
-  {
-  json_response = { 
-          professional_id: result.rows[0].user_id , 
-          result_code: 0 ,
-          professional_name: result.rows[0].name ,
-          token : result.rows[0].id,
-          first_time : result.rows[0].first_time,
-          tutorial_start : result.rows[0].tutorial_start,
-          tutorial_center : result.rows[0].tutorial_center,
-          tutorial_calendar : result.rows[0].tutorial_calendar,
-          tutorial_menu : result.rows[0].tutorial_menu,
-    };
-  }
-  
-
-  client.end() 
-  return json_response ;
-
-}
-
-//***************************************************** */
-//********** PROFESSIONAL SEND COMMENTS HELP    ******* */
-//**********                                   ******** */
-//***************************************************** */
-
-app.route('/professional_send_comments')
-.post(function (req, res) {
-  console.log('professional_send_comments  REQUEST : ', req.body );
-
-// ****** Connect to postgre
-const { Client } = require('pg')
-const client = new Client(conn_data)
-client.connect()
-
-// ****** Run query to bring appointment
-const sql = "INSERT INTO customers_messages (professional_id, message , animo ) VALUES ("+req.body.professional_id+", '"+req.body.message+"', '"+req.body.animo+"') "
-//const sql  = "SELECT * FROM center where id IN ( "+req.body.centers_ids+" )  " ;
-console.log('SQL professional_send_comments : '+sql ) ;
-const resultado = client.query(sql, (err, result) => {
-
-  if (err) {
-      console.log(' ERROR QUERY = '+sql ) ;
-      console.log(' ERR = '+err ) ;
-    }
-
-  if (result !=null)
-  {
-  console.log('RESULT professional_send_comments '+JSON.stringify(result.rows) ) ;
-  res.status(200).send(JSON.stringify(result.rows) );
-  }
-  else
-  {
-    res.status(200).send( null ) ;
-  }
-  
-  client.end()
-})
+*/
 
 
-})
-
-
-//***************************************************** */
-//********** PUBLIC GET CENTERS ARRAY from ids  ******* */
-//**********                                   ******** */
-//***************************************************** */
-app.route('/common_get_centers')
-.post(function (req, res) {
-  console.log('common_get_centers REQUEST : ', req.body );
- 
-// ****** Connect to postgre
-const { Client } = require('pg')
-const client = new Client(conn_data)
-client.connect()
-
-// ****** Run query to bring appointment
-const sql  = "SELECT * FROM center where id IN ( "+req.body.centers_ids+" )  " ;
-console.log('SQL common_get_centers : '+sql ) ;
-const resultado = client.query(sql, (err, result) => {
-
-  if (err) {
-      console.log(' ERROR QUERY = '+sql ) ;
-      console.log(' ERR = '+err ) ;
-    }
-
-  if (result !=null)
-  {
-  console.log('GET common_get_centers '+JSON.stringify(result.rows) ) ;
-  res.status(200).send(JSON.stringify(result.rows) );
-  }
-  else
-  {
-    res.status(200).send( null ) ;
-  }
-  
-  client.end()
-})
-
-})
-
-//***************************************************** */
-//************* PUBLIC SEARCH   *********************** */
-//******* PUBLIC APPOINTMENTS IN CALENDAR ID ********** */
-//***************************************************** */
-//PATIENT GET APPOINTMENTS  SEARCH BY CALENDAR
-app.route('/patient_get_appointments_calendar')
-.post(function (req, res) {
- 
-    console.log('patient_get_appointments_calendar : INPUT : ', req.body );
-    //get Appointments and remove the lock days from the response adding true to last parameter. 
-    let calendars = [req.body.cal_id]
-    let appointments_available = get_appointments_available_from_calendar(calendars,req.body.date,true  ) ;
-
-    appointments_available.then( v => {  console.log("patient_get_appointments_calendar  RESPONSE: "+JSON.stringify(v)) ; return (res.status(200).send(JSON.stringify(v))) } )
-})
-// CALLED FROM PUBLIC CALENDAR VIEWS
-async function get_appointments_available_from_calendar(cal_ids, date_start,remove_lock_days )
-{
-  // 1.- get Calendar
-  let calendars = await get_calendar_available_by_id(cal_ids) ;
-  console.log("patient_get_appointments_calendars : INPUT"+JSON.stringify(calendars));
-  // 2.- get Professional Appointment
-  // 
-  let appointments_reserved = await get_professional_appointments_by_date( calendars[0].professional_id , date_start , '2023-06-04')
-  console.log("get_professional_appointments_by_date : OUTPUT "+JSON.stringify(appointments_reserved));
- 
-  // 3.- GET Lock Dates
-  let lockDates = await get_professional_lock_days(calendars[0].professional_id);
-  lockDates = lockDates.map(lockDates => (new Date(lockDates.date) )) ;
-  console.log("getLockDays:"+JSON.stringify(lockDates));
-
-  // 4.- cutter calendar from date, remove_lock_days = true
-  // calendar_cutter(calendar, fromDate ,endDate ,lockDates, remove_lock_days )
-  let app_calendar = calendar_cutter(calendars[0],date_start, null , lockDates, remove_lock_days );
-  let app_calendar_filtered = filter_app_from_appTaken(app_calendar,appointments_reserved)
-
-  return(app_calendar_filtered); 
-}
-
-//***************************************************** */
-//****************    VIEW       ********************** */
-//********** GET DATA FOR PROFESSIONAL CALENDARS VIEW * */
-//***************************************************** */
-
-// PROFESSIONAL GET CALENDARS
-app.route('/professional_get_data_for_calendars_view')
-.post(function (req, res) {
-console.log('professional_get_data_for_calendars_view :', req.body );
-
-let response = professional_get_data_for_calendars_view(req.body);
-response.then( v => {  console.log("professional_get_data_for_calendars_view  RESPONSE: "+JSON.stringify(v)) ; return (res.status(200).send(JSON.stringify(v))) } )
-})
-// ASYNC Function  PROFESSIONAL GET CALENDARS
-async function professional_get_data_for_calendars_view(json)
-{
-  
-  let professional_calendars = []
-  professional_calendars = await get_professional_calendars(json.professional_id)
-  
-  let professional_centers = []
-  professional_centers = await get_professional_centers(json.professional_id)
-
-  let json_response = {
-    calendars : professional_calendars ,
-    centers : professional_centers
-    }
-
-    return json_response
-}
-
-//******************************************************** */
-//**********                                      ******** */
-//**********      PUBLIC SEARCH Main Page Public  ******** */
-//**********          PUBLIC APPOINTMENTS         ******** */
-//**********                21/12/2022            ******** */
-//******************************************************** */
-
-app.route('/patient_get_appointments_generic')
-.post(function (req, res) {
-    console.log('patient_get_appointments_generic : INPUT : ', req.body );
-    //res.status(200).send(JSON.stringify( get_appointments_available(req.body)));
-    let resp_app_available = get_public_appointments_available(req.body);
-    resp_app_available.then( v => {  console.log("patient_get_appointments_generic  RESPONSE: "+JSON.stringify(v)) ; return (res.status(200).send(JSON.stringify(v))) } )
-})
-
-async function get_public_appointments_available(json)
-{
-  let date =new Date(json.date) ;
-  date.setHours(0,0,0,0)
-
-   //*********** response message *********/
-   let json_response = {
-    appointments_list: [] , //here we put the appointments object
-    }
-  //*********************************** */   
-
-   // DAYS CICLE
-   let days_list = []
-  //days_list.push(date)
-    
-  // HOW MANY DAYS  40 ???
-   for (let i = 1; i < 40 ; i++) {
-    days_list.push(new Date(date.getTime()+( (1000*60*60*24)*i ) ) )
-  }
-
-  // console.log("-----------Days to search:"+days_list)
-
-   for (let i = 0; i < days_list.length; i++) {
-    // console.log("-----------Day to get:"+days_list[i])
-     let aux_appointments = await get_public_appointments_available_of_a_day(json.specialty , days_list[i], json.location, json.type_center, json.type_home, json.type_remote ) //type_center,type_home,type_remote
-     //console.log("-----------Appointments:"+JSON.stringify(aux_appointments))
-            let aux_app_day = {
-              date : days_list[i] ,
-              appointments : aux_appointments.appointments ,
-              centers: aux_appointments.centers  ,
-              calendars : aux_appointments.calendars  ,
-            } 
-
-     json_response.appointments_list.push(aux_app_day)    
-    }
-
-   //console.log("-----------GET PUBLIC APPOINTMENTS AVAILABLE JSON Response :"+JSON.stringify(json_response))
-   return (json_response)
-}
-
-async function get_public_appointments_available_of_a_day(specialty, date_to_get,location,type_center,type_home,type_remote)
-{
-    //************************************* */
-    let date =new Date(date_to_get) ;
-    date.setHours(0,0,0,0)
-
-    let is_lock_day=false ; 
-    let calendars_ids = [] ;
-    let professional_ids = [] ;
-
-    let centers_ids = [] ;
-    let centers = [] ;
-    //*********** response message *********/
-      let json_response = {
-            appointments :  [] ,
-            centers : [] ,
-            calendars : [] ,
-              }
-    //*********************************** */    
-  
-    // **************************************************
-    // 1.-  GET CALENDAR AVAILABLE BY DATE & SPECIALTY  
-    // **************************************************
-     let calendars = await get_calendars_available_by_date_specialty(date.toISOString(),specialty)
-     if (calendars.length <= 0 )
-     {
-       return []
-     }
-     //extract Calendard Ids
-     calendars_ids = calendars.map(val => val.id)
-     console.log("calendars_ids: "+calendars_ids);
-     //extract Professional_Ids
-     professional_ids = calendars.map(val => val.professional_id)
-     console.log("Professional_ids: "+professional_ids);
-     //extract Center_Ids
-     centers_ids = calendars.map(val => val.center_id)
-  
-    // *********************************************************************
-    // 2.-  GET CENTERS belong to professional IDs obtained from calendars  
-    // *********************************************************************
-    centers = await get_public_centers(centers_ids)
-
-    // *********************************************************************
-    // 2.1 - FILTER CENTERS only MATCH WITH type_center,type_home,type_remote  
-    // *********************************************************************
-    if (type_center)
-    { console.log("Filter Center Active :"+JSON.stringify(centers))
-      centers =  centers.filter(center =>  center.center_visit == 1 ) 
-    }
-    if (type_home)
-    { console.log("Filter Home Active :"+JSON.stringify(centers))
-      centers =  centers.filter(center =>  center.home_visit == 1 ) 
-    }
-    if (type_remote)
-    { console.log("Filter REMOTE CARE Active :"+JSON.stringify(centers))
-      centers =  centers.filter(center =>  center.remote_care == 1 ) 
-    }
-
-    let centers_ids_filtered = centers.map(val => val.id)
-    console.log("Centers : "+JSON.stringify(centers))
-        
-    // *********************************************************************
-    // 3.- REMOVE CALENDARS LINKED TO DELETED CENTERS
-    //**********************************************************************
-    //filter CALENDARS have only active centers.
-    calendars =  calendars.filter(cal =>  centers_ids_filtered.includes(cal.center_id) ) 
-    //**********************************************************************
-    
-    // *********************************************************************
-    // 4.- REMOVE CALENDARS NOT MATCH with Search Parameters 
-    //**********************************************************************
-    // remove CALENDARS not match with Location parameter search
-    if ( location != null )
-    {
-      console.log("Location filter TRUE "+location);
-      //Reduce centers list based in LOCATION
-      centers = centers.filter(obj => 
-          (location == obj.comuna || location == obj.home_comuna1 || location == obj.home_comuna2 || location == obj.home_comuna3 || location == obj.home_comuna4 || location == obj.home_comuna5 || location == obj.home_comuna6  )  );
-      //regenerate center ids list
-      centers_ids = centers.map(val => val.id)
-      console.log("Centers IDS Filtered by LOCATION : "+JSON.stringify(centers_ids))  
-      calendars = calendars.filter( calendar  =>  centers_ids.includes(calendar.center_id) )
-      console.log("calendars Filtered by LOCATION: "+JSON.stringify(calendars));
-      calendars_ids = calendars.map(val => val.id)
-      console.log("calendars_ids Filtered by LOCATION: "+calendars_ids);
-      professional_ids = calendars.map(val => val.professional_id)
-    }
-    console.log("calendars Filtered by LOCATION LATER: "+JSON.stringify(calendars));
-    //*************************************** */
-  
-    // *********************************************************************
-    // 5.- REMOVE DUPLICATED PROFESSIONAL IDS  
-    //**********************************************************************
-    professional_ids = professional_ids.sort().filter(function(item, pos, ary) {
-      return !pos || item != ary[pos - 1];
-      });
-    console.log("Professional_ids NO DUP: "+professional_ids);
-    //***********************************************************************
-    //SUMMARY
-    //console.log("Public Search :"+JSON.stringify(json));
-    console.log("Calendars MATCH Search parameters : "+calendars_ids);
-    console.log("Professional IDS in Calendars: "+professional_ids);
-    
-    // *********************************************************************
-    // 6.- CYCLE CUTTING CALENDARS FOUND   
-    //**********************************************************************
-    // let app_calendars = [] 
-    //  let lockDates = [] 
-   
-    let app_calendar_filtered = []
-  
-    for (let i = 0; i < calendars.length; i++) {
-      // *********************************************************************
-      // 6 - 1  GET PROFESSIONAL LOCK DAYS    
-      //**********************************************************************
-        let lockDates_aux = await is_professional_lock_day(calendars[i].professional_id , date.toISOString()  );
-        if (lockDates_aux  != null && lockDates_aux.length >= 1 )
-        {
-          console.log("IS A DAY BLOCK !!! Calendar:"+calendars[i].id+" Skip Calendar");
-          continue;
-        }
-      
-      let app_calendars = calendar_cutter_day(calendars[i] ,date )
-           
-      //get appointments already reserved by professional id belong this calendar.
-
-        // *********************************************************************
-        // 6 - 4  FILTER APPS AVAILABLE FROM APP TAKEN     
-        //**********************************************************************
-        //first set day end
-        let aux_date_start = new Date(date)
-        aux_date_start.setHours(0,0,0,0)
-        let aux_date_end = new Date( aux_date_start.getTime()  + (1000*60*60*24) )
-        let appointments_reserved = await get_professional_appointments_by_date( calendars[i].professional_id , aux_date_start , aux_date_end )
-      
-        let apps_removed_reserved = filter_app_from_appTaken(app_calendars ,appointments_reserved, false )
-        //******************************************************************** */
-      
-        //finally concat the result
-        app_calendar_filtered = app_calendar_filtered.concat(apps_removed_reserved)
-      }
-      //END 6 CYCLE
-     
-      // *********************************************************************
-      // 7 - SORT BY DATE TIME     
-      //**********************************************************************  
-      app_calendar_filtered.sort((a, b) => a.start_time - b.start_time) 
-      //console.log("PUBLIC SEARCH Response DATE:"+date+"  APPOINTMENTS:"+JSON.stringify(app_calendar_filtered));
-      
-      //json_response.date = date
-      json_response.appointments = app_calendar_filtered
-      json_response.centers = centers
-      json_response.calendars = calendars
-      //json_response.specialties = 
-       
-      //return  app_calendar_filtered ;
-      //console.log("get_public_appointments_available_of_a_day"+JSON.stringify(json_response))
-      return  json_response ;
-}
-
-// 1.-  PUBLIC GET CALENDARS 
-async function get_calendars_available_by_date_specialty(date,specialty)
-{
-  const { Client } = require('pg')
-  const client = new Client(conn_data)
-  await client.connect()
- 
-  const sql_calendars  = "SELECT * FROM professional_calendar WHERE specialty1 = "+specialty+" AND  active = true AND deleted_professional = false AND status = 1  AND date_start <= '"+date+"'  AND date_end >= '"+date+"'  " ;  
-
-  console.log("PUBLIC get_calendars_available_by_date_specialty  SQL:"+sql_calendars) 
-  
-  //console.log ("QUERY GET CALENDAR = "+sql_calendars);
-  const res = await client.query(sql_calendars) 
-  client.end() 
-  return res.rows ;
-}
-
-// 2.- PROFESSIONAL GET APPOINTMENT DAY
-// Return appointments taken in DATE belong to a PROFESSIONAL ID
-async function get_professional_appointment_day(ids,dates)
-{
-  const { Client } = require('pg')
-  const client = new Client(conn_data)
-  await client.connect()
-  //console.log("ids:"+ids+" dates:"+dates)
-
-  let aux_dates =" ";
-  for(var i=0; i<dates.length; i++){
-      aux_dates += "'"+dates[i]+"' " ;
-      
-      if (i < dates.length-1) 
-      {
-      aux_dates += "," ;
-      }
-    //console.log ("\n Value= "+calendars[i]['professional_id']) ; 
-  }
-
-  const sql_apps_taken  = "SELECT * FROM appointment WHERE date IN ("+aux_dates+")  and professional_id  IN ("+ids+") ;";
-  console.log("SQL QUERY: "+sql_apps_taken)
-  const res = await client.query(sql_apps_taken)
-  client.end() 
-  return res.rows;
-
-}
-
-// GET CENTERS DATA
-async function get_public_centers(center_ids)
-{
-  console.log('get_public_centers  REQUEST : ', center_ids );
- 
-  // ****** Connect to postgre
-  const { Client } = require('pg')
-  const client = new Client(conn_data)
-  client.connect()
-  
-  // ****** Run query to bring appointment
-  const sql  = "SELECT * FROM center WHERE id IN ("+center_ids+" ) and center_deleted != true" ;
-  console.log('SQL get_public_centers  : '+sql ) ;
-  console.log("SQL QUERY: "+sql)
-  const res = await client.query(sql)
-  client.end() 
-  return res.rows;
-}
-
-//************************************************************* */
 //************************************************************* */
 //********** PROFESSIONAL GET ALL APPOINTMENTS TAKEN    ******* */
-//**********                                           ******** */
-//************************************************************* */
-
+// sanitized  28-03-2023 
+// validated  29-03-2023 
 app.route('/professional_get_appointments_taken')
 .post(function (req, res) {  
+  req.body=sntz_json(req.body,"INPUT /professional_get_appointments_taken")
   let appsTaken = professional_get_appointments_taken(req)
   appsTaken.then( v => {  console.log("professional_get_appointments_taken RESPONSE: "+JSON.stringify(v)) ; return (res.status(200).send(JSON.stringify(v))) } )
 
 })
-
+// validated  29-03-2023 
 async function professional_get_appointments_taken(req)
 {
   let app_taken = await professional_get_all_appointments_by_prof_id(req)
@@ -2786,7 +2894,7 @@ async function professional_get_appointments_taken(req)
     }
   return json_response ;
 }
-
+// validated  29-03-2023 
 async function professional_get_all_appointments_by_prof_id(req)
 {
   const { Client } = require('pg')
@@ -2804,19 +2912,18 @@ async function professional_get_all_appointments_by_prof_id(req)
   return response.rows ;
 }
 
-
 //***************************************************** */
 //********** PROFESSIONAL GET MONT SUMMARY   ******* */
 //**********                                   ******** */
 //***************************************************** */
 app.route('/professional_get_month_summary')
 .post(function (req, res) {  
-
+  req.body=sntz_json(req.body,"INPUT /professional_get_month_summary")
   let month_summary = professional_get_month_summary(req)
   month_summary.then( v => {  console.log("professional_get_month_summary RESPONSE: "+JSON.stringify(v)) ; return (res.status(200).send(JSON.stringify(v))) } )
 
 })
-
+// validated  29-03-2023 
 async function professional_get_month_summary(req)
 {
   let appointments  = await professional_get_appointments(req) ;
@@ -2831,7 +2938,7 @@ async function professional_get_month_summary(req)
 
   return json_response ;
 }
-
+// validated  29-03-2023 
 async function professional_get_appointments(req)
 {
   const { Client } = require('pg')
