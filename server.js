@@ -23,6 +23,25 @@ app.use((req, res, next) => {
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(bodyParser.json());
 
+
+//********************************************************************/
+//********************************************************************/
+//********************* SOME CONFIG **********************************/
+//********************************************************************/
+//********************************************************************/
+
+app.listen(PORT, HOST);
+console.log(`Running on http://${HOST}:${PORT}`);
+
+const conn_data = {
+  user: 'conmeddb_user',
+  host: '127.0.0.1',
+  database: 'conmeddb02',
+  password: 'paranoid',
+  port: 5432,
+}
+
+
 // *********************************************************************************************************
 // *********                                  **************************************************************
 // *********   COMMON INTERFACE               **************************************************************
@@ -2839,30 +2858,12 @@ client.end()
 })
 
 
-//********************************************************************/
-//********************************************************************/
-//********************* SOME CONFIG **********************************/
-//********************************************************************/
-//********************************************************************/
-
-app.listen(PORT, HOST);
-console.log(`Running on http://${HOST}:${PORT}`);
-
-const conn_data = {
-  user: 'conmeddb_user',
-  host: '127.0.0.1',
-  database: 'conmeddb02',
-  password: 'paranoid',
-  port: 5432,
-}
 
 //********************************************************************/
 //********************************************************************/
 //********************* END SOME CONFIG ******************************/
 //********************************************************************/
 //********************************************************************/
-
-
 
 
 //**************************************************************** */
@@ -3118,10 +3119,12 @@ async function get_calendars_available_professional(json)
 /******************************************************************** */
 
 //******  PUBLIC CANCEL APP 
-//******   24-01-2023  
+// sanitized  28-03-2023 
+// validated   24-01-2023  
 app.route('/public_cancel_app')
 .post(function (req, res) {
-    console.log('public_cancel_app INPUT : ', req.body );
+   // console.log('public_cancel_app INPUT : ', req.body );
+    req.body=sntz_json(req.body,"/public_cancel_app")
 // ****** Connect to postgre
 const { Client } = require('pg')
 const client = new Client(conn_data)
@@ -3155,10 +3158,12 @@ const resultado = client.query(query_reserve, (err, result) => {
 })
 
 //******  PUBLIC CONFIRM APP 
-//******   24-01-2023  
+// sanitized  28-03-2023 
+// 24-01-2023  
 app.route('/public_confirm_app')
 .post(function (req, res) {
-    console.log('public_confirm_app INPUT : ', req.body );
+    //console.log('public_confirm_app INPUT : ', req.body );
+    req.body=sntz_json(req.body,"/public_confirm_app")
 // ****** Connect to postgre
 const { Client } = require('pg')
 const client = new Client(conn_data)
@@ -3194,11 +3199,11 @@ const resultado = client.query(query_confirm, (err, result) => {
 
 
 // PROFESSIONAL GET SPECIALT 
+// sanitized  28-03-2023 
 app.route('/get_professional_specialty')
 .post(function (req, res) {
- 
-    console.log('get_professional_specialty:', req.body );
- 
+ // console.log('get_professional_specialty:', req.body );
+    req.body=sntz_json(req.body,"/get_professional_specialty")
 const { Client } = require('pg')
 const client = new Client(conn_data)
 client.connect()
