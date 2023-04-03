@@ -24,11 +24,13 @@ app.use(bodyParser.urlencoded({ extended: true }));
 app.use(bodyParser.json());
 
 
-//********************************************************************/
-//********************************************************************/
-//********************* SOME CONFIG **********************************/
-//********************************************************************/
-//********************************************************************/
+//************************************************************************************************************/
+//************************************************************************************************************/
+//**********                                   ***************************************************************/
+//**********         SOME CONFIG               ***************************************************************/
+//**********                                   ***************************************************************/
+//************************************************************************************************************/
+//************************************************************************************************************/
 
 app.listen(PORT, HOST);
 console.log(`Running on http://${HOST}:${PORT}`);
@@ -41,10 +43,11 @@ const conn_data = {
   port: 5432,
 }
 
-
+// *********************************************************************************************************
 // *********************************************************************************************************
 // *********                                  **************************************************************
-// *********   COMMON INTERFACE               **************************************************************
+// *********   COMMON ROUTE INTERFACE         **************************************************************
+// *********     profesional & public         **************************************************************
 // *********                                  **************************************************************
 // *********************************************************************************************************
 // *********************************************************************************************************
@@ -101,14 +104,97 @@ const resultado = client.query(sql, (err, result) => {
 })
 
 // *********************************************************************************************************
+// *********************************************************************************************************
 // *********                                  **************************************************************
 // *********   PUBLIC INTERFACE               **************************************************************
 // *********                                  **************************************************************
 // *********************************************************************************************************
 // *********************************************************************************************************
 
+//******  PUBLIC CANCEL APP 
+// sanitized  28-03-2023 
+// validated   24-01-2023  
+app.route('/public_cancel_app')
+.post(function (req, res) {
+   // console.log('public_cancel_app INPUT : ', req.body );
+    req.body=sntz_json(req.body,"/public_cancel_app")
+// ****** Connect to postgre
+const { Client } = require('pg')
+const client = new Client(conn_data)
+client.connect()
+
+/* INPUT
+    req_date : req_date,
+    req_id  : req_id,
+    req_center_id :  req_center_id,
+    req_patient_doc_id : req_patient_doc_id,
+ */
+
+//let query_reserve =   "INSERT INTO appointment (  date , start_time,  duration,  center_id, confirmation_status, professional_id, patient_doc_id, patient_name,    patient_email, patient_phone1,  patient_age,  app_available, app_status, app_blocked, app_public,  location1, location2, location3, location4, location5, location6,   app_type_home, app_type_center,  app_type_remote, patient_notification_email_reserved , specialty_reserved , patient_address , calendar_id )"   
+let query_reserve = "DELETE FROM appointment WHERE id="+req.body.req_id+" AND center_id="+req.body.req_center_id+" AND patient_doc_id='"+req.body.req_patient_doc_id+"' "
+
+//query_reserve  += " VALUES ( '"+req.body.appointment_date+"' , '"+req.body.appointment_start_time+"' , '"+req.body.appointment_duration+"' ,  "+req.body.appointment_center_id+" , '0' , '"+req.body.appointment_professional_id+"' , '"+req.body.patient_doc_id.toUpperCase() +"' , '"+req.body.patient_name.toUpperCase()+"' , '"+req.body.patient_email.toUpperCase()+"' , '"+req.body.patient_phone+"' ,  '"+req.body.patient_age+"' ,'false' , '1' , '0' , '1', "+req.body.appointment_location1+" , "+req.body.appointment_location2+" ,"+req.body.appointment_location3+" ,"+req.body.appointment_location4+" ,"+req.body.appointment_location5+" ,"+req.body.appointment_location6+" , '"+req.body.appointment_type_home+"' , '"+req.body.appointment_type_center+"' , '"+req.body.appointment_type_remote+"' , '1' , '"+req.body.appointment_specialty+"' , '"+req.body.patient_address+"'  , '"+req.body.appointment_calendar_id+"' 	) RETURNING * " ; 
+
+console.log(query_reserve);
+const resultado = client.query(query_reserve, (err, result) => {
+    //res.status(200).send(JSON.stringify(result)) ;
+    if (err) {
+      console.log('/public_cancel_app ERR:'+err ) ;
+    }
+    else {
+    console.log("public_cancel_app JSON RESPONSE BODY : "+JSON.stringify(result));
+    res.status(200).send(JSON.stringify(result.rows[0])) ;  
+    }
+    client.end()
+})
+
+})
+
+//******  PUBLIC CONFIRM APP 
+// sanitized  28-03-2023 
+// 24-01-2023  
+app.route('/public_confirm_app')
+.post(function (req, res) {
+    //console.log('public_confirm_app INPUT : ', req.body );
+    req.body=sntz_json(req.body,"/public_confirm_app")
+// ****** Connect to postgre
+const { Client } = require('pg')
+const client = new Client(conn_data)
+client.connect()
+
+/* INPUT
+    req_date : req_date,
+    req_id  : req_id,
+    req_center_id :  req_center_id,
+    req_patient_doc_id : req_patient_doc_id,
+ */
+
+//let query_reserve =   "INSERT INTO appointment (  date , start_time,  duration,  center_id, confirmation_status, professional_id, patient_doc_id, patient_name,    patient_email, patient_phone1,  patient_age,  app_available, app_status, app_blocked, app_public,  location1, location2, location3, location4, location5, location6,   app_type_home, app_type_center,  app_type_remote, patient_notification_email_reserved , specialty_reserved , patient_address , calendar_id )"   
+//let query_reserve = "DELETE FROM appointment WHERE id="+req.body.req_id+" AND center_id="+req.body.req_center_id+" AND patient_doc_id='"+req.body.req_patient_doc_id+"' "
+
+let query_confirm = "UPDATE appointment SET confirmation_status = 1 WHERE id = "+req.body.req_id+" AND center_id ="+req.body.req_center_id+"  AND patient_doc_id='"+req.body.req_patient_doc_id+"' returning * " 
+//query_reserve  += " VALUES ( '"+req.body.appointment_date+"' , '"+req.body.appointment_start_time+"' , '"+req.body.appointment_duration+"' ,  "+req.body.appointment_center_id+" , '0' , '"+req.body.appointment_professional_id+"' , '"+req.body.patient_doc_id.toUpperCase() +"' , '"+req.body.patient_name.toUpperCase()+"' , '"+req.body.patient_email.toUpperCase()+"' , '"+req.body.patient_phone+"' ,  '"+req.body.patient_age+"' ,'false' , '1' , '0' , '1', "+req.body.appointment_location1+" , "+req.body.appointment_location2+" ,"+req.body.appointment_location3+" ,"+req.body.appointment_location4+" ,"+req.body.appointment_location5+" ,"+req.body.appointment_location6+" , '"+req.body.appointment_type_home+"' , '"+req.body.appointment_type_center+"' , '"+req.body.appointment_type_remote+"' , '1' , '"+req.body.appointment_specialty+"' , '"+req.body.patient_address+"'  , '"+req.body.appointment_calendar_id+"' 	) RETURNING * " ; 
+
+console.log(query_confirm);
+const resultado = client.query(query_confirm, (err, result) => {
+    //res.status(200).send(JSON.stringify(result)) ;
+    if (err) {
+      console.log('/public_confirm_app ERR:'+err ) ;
+    }
+    else {
+    console.log("public_confirm_app JSON RESPONSE BODY : "+JSON.stringify(result));
+    res.status(200).send(JSON.stringify(result.rows[0])) ;  
+    }
+    client.end()
+})
+
+})
+
+
+
 //*****  RECOVER APPOINTMENTS  ******************** */
 // sanitized 27-03-2023
+// Receive a requst from patient to recover his appointments
 //*************************************************** */
 app.route('/recover_appointments')
 .post(function (req, res) {
@@ -148,7 +234,7 @@ console.log('recover_appointments SQL :'+sql ) ;
 //*************************************************** */
 app.route('/public_register_professional')
 .post(function (req, res) {
-//sanitized 27-03-2023 *********
+
   req.body=sntz_json(req.body)
 //***************************** */
 console.log('public_register_professional INPUT:', req.body );
@@ -255,7 +341,6 @@ const resultado = client.query(sql, (err, result) => {
 
 })
 
-
 //***************************************************** */
 // COMMON GET CENTERS                                   */
 // sanitized 29-03-2023 
@@ -295,7 +380,6 @@ const resultado = client.query(sql, (err, result) => {
 })
 
 })
-
 
 //******************************************************** */
 //**********                                      ******** */
@@ -825,18 +909,13 @@ console.log('professional_lock_day SQL:'+sql ) ;
 })
 */
 
-
+// *********************************************************************************************************
 // *********************************************************************************************************
 // *********                                  **************************************************************
 // *********     END PUBLIC INTERFACE         **************************************************************
 // *********                                  **************************************************************
 // *********************************************************************************************************
 // *********************************************************************************************************
-
-
-
-
-
 
 
 // *********************************************************************************************************
@@ -846,6 +925,380 @@ console.log('professional_lock_day SQL:'+sql ) ;
 // *********                                  **************************************************************
 // *********************************************************************************************************
 // *********************************************************************************************************
+
+
+// PROFESSIONAL GET LOCK DAYS 
+// sanitized  31-03-2023 
+// TO BE DELETED 31-03-2023
+app.route('/professional_get_lock_days')
+.post(function (req, res) {
+  req.body=sntz_json(req.body,"TO BE DELETED /professional_get_lock_days")
+  //console.log('professional_get_lock_days INPUT : ', req.body );
+  let lock_days = get_professional_lock_days(req.body.professional_id)
+  lock_days.then( v => {  console.log("professional_get_lock_days  RESPONSE: "+JSON.stringify(v)) ; return (res.status(200).send(JSON.stringify(v))) } )
+
+})
+
+// PROFESSIONAL LOCK  DAY 
+// sanitized  31-03-2023 
+// validated 31-03-2023
+app.route('/professional_lock_day')
+.post(function (req, res) {
+  req.body=sntz_json(req.body,"/professional_lock_day")
+//console.log('professional_lock_day INPUT:', req.body );
+const { Client } = require('pg')
+const client = new Client(conn_data)
+client.connect() 
+var sql  = "INSERT INTO professional_day_locked ( professional_id, date ) values ('"+req.body.appointment_professional_id+"','"+req.body.appointment_date+"') ;"
+console.log('professional_lock_day SQL:'+sql ) ;
+	client.query(sql, (err, result) => {
+	  if (err) {
+	     // throw err ;
+	      console.log('professional_lock_day ERROR CREATION REGISTER, QUERY:'+sql ) ;
+	      console.log(err ) ;
+        res.status(200).send(JSON.stringify(result));
+	    }
+	    else
+	    {
+	  res.status(200).send(JSON.stringify(result));
+	  console.log('professional_lock_day  SUCCESS CENTER INSERT ' ) ; 
+    console.log('professional_lock_day  OUTPUT  :'+JSON.stringify(result) ) ; 
+	   }
+	   
+	  client.end()
+	})
+  
+})
+
+// PROFESSIONAL UN LOCK  DAY 
+// sanitized  31-03-2023 
+// validated 31-03-2023
+app.route('/professional_unlock_day')
+.post(function (req, res) {
+//console.log('professional_lock_day INPUT:', req.body );
+req.body=sntz_json(req.body,"/professional_unlock_day")
+const { Client } = require('pg')
+const client = new Client(conn_data)
+client.connect() 
+var sql  = "DELETE FROM  professional_day_locked  WHERE professional_id='"+req.body.appointment_professional_id+"' AND date='"+req.body.appointment_date+"' ;"
+console.log('professional_lock_day SQL:'+sql ) ;
+	client.query(sql, (err, result) => {
+	  if (err) {
+	     // throw err ;
+	      console.log('professional_lock_day ERROR CREATION REGISTER, QUERY:'+sql ) ;
+	      console.log(err ) ;
+        res.status(200).send(JSON.stringify(result));
+	    }
+	    else
+	    {
+	  res.status(200).send(JSON.stringify(result));
+	  console.log('professional_lock_day  SUCCESS CENTER INSERT ' ) ; 
+    console.log('professional_lock_day  OUTPUT  :'+JSON.stringify(result) ) ; 
+	   }
+	   
+	  client.end()
+	})
+  
+})
+
+
+// PROFESSIONAL GET SPECIALT 
+// sanitized  28-03-2023 
+app.route('/get_professional_specialty')
+.post(function (req, res) {
+ // console.log('get_professional_specialty:', req.body );
+    req.body=sntz_json(req.body,"/get_professional_specialty")
+const { Client } = require('pg')
+const client = new Client(conn_data)
+client.connect()
+
+
+// ****** Run query to bring appointment
+const sql  = "SELECT * from  specialty where id IN  (SELECT specialty_id FROM professional_specialty WHERE professional_id="+req.body.professional_id+") ;" ;
+console.log('get_professional_specialty: SQL GET PROFESSIONAL SPECIALTY = '+sql ) ;
+const resultado = client.query(sql, (err, result) => {
+
+  if (err) {
+      console.log('get_professional_specialty ERR:'+err ) ;
+    }
+
+  //console.log('get_professional_specialty : '+JSON.stringify(result) ) ;
+  res.status(200).send(JSON.stringify(result) );
+  client.end()
+})
+
+})
+
+// PROFESSIONAL TAKE APPOINTMENT
+// sanitized  31-03-2023 
+// validated 31-03-2023
+app.route('/professional_take_appointment')
+.post(function (req, res) {
+  req.body=sntz_json(req.body,"/professional_take_appointment")
+  //    console.log('professional_take_appointment INPUT : ', req.body );
+// ****** Connect to postgre
+const { Client } = require('pg')
+const client = new Client(conn_data)
+client.connect()
+
+let query_reserve =   "INSERT INTO appointment (  date , start_time,  duration,  center_id, confirmation_status, professional_id, patient_doc_id, patient_name,    patient_email, patient_phone1,  patient_age,  app_available, app_status, app_blocked, app_public,  location1, location2, location3, location4, location5, location6,   app_type_home, app_type_center,  app_type_remote, patient_notification_email_reserved , specialty_reserved , patient_address , calendar_id )"   
+
+query_reserve  += " VALUES ( '"+req.body.appointment_date+"' , '"+req.body.appointment_start_time+"' , '"+req.body.appointment_duration+"' ,  "+req.body.appointment_center_id+" , '0' , '"+req.body.appointment_professional_id+"' , '"+req.body.patient_doc_id.toUpperCase() +"' , '"+req.body.patient_name.toUpperCase()+"' , '"+req.body.patient_email.toUpperCase()+"' , '"+req.body.patient_phone+"' ,  '"+req.body.patient_age+"' ,'false' , '1' , '0' , '1', "+req.body.appointment_location1+" , "+req.body.appointment_location2+" ,"+req.body.appointment_location3+" ,"+req.body.appointment_location4+" ,"+req.body.appointment_location5+" ,"+req.body.appointment_location6+" , '"+req.body.appointment_type_home+"' , '"+req.body.appointment_type_center+"' , '"+req.body.appointment_type_remote+"' , '1' , '"+req.body.appointment_specialty+"' , '"+req.body.patient_address+"'  , '"+req.body.appointment_calendar_id+"' 	) RETURNING * " ; 
+
+console.log(query_reserve);
+const resultado = client.query(query_reserve, (err, result) => {
+    //res.status(200).send(JSON.stringify(result)) ;
+    if (err) {
+      console.log('/professional_take_appointment ERR:'+err ) ;
+    }
+    else {
+    console.log("professional_take_appointment JSON RESPONSE BODY : "+JSON.stringify(result));
+    res.status(200).send(JSON.stringify(result.rows[0])) ;  
+    }
+    client.end()
+})
+
+})
+
+// PROFESSIONAL BLOCK APPOINTMENTS  PLURAL MANY
+// sanitized  31-03-2023 
+// validated 31-03-2023
+app.route('/professional_block_appointments')
+.post(function (req, res) {
+  //console.log("professional_block_appointments "+JSON.stringify(req.body) )
+  req.body=sntz_json(req.body,"/professional_block_appointments")
+
+  let response_blocking = professional_block_appointments(req.body.lock_apps) 
+  let json_response = {
+                      result : 'success'
+                      }
+
+  response_blocking.then( v => {  console.log("professional_block_appointments  RESPONSE: "+JSON.stringify(json_response)) ; return (res.status(200).send(JSON.stringify(json_response))) } )
+})
+
+// PROFESSIONAL GET CALENDARS
+// sanitized  31-03-2023 
+// Seems to be NOT USED 31-03-2023
+app.route('/professional_get_calendars')
+.post(function (req, res) {
+  req.body=sntz_json(req.body,"TO DELETE /professional_get_calendars")
+  //  console.log('professional_get_calendars :', req.body );
+// ****** Connect to postgre
+const { Client } = require('pg')
+const client = new Client(conn_data)
+client.connect()
+
+// ****** Run query to bring appointment
+//const sql  = "SELECT * FROM professional_calendar WHERE professional_id='"+req.body.professional_id+"' ORDER BY id DESC " ;
+
+const sql  = "SELECT * FROM (SELECT *, id AS calendar_id, active as calendar_active FROM professional_calendar WHERE professional_id='"+req.body.professional_id+"' AND  deleted_professional = false )j   LEFT JOIN  center ON   j.center_id = center.id  ORDER BY j.id ASC  " ;
+
+//console.log('professional_get_calendars: SQL :'+sql ) ;
+const resultado = client.query(sql, (err, result) => {
+
+  if (err) {
+      console.log('rofessional_get_calendars ERR:'+err ) ;
+    }
+
+  //console.log('professional_get_calendars : '+JSON.stringify(result) ) ;
+  res.status(200).send(JSON.stringify(result) );
+  client.end() ;
+})
+
+})
+
+// PROFESSIONAL GET CENTERS
+// sanitized  31-03-2023 
+// Validated 31-03-2023
+app.route('/professional_get_centers')
+.post(function (req, res) {
+  req.body=sntz_json(req.body,"/professional_get_centers")
+  //console.log('professional_get_centers :', req.body );
+
+// ****** Connect to postgre
+const { Client } = require('pg')
+const client = new Client(conn_data)
+client.connect()
+
+// ****** Run query to bring appointment
+const sql  = "SELECT * FROM center WHERE  professional_id='"+req.body.professional_id+"' AND center_deleted='false' ORDER BY id DESC  " ;
+console.log('professional_get_centers: SQL :'+sql ) ;
+const resultado = client.query(sql, (err, result) => {
+
+  if (err) {
+      console.log('professional_get_centers ERR:'+err ) ;
+    }
+
+  //console.log('professional_get_centers : '+JSON.stringify(result) ) ;
+  res.status(200).send(JSON.stringify(result) );
+  client.end()
+})
+
+})
+
+// PROFESSIONAL GET CONFIG DATA
+// sanitized  31-03-2023 
+// Seems to be NOT USED 31-03-2023
+app.route('/professional_get_config_data')
+.post(function (req, res) {
+  req.body=sntz_json(req.body,"TO DELETE /professional_get_config_data")
+  //console.log('professional_get_config_data :', req.body );
+
+// ****** Connect to postgre
+const { Client } = require('pg')
+const client = new Client(conn_data)
+client.connect()
+
+// ****** Run query to bring appointment
+const sql  = "SELECT * FROM center WHERE  professional_id='"+req.body.professional_id+"'  ORDER BY id ASC  " ;
+console.log('professional_get_config_data: SQL :'+sql ) ;
+const resultado = client.query(sql, (err, result) => {
+
+  if (err) {
+      console.log('professional_get_config_data ERR:'+err ) ;
+    }
+
+  console.log('professional_get_config_data : '+JSON.stringify(result) ) ;
+  res.status(200).send(JSON.stringify(result) );
+  client.end()
+})
+
+})
+
+//PROFESSIONAL UPDATE CENTER
+// sanitized  31-03-2023 
+// validated 31-03-2023
+app.route('/professional_update_center')
+.post(function (req, res) {
+  req.body=sntz_json(req.body,"/professional_update_center")
+  //  console.log('professional_update_center :', req.body );
+ 
+// ****** Connect to postgre
+const { Client } = require('pg')
+const client = new Client(conn_data)
+client.connect()
+
+let sql = ""
+
+if (req.body.name != null ) 
+{
+sql = sql+" name='"+req.body.name+"' " ; ;
+}
+
+if (req.body.address!= null ) 
+{
+  sql = sql+", address='"+req.body.address+"' " ; ;
+}
+
+if (req.body.comuna_code!= null ) 
+{
+ sql = sql+", comuna ='"+req.body.comuna_code+"' " ;
+}
+
+if (req.body.phone1!= null ) 
+{
+ sql = sql+", phone1='"+req.body.phone1+"' " ; 
+}
+
+if (req.body.phone2!= null ) 
+{
+ sql = sql+", phone2='"+req.body.phone2+"' " ;
+}
+
+sql = sql+", home_comuna1="+req.body.home_comuna1+" " ;
+sql = sql+", home_comuna2="+req.body.home_comuna2+" " ;
+sql = sql+", home_comuna3="+req.body.home_comuna3+" " ;
+sql = sql+", home_comuna4="+req.body.home_comuna4+" " ;
+sql = sql+", home_comuna5="+req.body.home_comuna5+" " ;
+
+sql = sql+", comuna="+req.body.center_comuna+" " ;
+
+
+
+
+req.body.professional_id
+// ****** Run query to bring appointment
+//const sql  = "SELECT * FROM center WHERE id IN  (SELECT center_id FROM center_professional where professional_id='"+req.body.professional_id+"' ) AND center_deleted!='true'  ORDER BY id ASC  " ;
+const sql_request  = "UPDATE center SET "+sql+"  WHERE id = "+req.body.center_id+" ;" ;
+
+console.log('professional_get_centers: SQL :'+sql_request ) ;
+const resultado = client.query(sql_request, (err, result) => {
+
+  if (err) {
+      console.log('professional_get_centers ERR:'+err ) ;
+    }
+
+  console.log('professional_get_centers : '+JSON.stringify(result) ) ;
+  res.status(200).send(JSON.stringify(result) );
+  client.end()
+})
+
+
+})
+
+//PROFESSIONAL DELETE CENTER
+// sanitized  31-03-2023 
+// validated 31-03-2023
+app.route('/professional_delete_center')
+.post(function (req, res) {
+  req.body=sntz_json(req.body,"/professional_delete_center")
+  //console.log('professional_delete_center :', req.body );
+ 
+// ****** Connect to postgre
+const { Client } = require('pg')
+const client = new Client(conn_data)
+client.connect()
+
+const sql_request  = "UPDATE center  SET  center_deleted = 'true'  WHERE id ="+req.body.center_id+" ;" ;
+
+console.log('professional_delete_center : SQL :'+sql_request ) ;
+const resultado = client.query(sql_request, (err, result) => {
+
+  if (err) {
+      console.log('professional_delete_center ERR:'+err ) ;
+    }
+
+  console.log('professional_delete_center : '+JSON.stringify(result) ) ;
+  res.status(200).send(JSON.stringify(result) );
+  client.end()
+})
+
+})
+
+// GET PROFESSIONAL DATA 
+// sanitized  31-03-2023 
+// TO BE DELETED 31-03-2023
+app.route('/patient_get_professional')
+.post(function (req, res) {
+  req.body=sntz_json(req.body," TO BE DELETED /patient_get_professional")
+    //console.log('patient_get_professional  REQUEST : ', req.body );
+ 
+// ****** Connect to postgre
+const { Client } = require('pg')
+const client = new Client(conn_data)
+client.connect()
+
+// ****** Run query to bring appointment
+const sql  = "SELECT * FROM professional WHERE id='"+req.body.professional_id+"' " ;
+console.log('SQL patient_get_professional  : '+sql ) ;
+const resultado = client.query(sql, (err, result) => {
+
+  if (err) {
+    // throw err ;
+     console.log('patient_get_professional ERROR '+sql ) ;
+     console.log(err ) ;
+   }
+   else
+   {
+  res.status(200).send(JSON.stringify(result.rows[0]));
+  //console.log('patient_get_professional RESPONSE  :'+JSON.stringify(result) ) ; 
+  }
+  
+  client.end()
+})
+
+})
+
 
 
 //***************************************************** */
@@ -1138,9 +1591,6 @@ async function professional_get_appointments_from_calendars(prof_id, date,remove
  
   return(json_response); 
 }
-
-
-
 
 
 // **************************************
@@ -1960,9 +2410,6 @@ async function professional_get_appointments(req)
 
 
 
-
-
-
 //********************************************* */
 // CANDIDATA A SER ELIMINADA  27-03-2023
 //********************************************* */
@@ -2092,19 +2539,15 @@ const resultado = client.query(sql, (err, result) => {
 // ********************************************************************************************************
 // ********************************************************************************************************
 
-
-
-
-
-//*******************************************************************************
-//*******************************************************************************
-//********   PROFESSIONAL WEB SITE                              *****************
-//********   Show Calendars Appointments available              *****************
-//********                                                      *****************
-//********  professional_pwsite_get_calendar                    *****************
-//********                                                      *****************
-//*******************************************************************************
-//*******************************************************************************
+/*********************************************************************************************************
+//*********************************************************************************************************
+//********   PROFESSIONAL WEB SITE                              *******************************************
+//********   Show Calendars Appointments available              *******************************************
+//********                                                      *******************************************
+//********  professional_pwsite_get_calendar                    *******************************************
+//********                                                      *******************************************
+//*********************************************************************************************************
+//*********************************************************************************************************
 
 //***************************************/
 // PROFESSIONAL GET TimeTable
@@ -2337,10 +2780,7 @@ async function professional_pwsite_get_appointments_calendar(params)
  
 }
 
-//***************************************************************
-//***************************************************************
-//***************************************************************
-//***************************************************************
+
 
 //********************************************* 
 // PUBLIC POST TAKE APPOINTMENT removed 23-03-2023
@@ -2384,6 +2824,17 @@ const resultado = client.query(query_update, (err, result) => {
 
 })
 */
+
+
+
+// ********************************************************************************************************
+// ********************************************************************************************************
+// *********                                  *************************************************************
+// *********  TO BE ELIMINATED                *************************************************************
+// *********                                  *************************************************************
+// ********************************************************************************************************
+// ********************************************************************************************************
+
 
 //********************************************* 
 // PUBLIC POST GET APPOINTMENT AVAILABLE LIST
@@ -2859,12 +3310,6 @@ client.end()
 
 
 
-//********************************************************************/
-//********************************************************************/
-//********************* END SOME CONFIG ******************************/
-//********************************************************************/
-//********************************************************************/
-
 
 //**************************************************************** */
 // **********  PUBLIC PATIENT SEARCH *****************************
@@ -3112,440 +3557,21 @@ async function get_calendars_available_professional(json)
 
 
 
-/******************************************************************** */
-/******************************************************************** */
-/****************       TOOLS UTILS  ******************************** */
-/******************************************************************** */
-/******************************************************************** */
-
-//******  PUBLIC CANCEL APP 
-// sanitized  28-03-2023 
-// validated   24-01-2023  
-app.route('/public_cancel_app')
-.post(function (req, res) {
-   // console.log('public_cancel_app INPUT : ', req.body );
-    req.body=sntz_json(req.body,"/public_cancel_app")
-// ****** Connect to postgre
-const { Client } = require('pg')
-const client = new Client(conn_data)
-client.connect()
-
-/* INPUT
-    req_date : req_date,
-    req_id  : req_id,
-    req_center_id :  req_center_id,
-    req_patient_doc_id : req_patient_doc_id,
- */
-
-//let query_reserve =   "INSERT INTO appointment (  date , start_time,  duration,  center_id, confirmation_status, professional_id, patient_doc_id, patient_name,    patient_email, patient_phone1,  patient_age,  app_available, app_status, app_blocked, app_public,  location1, location2, location3, location4, location5, location6,   app_type_home, app_type_center,  app_type_remote, patient_notification_email_reserved , specialty_reserved , patient_address , calendar_id )"   
-let query_reserve = "DELETE FROM appointment WHERE id="+req.body.req_id+" AND center_id="+req.body.req_center_id+" AND patient_doc_id='"+req.body.req_patient_doc_id+"' "
-
-//query_reserve  += " VALUES ( '"+req.body.appointment_date+"' , '"+req.body.appointment_start_time+"' , '"+req.body.appointment_duration+"' ,  "+req.body.appointment_center_id+" , '0' , '"+req.body.appointment_professional_id+"' , '"+req.body.patient_doc_id.toUpperCase() +"' , '"+req.body.patient_name.toUpperCase()+"' , '"+req.body.patient_email.toUpperCase()+"' , '"+req.body.patient_phone+"' ,  '"+req.body.patient_age+"' ,'false' , '1' , '0' , '1', "+req.body.appointment_location1+" , "+req.body.appointment_location2+" ,"+req.body.appointment_location3+" ,"+req.body.appointment_location4+" ,"+req.body.appointment_location5+" ,"+req.body.appointment_location6+" , '"+req.body.appointment_type_home+"' , '"+req.body.appointment_type_center+"' , '"+req.body.appointment_type_remote+"' , '1' , '"+req.body.appointment_specialty+"' , '"+req.body.patient_address+"'  , '"+req.body.appointment_calendar_id+"' 	) RETURNING * " ; 
-
-console.log(query_reserve);
-const resultado = client.query(query_reserve, (err, result) => {
-    //res.status(200).send(JSON.stringify(result)) ;
-    if (err) {
-      console.log('/public_cancel_app ERR:'+err ) ;
-    }
-    else {
-    console.log("public_cancel_app JSON RESPONSE BODY : "+JSON.stringify(result));
-    res.status(200).send(JSON.stringify(result.rows[0])) ;  
-    }
-    client.end()
-})
-
-})
-
-//******  PUBLIC CONFIRM APP 
-// sanitized  28-03-2023 
-// 24-01-2023  
-app.route('/public_confirm_app')
-.post(function (req, res) {
-    //console.log('public_confirm_app INPUT : ', req.body );
-    req.body=sntz_json(req.body,"/public_confirm_app")
-// ****** Connect to postgre
-const { Client } = require('pg')
-const client = new Client(conn_data)
-client.connect()
-
-/* INPUT
-    req_date : req_date,
-    req_id  : req_id,
-    req_center_id :  req_center_id,
-    req_patient_doc_id : req_patient_doc_id,
- */
-
-//let query_reserve =   "INSERT INTO appointment (  date , start_time,  duration,  center_id, confirmation_status, professional_id, patient_doc_id, patient_name,    patient_email, patient_phone1,  patient_age,  app_available, app_status, app_blocked, app_public,  location1, location2, location3, location4, location5, location6,   app_type_home, app_type_center,  app_type_remote, patient_notification_email_reserved , specialty_reserved , patient_address , calendar_id )"   
-//let query_reserve = "DELETE FROM appointment WHERE id="+req.body.req_id+" AND center_id="+req.body.req_center_id+" AND patient_doc_id='"+req.body.req_patient_doc_id+"' "
-
-let query_confirm = "UPDATE appointment SET confirmation_status = 1 WHERE id = "+req.body.req_id+" AND center_id ="+req.body.req_center_id+"  AND patient_doc_id='"+req.body.req_patient_doc_id+"' returning * " 
-//query_reserve  += " VALUES ( '"+req.body.appointment_date+"' , '"+req.body.appointment_start_time+"' , '"+req.body.appointment_duration+"' ,  "+req.body.appointment_center_id+" , '0' , '"+req.body.appointment_professional_id+"' , '"+req.body.patient_doc_id.toUpperCase() +"' , '"+req.body.patient_name.toUpperCase()+"' , '"+req.body.patient_email.toUpperCase()+"' , '"+req.body.patient_phone+"' ,  '"+req.body.patient_age+"' ,'false' , '1' , '0' , '1', "+req.body.appointment_location1+" , "+req.body.appointment_location2+" ,"+req.body.appointment_location3+" ,"+req.body.appointment_location4+" ,"+req.body.appointment_location5+" ,"+req.body.appointment_location6+" , '"+req.body.appointment_type_home+"' , '"+req.body.appointment_type_center+"' , '"+req.body.appointment_type_remote+"' , '1' , '"+req.body.appointment_specialty+"' , '"+req.body.patient_address+"'  , '"+req.body.appointment_calendar_id+"' 	) RETURNING * " ; 
-
-console.log(query_confirm);
-const resultado = client.query(query_confirm, (err, result) => {
-    //res.status(200).send(JSON.stringify(result)) ;
-    if (err) {
-      console.log('/public_confirm_app ERR:'+err ) ;
-    }
-    else {
-    console.log("public_confirm_app JSON RESPONSE BODY : "+JSON.stringify(result));
-    res.status(200).send(JSON.stringify(result.rows[0])) ;  
-    }
-    client.end()
-})
-
-})
-
-
-// PROFESSIONAL GET SPECIALT 
-// sanitized  28-03-2023 
-app.route('/get_professional_specialty')
-.post(function (req, res) {
- // console.log('get_professional_specialty:', req.body );
-    req.body=sntz_json(req.body,"/get_professional_specialty")
-const { Client } = require('pg')
-const client = new Client(conn_data)
-client.connect()
-
-
-// ****** Run query to bring appointment
-const sql  = "SELECT * from  specialty where id IN  (SELECT specialty_id FROM professional_specialty WHERE professional_id="+req.body.professional_id+") ;" ;
-console.log('get_professional_specialty: SQL GET PROFESSIONAL SPECIALTY = '+sql ) ;
-const resultado = client.query(sql, (err, result) => {
-
-  if (err) {
-      console.log('get_professional_specialty ERR:'+err ) ;
-    }
-
-  //console.log('get_professional_specialty : '+JSON.stringify(result) ) ;
-  res.status(200).send(JSON.stringify(result) );
-  client.end()
-})
-
-})
-
-// PROFESSIONAL TAKE APPOINTMENT
-app.route('/professional_take_appointment')
-.post(function (req, res) {
-    console.log('professional_take_appointment INPUT : ', req.body );
-// ****** Connect to postgre
-const { Client } = require('pg')
-const client = new Client(conn_data)
-client.connect()
-
-let query_reserve =   "INSERT INTO appointment (  date , start_time,  duration,  center_id, confirmation_status, professional_id, patient_doc_id, patient_name,    patient_email, patient_phone1,  patient_age,  app_available, app_status, app_blocked, app_public,  location1, location2, location3, location4, location5, location6,   app_type_home, app_type_center,  app_type_remote, patient_notification_email_reserved , specialty_reserved , patient_address , calendar_id )"   
-
-query_reserve  += " VALUES ( '"+req.body.appointment_date+"' , '"+req.body.appointment_start_time+"' , '"+req.body.appointment_duration+"' ,  "+req.body.appointment_center_id+" , '0' , '"+req.body.appointment_professional_id+"' , '"+req.body.patient_doc_id.toUpperCase() +"' , '"+req.body.patient_name.toUpperCase()+"' , '"+req.body.patient_email.toUpperCase()+"' , '"+req.body.patient_phone+"' ,  '"+req.body.patient_age+"' ,'false' , '1' , '0' , '1', "+req.body.appointment_location1+" , "+req.body.appointment_location2+" ,"+req.body.appointment_location3+" ,"+req.body.appointment_location4+" ,"+req.body.appointment_location5+" ,"+req.body.appointment_location6+" , '"+req.body.appointment_type_home+"' , '"+req.body.appointment_type_center+"' , '"+req.body.appointment_type_remote+"' , '1' , '"+req.body.appointment_specialty+"' , '"+req.body.patient_address+"'  , '"+req.body.appointment_calendar_id+"' 	) RETURNING * " ; 
-
-console.log(query_reserve);
-const resultado = client.query(query_reserve, (err, result) => {
-    //res.status(200).send(JSON.stringify(result)) ;
-    if (err) {
-      console.log('/professional_take_appointment ERR:'+err ) ;
-    }
-    else {
-    console.log("professional_take_appointment JSON RESPONSE BODY : "+JSON.stringify(result));
-    res.status(200).send(JSON.stringify(result.rows[0])) ;  
-    }
-    client.end()
-})
-
-})
-
-// PROFESSIONAL BLOCK APPOINTMENTS  PLURAL MANY
-app.route('/professional_block_appointments')
-.post(function (req, res) {
- 
-  console.log("professional_block_appointments "+JSON.stringify(req.body) )
-
-  let response_blocking = professional_block_appointments(req.body.lock_apps) 
-  let json_response = {
-                      result : 'success'
-                      }
-
-  response_blocking.then( v => {  console.log("professional_block_appointments  RESPONSE: "+JSON.stringify(json_response)) ; return (res.status(200).send(JSON.stringify(json_response))) } )
-})
-
-// PROFESSIONAL GET CALENDARS
-app.route('/professional_get_calendars')
-.post(function (req, res) {
- 
-    console.log('professional_get_calendars :', req.body );
- 
-// ****** Connect to postgre
-const { Client } = require('pg')
-const client = new Client(conn_data)
-client.connect()
-
-// ****** Run query to bring appointment
-//const sql  = "SELECT * FROM professional_calendar WHERE professional_id='"+req.body.professional_id+"' ORDER BY id DESC " ;
-
-const sql  = "SELECT * FROM (SELECT *, id AS calendar_id, active as calendar_active FROM professional_calendar WHERE professional_id='"+req.body.professional_id+"' AND  deleted_professional = false )j   LEFT JOIN  center ON   j.center_id = center.id  ORDER BY j.id ASC  " ;
-
-//console.log('professional_get_calendars: SQL :'+sql ) ;
-const resultado = client.query(sql, (err, result) => {
-
-  if (err) {
-      console.log('rofessional_get_calendars ERR:'+err ) ;
-    }
-
-  //console.log('professional_get_calendars : '+JSON.stringify(result) ) ;
-  res.status(200).send(JSON.stringify(result) );
-  client.end() ;
-})
-
-})
-
-// PROFESSIONAL GET CENTERS
-app.route('/professional_get_centers')
-.post(function (req, res) {
- 
-    console.log('professional_get_centers :', req.body );
-
-// ****** Connect to postgre
-const { Client } = require('pg')
-const client = new Client(conn_data)
-client.connect()
-
-// ****** Run query to bring appointment
-const sql  = "SELECT * FROM center WHERE  professional_id='"+req.body.professional_id+"' AND center_deleted='false' ORDER BY id ASC  " ;
-console.log('professional_get_centers: SQL :'+sql ) ;
-const resultado = client.query(sql, (err, result) => {
-
-  if (err) {
-      console.log('professional_get_centers ERR:'+err ) ;
-    }
-
-  //console.log('professional_get_centers : '+JSON.stringify(result) ) ;
-  res.status(200).send(JSON.stringify(result) );
-  client.end()
-})
-
-})
-
-// PROFESSIONAL GET CENTERS Return even deleted
-
-app.route('/professional_get_config_data')
-.post(function (req, res) {
- 
-    console.log('professional_get_config_data :', req.body );
-
-// ****** Connect to postgre
-const { Client } = require('pg')
-const client = new Client(conn_data)
-client.connect()
-
-// ****** Run query to bring appointment
-const sql  = "SELECT * FROM center WHERE  professional_id='"+req.body.professional_id+"'  ORDER BY id ASC  " ;
-console.log('professional_get_config_data: SQL :'+sql ) ;
-const resultado = client.query(sql, (err, result) => {
-
-  if (err) {
-      console.log('professional_get_config_data ERR:'+err ) ;
-    }
-
-  console.log('professional_get_config_data : '+JSON.stringify(result) ) ;
-  res.status(200).send(JSON.stringify(result) );
-  client.end()
-})
-
-})
-
-
-
-//PROFESSIONAL UPDATE CENTER
-app.route('/professional_update_center')
-.post(function (req, res) {
- 
-    console.log('professional_update_center :', req.body );
- 
-// ****** Connect to postgre
-const { Client } = require('pg')
-const client = new Client(conn_data)
-client.connect()
-
-let sql = ""
-
-if (req.body.name != null ) 
-{
-sql = sql+" name='"+req.body.name+"' " ; ;
-}
-
-if (req.body.address!= null ) 
-{
-  sql = sql+", address='"+req.body.address+"' " ; ;
-}
-
-if (req.body.comuna_code!= null ) 
-{
- sql = sql+", comuna ='"+req.body.comuna_code+"' " ;
-}
-
-if (req.body.phone1!= null ) 
-{
- sql = sql+", phone1='"+req.body.phone1+"' " ; 
-}
-
-if (req.body.phone2!= null ) 
-{
- sql = sql+", phone2='"+req.body.phone2+"' " ;
-}
-
-sql = sql+", home_comuna1="+req.body.home_comuna1+" " ;
-sql = sql+", home_comuna2="+req.body.home_comuna2+" " ;
-sql = sql+", home_comuna3="+req.body.home_comuna3+" " ;
-sql = sql+", home_comuna4="+req.body.home_comuna4+" " ;
-sql = sql+", home_comuna5="+req.body.home_comuna5+" " ;
-
-sql = sql+", comuna="+req.body.center_comuna+" " ;
-
-
-
-
-req.body.professional_id
-// ****** Run query to bring appointment
-//const sql  = "SELECT * FROM center WHERE id IN  (SELECT center_id FROM center_professional where professional_id='"+req.body.professional_id+"' ) AND center_deleted!='true'  ORDER BY id ASC  " ;
-const sql_request  = "UPDATE center SET "+sql+"  WHERE id = "+req.body.center_id+" ;" ;
-
-console.log('professional_get_centers: SQL :'+sql_request ) ;
-const resultado = client.query(sql_request, (err, result) => {
-
-  if (err) {
-      console.log('professional_get_centers ERR:'+err ) ;
-    }
-
-  console.log('professional_get_centers : '+JSON.stringify(result) ) ;
-  res.status(200).send(JSON.stringify(result) );
-  client.end()
-})
-
-
-})
-
-//PROFESSIONAL DELETE CENTER
-app.route('/professional_delete_center')
-.post(function (req, res) {
- 
-    console.log('professional_delete_center :', req.body );
- 
-// ****** Connect to postgre
-const { Client } = require('pg')
-const client = new Client(conn_data)
-client.connect()
-
-const sql_request  = "UPDATE center  SET  center_deleted = 'true'  WHERE id ="+req.body.center_id+" ;" ;
-
-console.log('professional_delete_center : SQL :'+sql_request ) ;
-const resultado = client.query(sql_request, (err, result) => {
-
-  if (err) {
-      console.log('professional_delete_center ERR:'+err ) ;
-    }
-
-  console.log('professional_delete_center : '+JSON.stringify(result) ) ;
-  res.status(200).send(JSON.stringify(result) );
-  client.end()
-})
-
-})
-
-// GET PROFESSIONAL DATA 
-app.route('/patient_get_professional')
-.post(function (req, res) {
- 
-    //console.log('patient_get_professional  REQUEST : ', req.body );
- 
-// ****** Connect to postgre
-const { Client } = require('pg')
-const client = new Client(conn_data)
-client.connect()
-
-// ****** Run query to bring appointment
-const sql  = "SELECT * FROM professional WHERE id='"+req.body.professional_id+"' " ;
-console.log('SQL patient_get_professional  : '+sql ) ;
-const resultado = client.query(sql, (err, result) => {
-
-  if (err) {
-    // throw err ;
-     console.log('patient_get_professional ERROR '+sql ) ;
-     console.log(err ) ;
-   }
-   else
-   {
-  res.status(200).send(JSON.stringify(result.rows[0]));
-  //console.log('patient_get_professional RESPONSE  :'+JSON.stringify(result) ) ; 
-  }
-  
-  client.end()
-})
-
-})
-
-// PROFESSIONAL LOCK  DAY 
-app.route('/professional_lock_day')
-.post(function (req, res) {
-console.log('professional_lock_day INPUT:', req.body );
-const { Client } = require('pg')
-const client = new Client(conn_data)
-client.connect() 
-var sql  = "INSERT INTO professional_day_locked ( professional_id, date ) values ('"+req.body.appointment_professional_id+"','"+req.body.appointment_date+"') ;"
-console.log('professional_lock_day SQL:'+sql ) ;
-	client.query(sql, (err, result) => {
-	  if (err) {
-	     // throw err ;
-	      console.log('professional_lock_day ERROR CREATION REGISTER, QUERY:'+sql ) ;
-	      console.log(err ) ;
-        res.status(200).send(JSON.stringify(result));
-	    }
-	    else
-	    {
-	  res.status(200).send(JSON.stringify(result));
-	  console.log('professional_lock_day  SUCCESS CENTER INSERT ' ) ; 
-    console.log('professional_lock_day  OUTPUT  :'+JSON.stringify(result) ) ; 
-	   }
-	   
-	  client.end()
-	})
-  
-})
-
-// PROFESSIONAL UN LOCK  DAY 
-app.route('/professional_unlock_day')
-.post(function (req, res) {
-console.log('professional_lock_day INPUT:', req.body );
-const { Client } = require('pg')
-const client = new Client(conn_data)
-client.connect() 
-var sql  = "DELETE FROM  professional_day_locked  WHERE professional_id='"+req.body.appointment_professional_id+"' AND date='"+req.body.appointment_date+"' ;"
-console.log('professional_lock_day SQL:'+sql ) ;
-	client.query(sql, (err, result) => {
-	  if (err) {
-	     // throw err ;
-	      console.log('professional_lock_day ERROR CREATION REGISTER, QUERY:'+sql ) ;
-	      console.log(err ) ;
-        res.status(200).send(JSON.stringify(result));
-	    }
-	    else
-	    {
-	  res.status(200).send(JSON.stringify(result));
-	  console.log('professional_lock_day  SUCCESS CENTER INSERT ' ) ; 
-    console.log('professional_lock_day  OUTPUT  :'+JSON.stringify(result) ) ; 
-	   }
-	   
-	  client.end()
-	})
-  
-})
-
-// ***************************************************
-// ******   TUTORIAL  02-03-2923    ****************** 
-// ***************************************************
+/******************************************************************************************************** */
+/******************************************************************************************************** */
+/****************                             *********************************************************** */
+/****************      TUTORIAL  02-03-2923   *********************************************************** */
+/****************                             *********************************************************** */
+/******************************************************************************************************** */
+/******************************************************************************************************** */
 
 // PROFESSIONAL SHUTDOWN TUTORIAL
+// sanitized  31-03-2023 
+// validated 31-03-2023
 app.route('/professional_shutdown_tutorial')
 .post(function (req, res) {
-    console.log('professional_shutdown_tutorial INPUT : ', req.body );
+   // console.log('professional_shutdown_tutorial INPUT : ', req.body );
+   req.body=sntz_json(req.body,"/professional_shutdown_tutorial")
 // ****** Connect to postgre
 const { Client } = require('pg')
 const client = new Client(conn_data)
@@ -3574,26 +3600,18 @@ const resultado = client.query(query_update, (err, result) => {
 
 })
 
+// ****************************************************************************************************
+// ****************  END TUTORIAL   ******************************************************************* 
+// ****************************************************************************************************
 
 
-// ***************************************************
-// ****************  END TUTORIAL   ****************** 
-// ***************************************************
-
-
-
-// PROFESSIONAL GET LOCK DAYS 
-app.route('/professional_get_lock_days')
-.post(function (req, res) {
-  //console.log('professional_get_lock_days INPUT : ', req.body );
-  let lock_days = get_professional_lock_days(req.body.professional_id)
-  lock_days.then( v => {  console.log("professional_get_lock_days  RESPONSE: "+JSON.stringify(v)) ; return (res.status(200).send(JSON.stringify(v))) } )
-
-})
-
-//******************************************************************** */
-//***************    Funciones        ******************************** */
-//******************************************************************** */
+//****************************************************************************************************** */
+//****************************************************************************************************** */
+//***************                     ****************************************************************** */
+//***************    Funciones        ****************************************************************** */
+//***************                     ****************************************************************** */
+//****************************************************************************************************** */
+//****************************************************************************************************** */
 
 //GET PROFESSIONAL Calendars 
 
@@ -3841,14 +3859,15 @@ async function is_professional_lock_day(prof_id,date)
   return res.rows ;
 }
 
-//******************************************************* */
-//*******************  NEW CUTTER *********************** */
-//************** UNIQUE AND IMPORTAN ******************** */
-//**************   CALENDAR CUTTER  ********************* */
-//******************************************************* */
-//let apps = calendar_cutter(calendars[i],json.date, date_end.toISOString() , lockDates, true) ;  
-//******************************************************* */
-
+//********************************************************************************************************** */
+//********************************************************************************************************** */
+//**********                                 *************************************************************** */
+//**********        NEW CUTTER               *************************************************************** */
+//**********    UNIQUE AND IMPORTAN          *************************************************************** */
+//**********      CALENDAR CUTTER            *************************************************************** */
+//**********                                 *************************************************************** */
+//********************************************************************************************************** */
+//********************************************************************************************************** */
 
 //******************************************************* */
 //**********                                ************* */
@@ -4134,11 +4153,17 @@ function filter_app_from_appTaken(apps , appsTaken, includeAppTaken)
 
 
 
-// ***************************************************************
-// ***********    SECURITY    ************************************
-//              24-03-2023
-// ***************************************************************
+// ************************************************************************************************************
+// ************************************************************************************************************  
+// ***********        SECURITY          ***********************************************************************
+// ***********       24-03-2023         ***********************************************************************
+// ************************************************************************************************************
+// ************************************************************************************************************
 
+// ***************************************************************
+//  TEXT Santizator
+//  validated    24-03-2023
+// ***************************************************************
     function sntz(inputdata , flaw )
     {
     const regular_exp= /[^a-z0-9' '\-_@.,:á-ú#]/ig;
@@ -4152,10 +4177,9 @@ function filter_app_from_appTaken(apps , appsTaken, includeAppTaken)
     
     }
 
-
 // ***************************************************************
-// **** SECURITY Goes Through a JSON to sanitize  every field  ***
-//              24-03-2023
+//  JSON Santizator
+//  validated    24-03-2023
 // ***************************************************************
 
 function sntz_json(json_input,service_name)
@@ -4233,6 +4257,12 @@ const resultado = client.query(sql, (err, result) => {
 
 })
 
+// ************************************************************************************************************
+// ************************************************************************************************************  
+// ***********       END  SECURITY      ***********************************************************************
+// ***********       24-03-2023         ***********************************************************************
+// ************************************************************************************************************
+// ************************************************************************************************************
 
 
 
