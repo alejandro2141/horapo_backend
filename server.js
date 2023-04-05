@@ -1136,6 +1136,35 @@ const resultado = client.query(sql, (err, result) => {
 
 })
 
+// PROFESSIONAL GET COMMENTS
+// sanitized  31-03-2023 
+// Validated 31-03-2023
+app.route('/professional_get_comments')
+.post(function (req, res) {
+  req.body=sntz_json(req.body,"/professional_get_comments")
+  //console.log('professional_get_centers :', req.body );
+
+// ****** Connect to postgre
+const { Client } = require('pg')
+const client = new Client(conn_data)
+client.connect()
+
+// ****** Run query to bring appointment
+const sql  = "SELECT * FROM customers_messages WHERE  professional_id='"+req.body.professional_id+"'  ORDER BY id DESC  " ;
+const resultado = client.query(sql, (err, result) => {
+
+  if (err) {
+      console.log('professional_get_comments ERR:'+err ) ;
+    }
+
+  //console.log('professional_get_centers : '+JSON.stringify(result) ) ;
+  res.status(200).send(JSON.stringify(result) );
+  client.end()
+})
+
+})
+
+
 // PROFESSIONAL GET CONFIG DATA
 // sanitized  31-03-2023 
 // Seems to be NOT USED 31-03-2023
