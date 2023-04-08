@@ -1142,8 +1142,7 @@ const resultado = client.query(sql, (err, result) => {
 app.route('/professional_get_comments')
 .post(function (req, res) {
   req.body=sntz_json(req.body,"/professional_get_comments")
-  //console.log('professional_get_centers :', req.body );
-
+  
 // ****** Connect to postgre
 const { Client } = require('pg')
 const client = new Client(conn_data)
@@ -1157,8 +1156,7 @@ const resultado = client.query(sql, (err, result) => {
       console.log('professional_get_comments ERR:'+err ) ;
     }
 
-  //console.log('professional_get_centers : '+JSON.stringify(result) ) ;
-  res.status(200).send(JSON.stringify(result) );
+   res.status(200).send(JSON.stringify(result) );
   client.end()
 })
 
@@ -1801,7 +1799,7 @@ center_code = " '"+req.body.form_appointment_center_code+"' " ;
 }
 
 
-sql = "INSERT INTO professional_calendar (professional_id , start_time,  end_time, specialty1, duration, time_between, monday, tuesday, wednesday, thursday, friday, saturday , sunday, date_start, date_end,   center_id,  status , deleted_professional, color ) VALUES ( '"+req.body.professional_id+"',  '"+req.body.form_start_time+"' , '"+req.body.form_end_time+"', '"+req.body.form_specialty_id+"' , '"+req.body.form_app_duration+"' , '"+req.body.form_app_time_between+"' ,  '"+req.body.form_recurrency_mon+"' ,  '"+req.body.form_recurrency_tue+"'  ,  '"+req.body.form_recurrency_wed +"' ,  '"+req.body.form_recurrency_thu+"'  ,  '"+req.body.form_recurrency_fri+"'  , '"+req.body.form_recurrency_sat+"'  ,  '"+req.body.form_recurrency_sun+"'  ,   '"+req.body.form_calendar_start+"'  ,  '"+req.body.form_calendar_end+"'  ,   "+req.body.form_appointment_center_code+" , '1' , false , '"+req.body.form_calendar_color+"' )  " ;
+sql = "INSERT INTO professional_calendar (professional_id , start_time,  end_time, specialty1, duration, time_between, monday, tuesday, wednesday, thursday, friday, saturday , sunday, date_start, date_end,   center_id,  status , deleted_professional, color ,date  ) VALUES ( '"+req.body.professional_id+"',  '"+req.body.form_start_time+"' , '"+req.body.form_end_time+"', '"+req.body.form_specialty_id+"' , '"+req.body.form_app_duration+"' , '"+req.body.form_app_time_between+"' ,  '"+req.body.form_recurrency_mon+"' ,  '"+req.body.form_recurrency_tue+"'  ,  '"+req.body.form_recurrency_wed +"' ,  '"+req.body.form_recurrency_thu+"'  ,  '"+req.body.form_recurrency_fri+"'  , '"+req.body.form_recurrency_sat+"'  ,  '"+req.body.form_recurrency_sun+"'  ,   '"+req.body.form_calendar_start+"'  ,  '"+req.body.form_calendar_end+"'  ,   "+req.body.form_appointment_center_code+" , '1' , false , '"+req.body.form_calendar_color+"' ,  '"+req.body.date+"'  )  " ;
 console.log('create_calendar SQL:'+sql ) ;
 
   
@@ -2048,7 +2046,7 @@ app.route('/professional_get_appointments_day2')
 app.route('/professional_create_center')
 .post(function (req, res) {
   req.body=sntz_json(req.body,"/professional_create_center")
-  //  console.log('professional_create_center INPUT:', req.body );
+    //console.log('professional_create_center INPUT:', req.body );
   // ****** Connect to postgre
   const { Client } = require('pg')
   const client = new Client(conn_data)
@@ -2065,7 +2063,7 @@ var json_response = { result_status : 1 };
 if (req.body.app_type == 1 )
 {
   let location = req.body.locations[0]
-  sql = "INSERT INTO center ( name ,  address , phone1, phone2, comuna , center_visit, home_visit, remote_care, center_color , professional_id ) VALUES (  '"+req.body.name+"' , '"+req.body.address+"', '"+req.body.phone1+"' ,'"+req.body.phone2+"' ,"+location+" , true, false, false, '"+req.body.center_color+"' , '"+req.body.professional_id+"'  ) RETURNING  *";
+  sql = "INSERT INTO center ( name ,  address , phone1, phone2, comuna , center_visit, home_visit, remote_care, center_color , professional_id ,date ) VALUES (  '"+req.body.name+"' , '"+req.body.address+"', '"+req.body.phone1+"' ,'"+req.body.phone2+"' ,"+location+" , true, false, false, '"+req.body.center_color+"' , '"+req.body.professional_id+"' , '"+req.body.date+"'   ) RETURNING  *";
 }
 //INSERT APP TYPE HOME VISIT
 if (req.body.app_type == 2 )
@@ -2099,11 +2097,11 @@ if (req.body.app_type == 2 )
   if (req.body.locations[5]!=null) { comuna6=req.body.locations[5] ;}
   */
   
-  sql = " INSERT INTO center ( name ,  phone1, phone2,  center_visit, home_visit, remote_care , home_comuna1, home_comuna2, home_comuna3, home_comuna4, home_comuna5, home_comuna6  , center_color , professional_id ) VALUES (  '"+req.body.name+"' ,  '"+req.body.phone1+"' ,'"+req.body.phone2+"' , false, true , false , "+comuna1+", "+comuna2+" , "+comuna3+" , "+comuna4+" , "+comuna5+" , "+comuna6+" , '"+req.body.center_color+"' ,'"+req.body.professional_id+"'  ) ;  ";
+  sql = " INSERT INTO center ( name ,  phone1, phone2,  center_visit, home_visit, remote_care , home_comuna1, home_comuna2, home_comuna3, home_comuna4, home_comuna5, home_comuna6  , center_color , professional_id ,date  ) VALUES (  '"+req.body.name+"' ,  '"+req.body.phone1+"' ,'"+req.body.phone2+"' , false, true , false , "+comuna1+", "+comuna2+" , "+comuna3+" , "+comuna4+" , "+comuna5+" , "+comuna6+" , '"+req.body.center_color+"' ,'"+req.body.professional_id+"' , '"+req.body.date+"'  ) ;  ";
 }
 if (req.body.app_type == 3 )
 {
-  sql = " INSERT INTO center ( name , phone1, phone2, center_visit, home_visit, remote_care  , center_color , professional_id ) VALUES (  '"+req.body.name+"' ,  '"+req.body.phone1+"' ,'"+req.body.phone2+"' , false, false, true , '"+req.body.center_color+"' ,'"+req.body.professional_id+"' ) ;";
+  sql = " INSERT INTO center ( name , phone1, phone2, center_visit, home_visit, remote_care  , center_color , professional_id , date  ) VALUES (  '"+req.body.name+"' ,  '"+req.body.phone1+"' ,'"+req.body.phone2+"' , false, false, true , '"+req.body.center_color+"' ,'"+req.body.professional_id+"' , '"+req.body.date+"'   ) ;";
 }
 
 
@@ -2136,7 +2134,7 @@ console.log('create_center SQL:'+sql ) ;
 //****************************************************** */
 app.route('/professional_create_appointment')
 .post(function (req, res) {
-     console.log('SERVICE TO DELETE aprofessional_create_appointments INPUT : ', req.body );
+   //  console.log('SERVICE TO DELETE aprofessional_create_appointments INPUT : ', req.body );
 // ****** Connect to postgre
 const { Pool, Client } = require('pg')
 const client = new Client({
