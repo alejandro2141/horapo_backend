@@ -4201,7 +4201,7 @@ function filter_app_from_appTaken(apps , appsTaken, includeAppTaken)
     }
     console.log("sanitizing:"+inputdata)
     //here show error in devel AWS
-    return inputdata.replaceAll( regular_exp, "" );
+    return inputdata.replace( regular_exp, "" );
     
     }
 
@@ -4217,7 +4217,7 @@ function sntz_json(json_input,service_name)
   for (let i = 0; i < keys.length; i++) {
     const key = keys[i]; 
     
-    if (typeof json_input[key] === 'string' || myVar instanceof String )
+    if (typeof json_input[key] === 'string' || json_input[key] instanceof String )
     {
       json_input[key]=sntz(json_input[key]) 
       
