@@ -4200,6 +4200,7 @@ function filter_app_from_appTaken(apps , appsTaken, includeAppTaken)
       console.log ("SECURITY WARNING: INPUT includes special characters:"+JSON.stringify(inputdata) )    
     }
     console.log("sanitizing:"+inputdata)
+    //here show error in devel AWS
     return inputdata.replaceAll( regular_exp, "" );
     
     }
