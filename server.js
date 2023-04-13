@@ -1700,6 +1700,41 @@ console.log('professional_send_calendar_to_patient SQL :'+sql ) ;
 	})
 })
 
+// **************************************
+// *** PROFESSIONAL SEND INVITATION TO COLLEAGUE *****
+// Check 13/04/2023  
+// sanitized 13/04/2023 
+// ***************************************/
+app.route('/professional_send_invitation_colleague')
+.post(function (req, res) {
+  req.body=sntz_json(req.body,"/professional_send_invitation_colleague")
+  // ****** Connect to postgre
+const { Client } = require('pg')
+const client = new Client(conn_data)
+client.connect() 
+// GET RECOVER APPOINTMENTS 
+var sql  = null;
+sql = "insert into invitation_professional ( email ) values ('"+req.body.email+"') RETURNING * ;  ";
+
+console.log('professional_send_invitation_colleague SQL :'+sql ) ;
+	client.query(sql, (err, result) => {
+	  if (err) {
+	     // throw err ;
+	      console.log('professional_send_invitation_colleague ERROR CENTER CREATION QUERY:'+sql ) ;
+	      console.log(err ) ;
+	    }
+	    else
+	    {
+	  res.status(200).send(JSON.stringify(result));
+	  console.log('professional_send_invitation_colleague  SUCCESS INSERT ' ) ; 
+    console.log('professional_send_invitation_colleague  OUTPUT  :'+JSON.stringify(result) ) ; 
+	   }
+	   
+	  client.end()
+	})
+})
+
+
 //***************************************/
 //  PROFESSIONAL REQUEST APPOINTMENT CONFIRMATION
 // sanitized  27-03-2023 
