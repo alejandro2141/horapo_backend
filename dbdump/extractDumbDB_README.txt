@@ -7,7 +7,7 @@ alejandro@alejandro-OptiPlex-3080:~/Documents/GitHub/conmed-dockerized$ npm -ver
 
 
 #POSTGRES 
-su postgres
+sudo su postgres
 cd /tmp
 pg_dumpall > backupNew-10-13-2021
 
@@ -18,4 +18,10 @@ sudo su postgres
 dropdb conmeddb02
 psql conmeddb02 < backupNew-10-13-2021
 psql -f backupNew-11-05-2021  postgres
+
+#incrementals
+
+sudo su postgres 
+pg_dump --format plain --encoding UTF8 --schema-only  "conmeddb02" > /tmp/lala2
+
 
