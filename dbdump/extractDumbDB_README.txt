@@ -24,4 +24,8 @@ psql -f backupNew-11-05-2021  postgres
 sudo su postgres 
 pg_dump --format plain --encoding UTF8 --schema-only  "conmeddb02" > /tmp/lala2
 
+psql
+\l  
+\c conmeddb02 
+ ALTER TABLE appointment_cancelled ADD COLUMN patient_confirmation integer, ADD COLUMN patient_confirmation_date timestamp with time zone ;
 
