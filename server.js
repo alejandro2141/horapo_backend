@@ -1406,6 +1406,7 @@ async function get_access_login(req)
   if (result.rows.length>0 )
   {
   json_response = { 
+          sid : result.rows[0].id,
           professional_id: result.rows[0].user_id , 
           result_code: 0 ,
           professional_name: result.rows[0].name ,
@@ -1423,6 +1424,78 @@ async function get_access_login(req)
   return json_response ;
 
 }
+
+
+//***************************************************** */
+//   PROFESSIONAL LOGIN from session                    */
+//      Validated 17-05-2023   
+//      sanitized 17-05-2023  
+// **************************************************** */
+//***************************************************** */
+app.route('/professional_login_session')
+.post(function (req, res) {
+
+  req.body=sntz_json(req.body,"INPUT /professional_login")
+  
+  if (req.body["sessionCode"] )
+  {
+    let json_response = login_from_session(req)
+    json_response.then( v => {  console.log("professional_login_session RESPONSE: "+JSON.stringify(v)) ; return (res.status(200).send(JSON.stringify(v))) } )
+    //res.status(200).send(JSON.stringify(json_response));
+    //console.log('professional_login RESPONSE  :'+JSON.stringify(json_response) ) ;
+  }
+  else
+  {
+    let json_response_error = { 
+      professional_id: null , 
+      result_code: 3 ,
+      professional_name: null ,
+      token : null ,
+      first_time : null,
+                  };
+    return (res.status(200).send(JSON.stringify(json_response_error))) 
+  }
+
+})
+
+//***************************************************** */
+// FUNCTION REQUIRED FOR LOGIN 
+// Validated 17-05-2023 
+//***************************************************** */
+async function login_from_session(req)
+{
+  const { Client } = require('pg')
+  const client = new Client(conn_data)
+  await client.connect()
+    
+  const sql = "SELECT * FROM session  WHERE id='"+req.body.sessionCode+"'  ";
+  console.log('professionalLogin SQL:'+sql ) ;
+  //set default error
+  var json_response = {  professional_id: null , result_code : 33 };
+  const result = await client.query(sql) 
+  //IF SUCCESS FOUND USER
+  if (result.rows.length>0 )
+  {
+  json_response = { 
+          sid : result.rows[0].id,
+          professional_id: result.rows[0].user_id , 
+          result_code: 0 ,
+          professional_name: result.rows[0].name ,
+          token : result.rows[0].id,
+          first_time : result.rows[0].first_time,
+          tutorial_start : result.rows[0].tutorial_start,
+          tutorial_center : result.rows[0].tutorial_center,
+          tutorial_calendar : result.rows[0].tutorial_calendar,
+          tutorial_menu : result.rows[0].tutorial_menu,
+    };
+  }
+  
+  client.end() 
+  return json_response ;
+
+}
+
+
 
 //***************************************************** */
 //    end   PROFESSIONAL LOGIN                          */
@@ -1471,6 +1544,9 @@ const resultado = client.query(sql, (err, result) => {
 
 
 })
+
+
+
 
 //*********************************************************************************************************************
 //*********************************************************************************************************************
