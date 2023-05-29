@@ -13,7 +13,11 @@ curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.39.3/install.sh
 curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.39.3/install.sh | bash
 This will install the nvm script to your user account. To use it, you must first source your .bashrc file:
 source ~/.bashrc
+Now, you can ask NVM which versions of Node are available:
+nvm list-remote
 
+It’s a very long list. You can install a version of Node by writing in any of the release versions listed. For instance, to get version v14.10.0, you can run:
+nvm install v14.10.0
 
 
 
