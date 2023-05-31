@@ -29,3 +29,5 @@ psql
 \c conmeddb02 
  ALTER TABLE appointment_cancelled ADD COLUMN patient_confirmation integer, ADD COLUMN patient_confirmation_date timestamp with time zone ;
 
+#TO RESTAR POSTGRES if is required
+/etc/init.d/postgresql restart
