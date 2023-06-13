@@ -149,6 +149,7 @@ const resultado = client.query(query_reserve, (err, result) => {
 
 })
 
+
 // *********************************************************************************************************
 //  GET SESSION PROFESSIONALS ACTIVE
 //  validated 09-06-2023  
@@ -189,6 +190,46 @@ const resultado = client.query(query_reserve, (err, result) => {
 })
 
 
+// *********************************************************************************************************
+//  GET PUBLIC COMMENTS
+//  validated 12-06-2023  
+// *********************************************************************************************************
+// validated   24-01-2023  
+app.route('/monitoring_get_public_comments')
+.post(function (req, res) {
+   // console.log('public_cancel_app INPUT : ', req.body );
+    req.body=sntz_json(req.body,"/monitoring_get_public_comments")
+// ****** Connect to postgre
+const { Client } = require('pg')
+const client = new Client(conn_data)
+client.connect()
+
+//let query_reserve =   "INSERT INTO appointment (  date , start_time,  duration,  center_id, confirmation_status, professional_id, patient_doc_id, patient_name,    patient_email, patient_phone1,  patient_age,  app_available, app_status, app_blocked, app_public,  location1, location2, location3, location4, location5, location6,   app_type_home, app_type_center,  app_type_remote, patient_notification_email_reserved , specialty_reserved , patient_address , calendar_id )"   
+let timestamp = new Date()
+let yesterday = new Date( timestamp.getTime() - (86400000 *7)  )
+
+let query_reserve = "SELECT * FROM public_comments " 
+
+//query_reserve  += " VALUES ( '"+req.body.appointment_date+"' , '"+req.body.appointment_start_time+"' , '"+req.body.appointment_duration+"' ,  "+req.body.appointment_center_id+" , '0' , '"+req.body.appointment_professional_id+"' , '"+req.body.patient_doc_id.toUpperCase() +"' , '"+req.body.patient_name.toUpperCase()+"' , '"+req.body.patient_email.toUpperCase()+"' , '"+req.body.patient_phone+"' ,  '"+req.body.patient_age+"' ,'false' , '1' , '0' , '1', "+req.body.appointment_location1+" , "+req.body.appointment_location2+" ,"+req.body.appointment_location3+" ,"+req.body.appointment_location4+" ,"+req.body.appointment_location5+" ,"+req.body.appointment_location6+" , '"+req.body.appointment_type_home+"' , '"+req.body.appointment_type_center+"' , '"+req.body.appointment_type_remote+"' , '1' , '"+req.body.appointment_specialty+"' , '"+req.body.patient_address+"'  , '"+req.body.appointment_calendar_id+"' 	) RETURNING * " ; 
+
+console.log(query_reserve);
+const resultado = client.query(query_reserve, (err, result) => {
+    //res.status(200).send(JSON.stringify(result)) ;
+    if (err) {
+      console.log('/monitoring_get_public_comments ERR:'+err ) ;
+    }
+    else {
+    console.log("monitoring_get_public_comments JSON RESPONSE BODY : "+JSON.stringify(result));
+    res.status(200).send(JSON.stringify(result)) ;  
+    }
+    client.end()
+})
+
+
+})
+
+
+
 
 // *********************************************************************************************************
 // *********************************************************************************************************
@@ -197,6 +238,53 @@ const resultado = client.query(query_reserve, (err, result) => {
 // *********                                  **************************************************************
 // *********************************************************************************************************
 // *********************************************************************************************************
+
+
+
+//******  PUBLIC SEND COMMENTS  ********************* */ 
+// sanitized 12-06-2023
+//*************************************************** */
+app.route('/public_send_comments')
+.post(function (req, res) {
+
+  req.body=sntz_json(req.body,"/public_send_comments")
+//***************************** */
+console.log('public_send_comments:', req.body );
+// ****** Connect to postgre
+const { Client } = require('pg')
+const client = new Client(conn_data)
+client.connect() 
+// GET PROFESSIONAL DATA
+var sql  = null;
+var json_response = { result_status : 1 };
+//var res = null; 	
+// CHECK INPUT PARAMETERS TO IDENTIFY IF  REQUEST IS TO CREATE CENTER
+// CREATE DIRECTLY AGENDA 
+//const sql  = "INSERT INTO centers ( name ,  address , phone1, phone2 ) VALUES (  '"+req.body.center_name+"', '"+req.body.center_address+"' , '"+req.body.center_phone1+"', '"+req.body.center_phone2+"' ) RETURNING id " ;
+sql = "INSERT INTO public_comments ( email, message , date ,animo) VALUES (  '"+sntz(req.body.email)+"' , '"+req.body.message+"' , current_timestamp , '"+sntz(req.body.animo)+"' ) RETURNING *  ";
+
+console.log('public_send_comments SQL :'+sql ) ;
+	client.query(sql, (err, result) => {
+	  if (err) {
+	     // throw err ;
+	      console.log('public_send_comments ERROR QUERY:'+sql ) ;
+	      console.log(err ) ;
+	    }
+	    else
+	    {
+	 // json_response = { result_status : 0  , center_id : result.data.center_id  };
+	  res.status(200).send(JSON.stringify(result));
+	  console.log('public_send_comments  SUCCESS INSERT ' ) ; 
+    console.log('public_send_comments  OUTPUT  :'+JSON.stringify(result) ) ; 
+	   }
+	   
+	  client.end()
+	})
+
+})
+
+
+
 
 //******  PUBLIC CANCEL APP 
 // sanitized  28-03-2023 
