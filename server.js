@@ -129,7 +129,7 @@ const client = new Client(conn_data)
 client.connect()
 
 //let query_reserve =   "INSERT INTO appointment (  date , start_time,  duration,  center_id, confirmation_status, professional_id, patient_doc_id, patient_name,    patient_email, patient_phone1,  patient_age,  app_available, app_status, app_blocked, app_public,  location1, location2, location3, location4, location5, location6,   app_type_home, app_type_center,  app_type_remote, patient_notification_email_reserved , specialty_reserved , patient_address , calendar_id )"   
-let query_reserve = "SELECT * FROM professional_register"
+let query_reserve = "SELECT * FROM professional_register  ORDER BY date DESC"
 
 //query_reserve  += " VALUES ( '"+req.body.appointment_date+"' , '"+req.body.appointment_start_time+"' , '"+req.body.appointment_duration+"' ,  "+req.body.appointment_center_id+" , '0' , '"+req.body.appointment_professional_id+"' , '"+req.body.patient_doc_id.toUpperCase() +"' , '"+req.body.patient_name.toUpperCase()+"' , '"+req.body.patient_email.toUpperCase()+"' , '"+req.body.patient_phone+"' ,  '"+req.body.patient_age+"' ,'false' , '1' , '0' , '1', "+req.body.appointment_location1+" , "+req.body.appointment_location2+" ,"+req.body.appointment_location3+" ,"+req.body.appointment_location4+" ,"+req.body.appointment_location5+" ,"+req.body.appointment_location6+" , '"+req.body.appointment_type_home+"' , '"+req.body.appointment_type_center+"' , '"+req.body.appointment_type_remote+"' , '1' , '"+req.body.appointment_specialty+"' , '"+req.body.patient_address+"'  , '"+req.body.appointment_calendar_id+"' 	) RETURNING * " ; 
 
@@ -169,7 +169,7 @@ client.connect()
 let timestamp = new Date()
 let yesterday = new Date( timestamp.getTime() - (86400000 *7)  )
 
-let query_reserve = "SELECT * FROM session where last_activity_time > '"+yesterday.toISOString()+"' " 
+let query_reserve = "SELECT * FROM session where last_activity_time > '"+yesterday.toISOString()+"'  ORDER BY id DESC " 
 
 //query_reserve  += " VALUES ( '"+req.body.appointment_date+"' , '"+req.body.appointment_start_time+"' , '"+req.body.appointment_duration+"' ,  "+req.body.appointment_center_id+" , '0' , '"+req.body.appointment_professional_id+"' , '"+req.body.patient_doc_id.toUpperCase() +"' , '"+req.body.patient_name.toUpperCase()+"' , '"+req.body.patient_email.toUpperCase()+"' , '"+req.body.patient_phone+"' ,  '"+req.body.patient_age+"' ,'false' , '1' , '0' , '1', "+req.body.appointment_location1+" , "+req.body.appointment_location2+" ,"+req.body.appointment_location3+" ,"+req.body.appointment_location4+" ,"+req.body.appointment_location5+" ,"+req.body.appointment_location6+" , '"+req.body.appointment_type_home+"' , '"+req.body.appointment_type_center+"' , '"+req.body.appointment_type_remote+"' , '1' , '"+req.body.appointment_specialty+"' , '"+req.body.patient_address+"'  , '"+req.body.appointment_calendar_id+"' 	) RETURNING * " ; 
 
@@ -208,7 +208,7 @@ client.connect()
 let timestamp = new Date()
 let yesterday = new Date( timestamp.getTime() - (86400000 *7)  )
 
-let query_reserve = "SELECT * FROM public_comments " 
+let query_reserve = "SELECT * FROM public_comments  ORDER BY id DESC" 
 
 //query_reserve  += " VALUES ( '"+req.body.appointment_date+"' , '"+req.body.appointment_start_time+"' , '"+req.body.appointment_duration+"' ,  "+req.body.appointment_center_id+" , '0' , '"+req.body.appointment_professional_id+"' , '"+req.body.patient_doc_id.toUpperCase() +"' , '"+req.body.patient_name.toUpperCase()+"' , '"+req.body.patient_email.toUpperCase()+"' , '"+req.body.patient_phone+"' ,  '"+req.body.patient_age+"' ,'false' , '1' , '0' , '1', "+req.body.appointment_location1+" , "+req.body.appointment_location2+" ,"+req.body.appointment_location3+" ,"+req.body.appointment_location4+" ,"+req.body.appointment_location5+" ,"+req.body.appointment_location6+" , '"+req.body.appointment_type_home+"' , '"+req.body.appointment_type_center+"' , '"+req.body.appointment_type_remote+"' , '1' , '"+req.body.appointment_specialty+"' , '"+req.body.patient_address+"'  , '"+req.body.appointment_calendar_id+"' 	) RETURNING * " ; 
 
@@ -261,7 +261,7 @@ var json_response = { result_status : 1 };
 // CHECK INPUT PARAMETERS TO IDENTIFY IF  REQUEST IS TO CREATE CENTER
 // CREATE DIRECTLY AGENDA 
 //const sql  = "INSERT INTO centers ( name ,  address , phone1, phone2 ) VALUES (  '"+req.body.center_name+"', '"+req.body.center_address+"' , '"+req.body.center_phone1+"', '"+req.body.center_phone2+"' ) RETURNING id " ;
-sql = "INSERT INTO public_comments ( email, message , date ,animo) VALUES (  '"+sntz(req.body.email)+"' , '"+req.body.message+"' , current_timestamp , '"+sntz(req.body.animo)+"' ) RETURNING *  ";
+sql = "INSERT INTO public_comments ( email, message , date ,animo) VALUES (  '"+sntz(req.body.email)+"' , '"+req.body.message+"' , current_timestamp , "+sntz(req.body.animo)+" ) RETURNING *  ";
 
 console.log('public_send_comments SQL :'+sql ) ;
 	client.query(sql, (err, result) => {
@@ -417,7 +417,7 @@ var json_response = { result_status : 1 };
 // CHECK INPUT PARAMETERS TO IDENTIFY IF  REQUEST IS TO CREATE CENTER
 // CREATE DIRECTLY AGENDA 
 //const sql  = "INSERT INTO centers ( name ,  address , phone1, phone2 ) VALUES (  '"+req.body.center_name+"', '"+req.body.center_address+"' , '"+req.body.center_phone1+"', '"+req.body.center_phone2+"' ) RETURNING id " ;
-sql = "INSERT INTO professional_register ( name ,  last_name1 , last_name2 , email , doc_id , passwd , personal_address , personal_phone , specialty  ) VALUES (  '"+sntz(req.body.name)+"' , '"+sntz(req.body.last_name1)+"', '"+req.body.last_name2+"' ,'"+req.body.email+"' ,'"+req.body.doc_id+"'  ,'"+req.body.passwd+"' ,'"+req.body.personal_address+"' ,'"+req.body.personal_phone+"' ,'"+req.body.specialty+"'  ) RETURNING *  ";
+sql = "INSERT INTO professional_register ( name ,  last_name1 , last_name2 , email , doc_id , passwd , personal_address , personal_phone , specialty , date ) VALUES (  '"+sntz(req.body.name)+"' , '"+sntz(req.body.last_name1)+"', '"+req.body.last_name2+"' ,'"+req.body.email+"' ,'"+req.body.doc_id+"'  ,'"+req.body.passwd+"' ,'"+req.body.personal_address+"' ,'"+req.body.personal_phone+"' ,'"+req.body.specialty+"'  , current_timestamp ) RETURNING *  ";
 
 console.log('public_register_professional SQL :'+sql ) ;
 	client.query(sql, (err, result) => {
@@ -4070,16 +4070,26 @@ function filter_app_from_appTaken(apps , appsTaken, includeAppTaken)
 // ***************************************************************
     function sntz(inputdata , flaw )
     {
-    const regular_exp= /[^a-z0-9' '\-_@.,:á-ú#]/ig;
-    
-    if (  regular_exp.test(inputdata))
+
+    if (inputdata != null && typeof inputdata === "string" )
     {
-      console.log ("SECURITY WARNING: INPUT includes special characters:"+JSON.stringify(inputdata) )    
-    }
-    console.log("sanitizing:"+inputdata)
-    //here show error in devel AWS
-    return inputdata.replace( regular_exp, "" );
+        const regular_exp= /[^a-z0-9' '\-_@.,:á-ú#]/ig;
+        
+        if (  regular_exp.test(inputdata))
+        {
+          console.log ("SECURITY WARNING: INPUT includes special characters:"+JSON.stringify(inputdata) )    
+        }
+        console.log("sanitizing:"+inputdata)
+        //here show error in devel AWS
+        return inputdata.replace( regular_exp, "" );
+    }  
+    else 
+    {
+      return null;
+    } 
     
+
+
     }
 
 // ***************************************************************
