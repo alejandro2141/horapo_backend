@@ -2673,6 +2673,53 @@ async function professional_get_all_appointments_by_prof_id(req)
   return response.rows ;
 }
 
+
+//************************************************************* */
+//********** PROFESSIONAL GET ALL APPOINTMENTS CANCELLED  ******* */
+// sanitized  22-06-2023 
+// validated  22-06-2023 
+app.route('/professional_get_appointments_cancelled')
+.post(function (req, res) {  
+  req.body=sntz_json(req.body,"/professional_get_appointments_cancelled")
+  let appsTaken = professional_get_appointments_cancelled(req)
+  appsTaken.then( v => {  console.log("professional_get_appointments_cancelled RESPONSE: "+JSON.stringify(v)) ; return (res.status(200).send(JSON.stringify(v))) } )
+})
+
+// validated  29-03-2023 
+async function professional_get_appointments_cancelled(req)
+{
+  let app_taken = await professional_get_all_appointments_cancelled_by_prof_id(req)
+  let calendars = await get_all_professional_calendars(req.body.professional_id)
+  let centers = await get_all_professional_centers(req.body.professional_id)
+  let specialties  = await get_professional_specialties(req.body.professional_id)
+  
+  let json_response = {
+    appointments: app_taken  ,
+    calendars : calendars ,
+    centers : centers  ,
+    specialties : specialties ,
+    }
+  return json_response ;
+}
+
+// validated  29-03-2023 
+async function professional_get_all_appointments_cancelled_by_prof_id(req)
+{
+  const { Client } = require('pg')
+  const client = new Client(conn_data)
+  await client.connect()  
+  //END IF LOCATION
+  //const sql_calendars SELECT * FROM professional_day_locked WHERE professional_id = 1 ;  = "SELECT * FROM professional_calendar WHERE id = 139 AND date_start <='2022-06-02' AND date_end >= '2022-06-01' AND  active = true AND deleted_professional = false AND status = 1  " ;  
+  console.log("professional_get_appointments_cancelled_by_prof_id REQUEST "+JSON.stringify(req.body));
+
+  const sql  = "SELECT *, id as app_id FROM appointment_cancelled WHERE Professional_id='"+req.body.professional_id+"' AND app_blocked = 0  ORDER BY start_time ASC" 
+  console.log("professional_get_appointments_taken_by_prof_id  SQL:"+sql) 
+  const response = await client.query(sql) 
+  client.end() 
+  
+  return response.rows ;
+}
+
 //***************************************************** */
 //********** PROFESSIONAL GET MONT SUMMARY   ******* */
 //**********                                   ******** */
