@@ -869,7 +869,8 @@ async function get_appointments_available_from_calendar(cal_ids, date_start,remo
   let calendars = await get_calendar_available_by_id(cal_ids) ;
   console.log("patient_get_appointments_calendars : INPUT"+JSON.stringify(calendars));
   // 2.- get Professional Appointment
-  // 
+  
+  // WARNING HARDCODED 21-07
   let appointments_reserved = await get_professional_appointments_by_date( calendars[0].professional_id , date_start , '2023-06-04')
   console.log("get_professional_appointments_by_date : OUTPUT "+JSON.stringify(appointments_reserved));
  
@@ -1846,7 +1847,6 @@ async function professional_get_appointments_from_calendars(prof_id, date,remove
         day: aux_date_start,
         appointments : app_calendar_filtered
       }
-      
     app_day_calendar = app_day_calendar.concat(json_day_apps)
     */
   }
@@ -2081,7 +2081,7 @@ center_code = " '"+req.body.form_appointment_center_code+"' " ;
 }
 
 
-sql = "INSERT INTO professional_calendar (professional_id , start_time,  end_time, specialty1, duration, time_between, monday, tuesday, wednesday, thursday, friday, saturday , sunday, date_start, date_end,   center_id,  status , deleted_professional, color ,date  ) VALUES ( '"+req.body.professional_id+"',  '"+req.body.form_start_time+"' , '"+req.body.form_end_time+"', '"+req.body.form_specialty_id+"' , '"+req.body.form_app_duration+"' , '"+req.body.form_app_time_between+"' ,  '"+req.body.form_recurrency_mon+"' ,  '"+req.body.form_recurrency_tue+"'  ,  '"+req.body.form_recurrency_wed +"' ,  '"+req.body.form_recurrency_thu+"'  ,  '"+req.body.form_recurrency_fri+"'  , '"+req.body.form_recurrency_sat+"'  ,  '"+req.body.form_recurrency_sun+"'  ,   '"+req.body.form_calendar_start+"'  ,  '"+req.body.form_calendar_end+"'  ,   "+req.body.form_appointment_center_code+" , '1' , false , '"+req.body.form_calendar_color+"' ,  '"+req.body.date+"'  )  " ;
+sql = "INSERT INTO professional_calendar (professional_id , start_time,  end_time, specialty1, duration, time_between, monday, tuesday, wednesday, thursday, friday, saturday , sunday, date_start, date_end,   center_id,  status , deleted_professional, color ,date ,price ) VALUES ( '"+req.body.professional_id+"',  '"+req.body.form_start_time+"' , '"+req.body.form_end_time+"', '"+req.body.form_specialty_id+"' , '"+req.body.form_app_duration+"' , '"+req.body.form_app_time_between+"' ,  '"+req.body.form_recurrency_mon+"' ,  '"+req.body.form_recurrency_tue+"'  ,  '"+req.body.form_recurrency_wed +"' ,  '"+req.body.form_recurrency_thu+"'  ,  '"+req.body.form_recurrency_fri+"'  , '"+req.body.form_recurrency_sat+"'  ,  '"+req.body.form_recurrency_sun+"'  ,   '"+req.body.form_calendar_start+"'  ,  '"+req.body.form_calendar_end+"'  ,   "+req.body.form_appointment_center_code+" , '1' , false , '"+req.body.form_calendar_color+"' ,  '"+req.body.date+"' ,  '"+req.body.form_app_price+"'  )  " ;
 console.log('create_calendar SQL:'+sql ) ;
 
   
@@ -2202,6 +2202,11 @@ if (req.body.form_day_sun !=null)
 
 if (req.body.form_color !=null)
 { variables_sql =  variables_sql +", color = '"+req.body.form_color+"' " }
+
+
+if (req.body.form_app_price  !=null)
+{ variables_sql =  variables_sql +", price = "+req.body.form_app_price +" " }
+
 
 
 let sql = " UPDATE professional_calendar SET "+variables_sql+"   WHERE id = "+req.body.calendar_id+"  " ;
@@ -2909,13 +2914,12 @@ async function get_locations()
 
 //***************************************/
 // PROFESSIONAL GET Appointments_Calendar
-// NOT SURE FROM WHERE IS CALLING 
-// sanitized  28-03-2023 
-//  Under evaluation to be eliminated 28-03-2023 
+// CALLED FORM PROFESSIONAL PERSONAL WEB SITE TO SEARCH APP in calendar
+// Validated on 20-07-2023 
 //***************************************/
 app.route('/professional_pwsite_get_appointments_calendar')
 .post(function (req, res) {
-  req.body=sntz_json(req.body,"TO BE ELIMINATED /professional_pwsite_get_appointments_calendar")
+  req.body=sntz_json(req.body,"/professional_pwsite_get_appointments_calendar")
   //console.log('professional_pwsite_get_appointments_calendar INPUT :', JSON.stringify(req.body) );
   
   let json_response=professional_pwsite_get_appointments_calendar(req.body)
@@ -2940,7 +2944,24 @@ async function professional_pwsite_get_appointments_calendar(params)
   // 1.- GET CALENDAR DATA
   let calendar_data = await get_calendar_data(params.calendar_id)
   console.log("calendar_data = "+JSON.stringify(calendar_data))
+
+  let day_cal_start = new Date(calendar_data[0].date_start)
+  let day_cal_end   = new Date(calendar_data[0].date_end  )
+  let aux_date_current = new Date()
   
+  //VALIDATE IF CALENDAR IS ACTIVE, DELETED OR EXPIRED
+  if (calendar_data != null && !calendar_data[0].active )
+      {
+        json_response.error = "Calendario No Existe o Inactivo"
+        return  json_response 
+      }
+  //validate if calendar is expired
+  if ( ( calendar_data != null ) && (  day_cal_end.getTime() < aux_date_current.getTime()  )  )
+      {
+        json_response.error = "Calendario esta expirado"
+        return  json_response 
+      }
+
   // 2.- GET LOCK DAYS PROFESSIONAL
   lock_days = await get_professional_lock_days(calendar_data[0].professional_id)
   console.log("LOCK DAYS:"+JSON.stringify(lock_days))
@@ -2952,8 +2973,6 @@ async function professional_pwsite_get_appointments_calendar(params)
   }
   
   // FILTER DAYS ONLY IF ACTIVE IN CALENDAR 
-  let day_cal_start = new Date(calendar_data[0].date_start)
-  let day_cal_end   = new Date(calendar_data[0].date_end  )
   
   for (let i = 0; i < days_list.length; i++) {
     
@@ -2981,8 +3000,14 @@ async function professional_pwsite_get_appointments_calendar(params)
     // console.log("-----------Day to get:"+days_list[i])
       let app_calendars = calendar_cutter_day( calendar_data[0] , days_list_filtered[i] )
       //LOOK FOR APPOINTMENT RESERVED FOR THIS DAY PROFESSIONAL ID and DAY
-      let appointments_reserved = await get_professional_appointments_by_date(calendar_data[0].professional_id , days_list_filtered[i] , days_list_filtered[i] )     
-      let app_calendar_filtered = filter_app_from_appTaken(app_calendars,appointments_reserved)
+
+      let aux_date_start = new Date(days_list_filtered[i])
+      aux_date_start.setHours(0,0,0,0)
+      let aux_date_end = new Date( aux_date_start.getTime()  + (1000*60*60*24) )
+
+      let appointments_reserved = await get_professional_appointments_by_date(calendar_data[0].professional_id , aux_date_start , aux_date_end )     
+      console.log("get_professional_appointments_by_date result: "+appointments_reserved.length+"   vs app_calendar : "+ app_calendars.length)
+      let app_calendar_filtered = filter_app_from_appTaken(app_calendars,appointments_reserved,false)
 
     let day_apps_aux = 
         { date : days_list_filtered[i] , 
@@ -2992,23 +3017,7 @@ async function professional_pwsite_get_appointments_calendar(params)
 
     }
 
-    /*
-    let aux_appointments = await get_public_appointments_available_of_a_day(json.specialty , days_list[i], json.location, json.type_center, json.type_home, json.type_remote ) //type_center,type_home,type_remote
-     //console.log("-----------Appointments:"+JSON.stringify(aux_appointments))
-            let aux_app_day = {
-              date : days_list[i] ,
-              appointments : aux_appointments.appointments ,
-              centers: aux_appointments.centers  ,
-              calendars : aux_appointments.calendars  ,
-            } 
 
-     json_response.appointments.push(aux_app_day)    
-    */
-  /*
-  let aux_date_start = new Date(params.date) 
-  let aux_date_end = new Date(aux_date_start.getTime()+( (1000*60*60*24)* 40 ) )
-  let appointments_reserved = await get_professional_appointments_by_date( params.professional_id , aux_date_start , aux_date_end )
-  */  
   
   console.log("--------------------------- professional_pwsite_get_appointments_calendar response "+JSON.stringify(json_response ) );
  
@@ -3754,7 +3763,7 @@ async function get_calendar_available_by_id(cal_id)
   return res.rows ;
 }
 
-//GET all professional appointments taken between two dates  
+//GET all professional appointments taken between two dates.   INCLUDE HOURS BLOCKED
 async function get_professional_appointments_by_date(prof_id ,date_start ,date_end)
 {
   const { Client } = require('pg')
@@ -3771,6 +3780,8 @@ async function get_professional_appointments_by_date(prof_id ,date_start ,date_e
   //console.log("get_professional_appointments_by_date  SQL:"+sql_calendars) 
   
   const res = await client.query(sql_calendars) 
+  console.log("---- ----- --- -> SQL get_professional_appointments_by_date:"+sql_calendars )
+  console.log("---- ----- --- -> get_professional_appointments_by_date:"+JSON.stringify(res.rows) )
   client.end() 
   return res.rows ;
 }
@@ -4043,7 +4054,7 @@ function calendar_cutter(calendar, fromDate ,endDate ,lockDates, remove_lock_day
 // filter app from app taken
 function filter_app_from_appTaken(apps , appsTaken, includeAppTaken)
 {
-  //console.log("FILTER FUNCTION APPS:"+JSON.stringify(apps ));
+  console.log("FILTER FUNCTION APPS: IncludeAppTaken:"+includeAppTaken);
   //console.log("FILTER FUNCTION APPS TAKEN:"+JSON.stringify(appsTaken));
  
   let apps_taken_array = [] ;  
