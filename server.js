@@ -2952,13 +2952,15 @@ async function professional_pwsite_get_appointments_calendar(params)
   //VALIDATE IF CALENDAR IS ACTIVE, DELETED OR EXPIRED
   if (calendar_data != null && !calendar_data[0].active )
       {
-        json_response.error = "Calendario No Existe o Inactivo"
+        json_response.error_msg = "Calendario No Existe o Inactivo"
+        json_response.error = true
         return  json_response 
       }
   //validate if calendar is expired
   if ( ( calendar_data != null ) && (  day_cal_end.getTime() < aux_date_current.getTime()  )  )
       {
-        json_response.error = "Calendario esta expirado"
+        json_response.error_msg  = "Calendario esta expirado"
+        json_response.error = true
         return  json_response 
       }
 
