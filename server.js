@@ -1321,7 +1321,7 @@ const client = new Client(conn_data)
 client.connect()
 
 // ****** Run query to bring appointment
-const sql  = "SELECT * FROM customers_messages WHERE  professional_id='"+req.body.professional_id+"'  ORDER BY id DESC  " ;
+const sql  = "SELECT * FROM customers_messages WHERE  professional_id='"+req.body.professional_id+"'  ORDER BY id DESC  LIMIT 20 " ;
 const resultado = client.query(sql, (err, result) => {
 
   if (err) {
