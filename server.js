@@ -1674,11 +1674,58 @@ async function login_from_session(req)
 
 }
 
-
-
 //***************************************************** */
 //    end   PROFESSIONAL LOGIN                          */
 //***************************************************** */
+
+
+//***************************************************** */
+//     professional_recover_password         
+//      Validated 26-07-2023  
+//      sanitized 26-07-2023 
+// **************************************************** */
+//***************************************************** */
+
+app.route('/professional_recover_password')
+.post(function (req, res) {
+  //console.log('professional_send_comments  REQUEST : ', req.body );
+  req.body=sntz_json(req.body,"INPUT /professional_recover_password ")
+
+// ****** Connect to postgre
+const { Client } = require('pg')
+const client = new Client(conn_data)
+client.connect()
+
+// ****** Run query to bring appointment
+const sql = "INSERT INTO professional_recover_password (date , email , date_update ) VALUES ('"+req.body.date+"', '"+req.body.form_email+"', '"+req.body.date+"') "
+//const sql  = "SELECT * FROM center where id IN ( "+req.body.centers_ids+" )  " ;
+console.log('SQL professional_send_comments : '+sql ) ;
+const resultado = client.query(sql, (err, result) => {
+
+  if (err) {
+      console.log(' ERROR QUERY = '+sql ) ;
+      console.log(' ERR = '+err ) ;
+    }
+
+  if (result !=null)
+  {
+  console.log('RESULT professional_recover_password '+JSON.stringify(result.rows) ) ;
+  res.status(200).send(JSON.stringify(result.rows) );
+  }
+  else
+  {
+    res.status(200).send( null ) ;
+  }
+  
+  client.end()
+})
+
+
+})
+
+
+
+
 
 //***************************************************** */
 //      PROFESSIONAL SEND COMMENTS HELP         
@@ -2164,6 +2211,7 @@ let variables_sql = ""
 
 if (req.body.form_calendar_active !=null)
 { variables_sql = " active = "+req.body.form_calendar_active+" "  }
+
 if (req.body.form_center_id !=null)
 { variables_sql =  variables_sql +" , center_id = "+req.body.form_center_id+"" }
 
@@ -2178,6 +2226,16 @@ if (req.body.form_time_start !=null)
 
 if (req.body.form_time_end !=null)
 { variables_sql =  variables_sql +", end_time = '"+req.body.form_time_end+"'" }
+
+
+
+if (req.body.form_app_duration !=null)
+{ variables_sql =  variables_sql +", duration = '"+req.body.form_app_duration+"'" }
+
+if (req.body.form_app_time_between !=null)
+{ variables_sql =  variables_sql +", time_between = '"+req.body.form_app_time_between+"'" }
+
+
 
 if (req.body.form_day_mon !=null)
 { variables_sql =  variables_sql +", monday = '"+req.body.form_day_mon+"'" }
@@ -2203,10 +2261,8 @@ if (req.body.form_day_sun !=null)
 if (req.body.form_color !=null)
 { variables_sql =  variables_sql +", color = '"+req.body.form_color+"' " }
 
-
 if (req.body.form_app_price  !=null)
 { variables_sql =  variables_sql +", price = "+req.body.form_app_price +" " }
-
 
 
 let sql = " UPDATE professional_calendar SET "+variables_sql+"   WHERE id = "+req.body.calendar_id+"  " ;
