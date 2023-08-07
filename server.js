@@ -597,6 +597,12 @@ async function get_public_appointments_available(json)
 
   // console.log("-----------Days to search:"+days_list)
 
+//******************************************************************/
+//TODO ADD A BREACK IN CASE APPOINTMENTS are more tan 200.
+
+let appointments_counter = 0 ; 
+
+
    for (let i = 0; i < days_list.length; i++) {
     // console.log("-----------Day to get:"+days_list[i])
      let aux_appointments = await get_public_appointments_available_of_a_day(json.specialty , days_list[i], json.location, json.type_center, json.type_home, json.type_remote ) //type_center,type_home,type_remote
@@ -606,9 +612,32 @@ async function get_public_appointments_available(json)
               appointments : aux_appointments.appointments ,
               centers: aux_appointments.centers  ,
               calendars : aux_appointments.calendars  ,
+             
             } 
+    
+        if (aux_appointments!=null && aux_appointments.appointments!=null  )
+          {
+          appointments_counter = appointments_counter +  aux_appointments.appointments.length
+          }
+        else 
+          {
+          appointments_counter = 0
+          }
+  
+       
+        
+        //set response
+        json_response.days_counter = i+1
+        json_response.appointments_result_counter = appointments_counter
 
-     json_response.appointments_list.push(aux_app_day)    
+        json_response.appointments_list.push(aux_app_day)    
+      
+     //TO LIMIT RESPONSE. TO AVOID CHECK NEXT DAY IN CASE WE ALREADY OBTAIN MORE THAN 100 DAYS. 
+        if  (appointments_counter > 100 )
+        { 
+          return (json_response)
+        }
+
     }
 
    //console.log("-----------GET PUBLIC APPOINTMENTS AVAILABLE JSON Response :"+JSON.stringify(json_response))
@@ -887,199 +916,6 @@ async function get_appointments_available_from_calendar(cal_ids, date_start,remo
   return(app_calendar_filtered); 
 }
 
-//***************************************************** */
-//  END  PATIENT GET APPOINTMENTS  SEARCH BY CALENDAR
-//****************************************************** */
-
-
-
-
-// **************************************
-// ********* COMMON API ******************
-// **************************************
-/*
-// GET ASSISTANTS
-app.route('/get_public_token')
-.post(function (req, res) {
-    console.log('get_public_token:', req.body );
-   
-    var tday = new Date();
-    //var date = tday.getMinutes()+(tday.getHours()*60)+'-'+tday.getDate()+''+(tday.getMonth()+1) ;
-    var date = tday.getMinutes()+(tday.getHours()*60) ;
-
-    var json_response = { 
-        token :  date , 
-        min : '23579',
-            };
-    console.log("get_public_token Response: "+JSON.stringify(json_response));
-    console.log("Request Sesion. ID created:"+req.body.id+" Token Assigned:"+json_response.token );
-
-    res.status(200).send(JSON.stringify(json_response) );
-})
-*/
-/*
-app.route('/get_professional_specialty')
-.post(function (req, res) {
- 
-    console.log('get_professional_specialty:', req.body );
- 
-// ****** Connect to postgre
-const { Pool, Client } = require('pg')
-const client = new Client({
-  user: 'conmeddb_user',
-  host: '127.0.0.1',
-  database: 'conmeddb02',
-  password: 'paranoid',
-  port: 5432,
-    })
-
-client.connect()
-// ****** Run query to bring appointment
-const sql  = "SELECT * from  specialty where id IN  (SELECT specialty_id FROM professional_specialty WHERE professional_id="+req.body.professional_id+") ;" ;
-console.log('get_professional_specialty: SQL GET PROFESSIONAL SPECIALTY = '+sql ) ;
-const resultado = client.query(sql, (err, result) => {
-
-  if (err) {
-      console.log('get_professional_specialty ERR:'+err ) ;
-    }
-
-  console.log('get_professional_specialty : '+JSON.stringify(result) ) ;
-  res.status(200).send(JSON.stringify(result) );
-  client.end()
-})
-
-})
-*/
-
-/*
-// COMENTADO ESTE SAVE APPOINTMENT  27-03-2023
-// SAVE APPOINTMENT
-app.route('/save_appointment')
-.post(function (req, res) {
-    console.log('save_appointment INPUT : ', req.body );
-// ****** Connect to postgre
-const { Pool, Client } = require('pg')
-const client = new Client({
-  user: 'conmeddb_user',
-  host: '127.0.0.1',
-  database: 'conmeddb02',
-  password: 'paranoid',
-  port: 5432,
-})
-client.connect()
-//const query_update = "UPDATE appointment SET reserve_patient_name = '"+req.body.patient_name+"' ,  reserve_patient_doc_id = '"+req.body.patient_doc_id+"' , reserve_patient_email = '"+req.body.patient_email+"' , reserve_patient_phone ='"+req.body.patient_phone+"' , reserve_patient_insurance='"+req.body.patient_insurance+"' , reserve_available='FALSE'    WHERE id = '"+req.body.appointment_id+"' RETURNING * " ;
-let query_update = "UPDATE appointment SET " ;
-
-// from Update Form
-if  (req.body.form_start_time != null )
-{ query_update += " start_time = '"+req.body.form_start_time+"'  , "   ;}
-
-if  (req.body.form_appointment_duration != null )
-{ query_update += " duration = '"+req.body.form_appointment_duration+"'  , "   ;}
-
-if  (req.body.form_center_id != null )
-{ query_update += " center_id = '"+req.body.form_center_id+"'  , "   ;}
-
-if  (req.body.form_specialty_code != null )
-{ query_update += " specialty = '"+req.body.form_specialty_code+"'  , "   ;}
-
-
-// FROM Take Appointment. 
-if  (req.body.patient_name != null )
-{ query_update += " patient_name = '"+req.body.patient_name+"'  , "   ;}
-
-if  (req.body.patient_doc_id != null )
-{  query_update += "patient_doc_id = '"+req.body.patient_doc_id+"' , " ; } 
-
-if  (req.body.patient_email != null )
-{  query_update += "patient_email = '"+req.body.patient_email+"' , "   ; } 
- 
-if  (req.body.patient_phone != null )
-{  query_update += "patient_phone1 ='"+req.body.patient_phone+"' ,  " ; } 
- 
-if  (req.body.patient_insurance != null )
-{  query_update += "patient_insurance='"+req.body.patient_insurance+"' , " ; } 
-
-//last one of the query.- 
-if  (req.body.form_public != null )
-{  query_update += " available_public_search ='"+req.body.form_public+" ' " ; } 
-
-query_update += "    WHERE id = '"+req.body.appointment_id+"'  RETURNING * " ;
-
-//const query_update = "UPDATE appointment SET patient_name = '"+req.body.patient_name+"' ,  patient_doc_id = '"+req.body.patient_doc_id+"' , patient_email = '"+req.body.patient_email+"' , patient_phone1 ='"+req.body.patient_phone+"' , patient_insurance='"+req.body.patient_insurance+"' , app_available='FALSE'     WHERE id = '"+req.body.appointment_id+"'  RETURNING * ";
-
-console.log(query_update);
-const resultado = client.query(query_update, (err, result) => {
-    //res.status(200).send(JSON.stringify(result)) ;
-    if (err) {
-      console.log('/save_appointment ERR:'+err ) ;
-
-    }
-    else {
-    console.log("JSON RESPONSE BODY : "+JSON.stringify(result));
-    res.status(200).send(JSON.stringify(result.rows[0])) ;  
-    }
-    
-
-    client.end()
-})
-
-  //console.log(JSON.stringify(JSON.stringify(req))) ;
-  
-  
-  
- //res.send("saludos terricolas");
-  //res.status(200).json(resultado.rows) ;
-  // res.send(JSON.stringify(result));
-})
-
-*/
-
-
-/*****************************************************
-
-PROFESIONAL API
-
-*******************************************************/
-/*
-// PROFESSIONAL DUPLICATE DAY 
-app.route('/professional_lock_day')
-.post(function (req, res) {
-    console.log('professional_lock_day INPUT:', req.body );
-// ****** Connect to postgre
-const { Pool, Client } = require('pg')
-const client = new Client({
-  user: 'conmeddb_user',
-  host: '127.0.0.1',
-  database: 'conmeddb02',
-  password: 'paranoid',
-  port: 5432,
-})
-client.connect() ;
-// GET PROFESSIONAL DATA
-var sql  = "INSERT INTO professional_day_locked ( professional_id, date ) values ('"+req.body.appointment_professional_id+"','"+req.body.appointment_date+"') ;"
-
-console.log('professional_lock_day SQL:'+sql ) ;
-	client.query(sql, (err, result) => {
-	  if (err) {
-	     // throw err ;
-	      console.log('professional_lock_day ERROR CREATION REGISTER, QUERY:'+sql ) ;
-	      console.log(err ) ;
-        res.status(200).send(JSON.stringify(result));
-	    }
-	    else
-	    {
-	  res.status(200).send(JSON.stringify(result));
-	  console.log('professional_lock_day  SUCCESS CENTER INSERT ' ) ; 
-    console.log('professional_lock_day  OUTPUT  :'+JSON.stringify(result) ) ; 
-	   }
-	   
-	  client.end()
-	})
-  
-
-})
-*/
 
 // *********************************************************************************************************
 // *********************************************************************************************************
@@ -2152,45 +1988,7 @@ console.log('create_calendar SQL:'+sql ) ;
 
 })
 
-//***************************************/
-// PROFESSIONAL ACTIVATE  CALENDAR 
-// sanitized  28-03-2023 
-//***************************************/
-/*
-app.route('/professional_activate_calendar')
-.post(function (req, res) {
-  req.body=sntz_json(req.body)
-  //  console.log('professional_activate_calendar INPUT:', req.body );
-// ****** Connect to postgre
-const { Client } = require('pg')
-const client = new Client(conn_data)
-client.connect() 
-// GET PROFESSIONAL DATA
 
-let sql = " UPDATE professional_calendar SET active = true WHERE id = "+req.body.calendar_id+"  " ;
-
-console.log('Professional activate calendar  SQL:'+sql ) ;
-  
-	client.query(sql, (err, result) => {
-	  if (err) {
-	     // throw err ;
-	      console.log('ACTIVATE CALENDAR  ERROR:'+sql ) ;
-	      console.log(err ) ;
-	    }
-	    else
-	    {
-	 // json_response = { result_status : 0  , center_id : result.data.center_id  };
-	  res.status(200).send(JSON.stringify(result));
-	  console.log('ACTIVATE CALENDAR SUCCESS ' ) ; 
-    console.log('ACTIVATE CALENDAR OUTPUT :'+JSON.stringify(result) ) ; 
-	   }
-	   
-	  client.end()
-	})
-  
-
-})
-*/
 
 //***************************************/
 // PROFESSIONAL UPDATE  CALENDAR 
@@ -2739,6 +2537,8 @@ async function professional_get_all_appointments_by_prof_id(req)
 //********** PROFESSIONAL GET ALL APPOINTMENTS CANCELLED  ******* */
 // sanitized  22-06-2023 
 // validated  22-06-2023 
+//************************************************************* */
+
 app.route('/professional_get_appointments_cancelled')
 .post(function (req, res) {  
   req.body=sntz_json(req.body,"/professional_get_appointments_cancelled")
@@ -2781,15 +2581,15 @@ async function professional_get_all_appointments_cancelled_by_prof_id(req)
   return response.rows ;
 }
 
-//***************************************************** */
-//********** PROFESSIONAL GET MONT SUMMARY   ******* */
-//**********                                   ******** */
-//***************************************************** */
+//********************************************        ******* */
+//********** PROFESSIONAL GET MONT SUMMARY            ******* */
+//**********   Under evaluation to remove 07-08-2023  ******* */
+//***********************************************     ******* */
 app.route('/professional_get_month_summary')
 .post(function (req, res) {  
   req.body=sntz_json(req.body,"/professional_get_month_summary")
   let month_summary = professional_get_month_summary(req)
-  month_summary.then( v => {  console.log("professional_get_month_summary RESPONSE: "+JSON.stringify(v)) ; return (res.status(200).send(JSON.stringify(v))) } )
+  month_summary.then( v => {  console.log("ELIMINAR professional_get_month_summary RESPONSE: "+JSON.stringify(v)) ; return (res.status(200).send(JSON.stringify(v))) } )
 
 })
 // validated  29-03-2023 
@@ -3082,10 +2882,6 @@ async function professional_pwsite_get_appointments_calendar(params)
   return json_response 
  
 }
-
-
-
-
 
 
 // ********************************************************************************************************
@@ -3453,53 +3249,7 @@ console.log('get_appointments  SQL:'+sql ) ;
 
 })
  
-//********************************************* 
-// PUBLIC POST CANCEL AND BLOCK APPOINTMENT
-// sanitized  28-03-2023 
-// Under evaluation to be eliminated 29-03-2023 
-//********************************************* 
-//********************************************* 
-/*
-.post(function (req, res) {
-  req.body=sntz_json(req.body,"TO BE ELIMINATED INPUT /cancel_block_appointment")
-// ****** Connect to postgre
-const { Pool, Client } = require('pg')
-const client = new Client({
-  user: 'conmeddb_user',
-  host: '127.0.0.1',
-  database: 'conmeddb01',
-  password: 'paranoid',
-  port: 5432,
-})
-client.connect()
-const query_update = "UPDATE appointments SET reserve_status = '1' , blocked = 'true' WHERE id = '"+req.body.appointment_id+"' RETURNING * " ;
 
-console.log(query_update);
-const resultado = client.query(query_update, (err, result) => {
-
-     console.log('RESULTADO '+JSON.stringify(resultado))
-     var json_response_ok = { 
-			    result_status : 'inserted', 
-			    result_code: '200',
-			    	  };
-  
-    res.status(200).send(JSON.stringify(json_response_ok));
-    console.log("JSON RESPONSE BODY : "+JSON.stringify(json_response_ok));
-    console.log ("ERROR LOG : "+err);
-
-  client.end()
-
-})
-
-
-
-
- 
- 
- 
- 
-})
-*/
 
 //********************************************* 
 //********************************************* 
