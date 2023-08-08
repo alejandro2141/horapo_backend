@@ -228,6 +228,45 @@ const resultado = client.query(query_reserve, (err, result) => {
 
 })
 
+// *********************************************************************************************************
+//  GET PROFESSIONAL COMMENTS
+//  validated 08-08-2023  
+// *********************************************************************************************************
+// validated   24-01-2023  
+app.route('/monitoring_get_professional_comments')
+.post(function (req, res) {
+   // console.log('public_cancel_app INPUT : ', req.body );
+    req.body=sntz_json(req.body,"/monitoring_get_professional_comments")
+// ****** Connect to postgre
+const { Client } = require('pg')
+const client = new Client(conn_data)
+client.connect()
+
+//let query_reserve =   "INSERT INTO appointment (  date , start_time,  duration,  center_id, confirmation_status, professional_id, patient_doc_id, patient_name,    patient_email, patient_phone1,  patient_age,  app_available, app_status, app_blocked, app_public,  location1, location2, location3, location4, location5, location6,   app_type_home, app_type_center,  app_type_remote, patient_notification_email_reserved , specialty_reserved , patient_address , calendar_id )"   
+let timestamp = new Date()
+let yesterday = new Date( timestamp.getTime() - (86400000 *7)  )
+
+let query_reserve = "SELECT * FROM customers_messages  ORDER BY id DESC" 
+
+//query_reserve  += " VALUES ( '"+req.body.appointment_date+"' , '"+req.body.appointment_start_time+"' , '"+req.body.appointment_duration+"' ,  "+req.body.appointment_center_id+" , '0' , '"+req.body.appointment_professional_id+"' , '"+req.body.patient_doc_id.toUpperCase() +"' , '"+req.body.patient_name.toUpperCase()+"' , '"+req.body.patient_email.toUpperCase()+"' , '"+req.body.patient_phone+"' ,  '"+req.body.patient_age+"' ,'false' , '1' , '0' , '1', "+req.body.appointment_location1+" , "+req.body.appointment_location2+" ,"+req.body.appointment_location3+" ,"+req.body.appointment_location4+" ,"+req.body.appointment_location5+" ,"+req.body.appointment_location6+" , '"+req.body.appointment_type_home+"' , '"+req.body.appointment_type_center+"' , '"+req.body.appointment_type_remote+"' , '1' , '"+req.body.appointment_specialty+"' , '"+req.body.patient_address+"'  , '"+req.body.appointment_calendar_id+"' 	) RETURNING * " ; 
+
+console.log(query_reserve);
+const resultado = client.query(query_reserve, (err, result) => {
+    //res.status(200).send(JSON.stringify(result)) ;
+    if (err) {
+      console.log('/monitoring_get_professional_comments ERR:'+err ) ;
+    }
+    else {
+    console.log("monitoring_get_professional_comments JSON RESPONSE BODY : "+JSON.stringify(result));
+    res.status(200).send(JSON.stringify(result)) ;  
+    }
+    client.end()
+})
+
+
+})
+
+
 
 
 
