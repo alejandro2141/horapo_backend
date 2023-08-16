@@ -646,24 +646,17 @@ let appointments_counter = 0 ;
     // console.log("-----------Day to get:"+days_list[i])
      let aux_appointments = await get_public_appointments_available_of_a_day(json.specialty , days_list[i], json.location, json.type_center, json.type_home, json.type_remote ) //type_center,type_home,type_remote
      //console.log("-----------Appointments:"+JSON.stringify(aux_appointments))
-            let aux_app_day = {
+          let aux_app_day = {
               date : days_list[i] ,
               appointments : aux_appointments.appointments ,
               centers: aux_appointments.centers  ,
               calendars : aux_appointments.calendars  ,
-             
             } 
     
         if (aux_appointments!=null && aux_appointments.appointments!=null  )
           {
           appointments_counter = appointments_counter +  aux_appointments.appointments.length
           }
-        else 
-          {
-          appointments_counter = 0
-          }
-  
-       
         
         //set response
         json_response.days_counter = i+1
