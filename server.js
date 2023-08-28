@@ -848,7 +848,7 @@ async function get_public_appointments_available_of_a_day(specialty, date_to_get
 
         //counter to check if breack the cycle
         app_counter = app_counter + app_calendars.length
-        if (app_counter > 100)
+        if (app_counter > 2000)
         {
         break;
         }
