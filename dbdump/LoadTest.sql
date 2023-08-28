@@ -30,10 +30,21 @@ INSERT INTO professional_calendar (professional_id , start_time,  end_time, spec
 */
 
 DO $$
+
+
+
 DECLARE v_profname text;
 DECLARE v_profid bigint;
 DECLARE v_centerid1 bigint;
+DECLARE v_centerid2 bigint;
+
 BEGIN 
+
+TRUNCATE TABLE professional_calendar;
+TRUNCATE TABLE center;
+TRUNCATE TABLE account;
+TRUNCATE TABLE professional_specialty ;
+TRUNCATE TABLE professional CASCADE;
 
 -- CREATE PROFESSIONALS BASED IN COUNTER
 	for cnt in 1..100 loop
@@ -49,15 +60,23 @@ BEGIN
 		INSERT INTO professional_specialty ( professional_id , specialty_id ) VALUES ( v_profid , '100' ) ;
 		INSERT INTO professional_specialty ( professional_id , specialty_id ) VALUES ( v_profid , '200' ) ;
 		
-		-- INSERT CENTER
+		-- INSERT CENTERs
 		INSERT INTO center ( name , address , phone1,phone2, active, country, comuna, center_deleted, center_color, home_comuna1, home_comuna2 , home_visit,center_visit, remote_care, professional_id , date  ) 
-	                values ( CONCAT('consulta',v_profname) , CONCAT('Avenida n', v_profname) ,  '7454333' , '56975397201', 1 , 1 , 1511 , false , '#FFE6EE' , 1708 , 1662,  false  , true , false ,  v_profid ,  NOW() )  
-					RETURNING id INTO v_centerid1; 
+	                values ( CONCAT('consulta1',v_profname) , CONCAT('Avenida consulta1 ', v_profname) ,  '7454333' , '56975397201', 1 , 1 , 1511 , false , '#FFE6EE' , 1708 , 1662,  false  , true , false ,  v_profid ,  NOW() )  
+					RETURNING id INTO v_centerid1;
+					
+		INSERT INTO center ( name , address , phone1,phone2, active, country, comuna, center_deleted, center_color, home_comuna1, home_comuna2 , home_visit,center_visit, remote_care, professional_id , date  ) 
+	                values ( CONCAT('consulta2',v_profname) , CONCAT('Avenida consulta2 ', v_profname) ,  '7454333' , '56975397201', 1 , 1 , 1512 , false , '#FF4244' , 1709 , 1662,  false  , true , false ,  v_profid ,  NOW() )  
+					RETURNING id INTO v_centerid2; 
 					
 						
-		-- INSERT CALENDAR
+		-- INSERT CALENDARs
+		--calendarColorArray : ["#FF4244","#4ebeef","#AF8536", "#f6a700", "#32b780", "#dd6da4"],
 		INSERT INTO professional_calendar (professional_id , start_time,  end_time, specialty1, duration, time_between, monday, tuesday, wednesday, thursday, friday, saturday , sunday, date_start, date_end,   center_id,  status , deleted_professional, color ,date ,price , active ) 
-		VALUES ( v_profid,  '02:00:00-4' , '23:00:00-4', '100' , '50' , '10' ,  'true' ,  'true'  ,  'true' ,  'true'  ,  'true'  , 'false'  ,  'false'  ,   '2023-08-23T04:00:00.000Z'  ,  '2023-10-22T02:59:59.997Z', v_centerid1 , '1' , false , '#FF4244' ,  NOW() , 666 , true ) ;
+		VALUES ( v_profid,  '07:00:00-4' , '12:00:00-4', '100' , '50' , '10' ,  'true' ,  'true'  ,  'true' ,  'true'  ,  'true'  , 'true'  ,  'false'  ,   '2023-08-23T04:00:00.000Z'  ,  '2023-10-22T02:59:59.997Z', v_centerid1 , '1' , false , '#FF4244' ,  NOW() , 666 , true ) ;
+
+		INSERT INTO professional_calendar (professional_id , start_time,  end_time, specialty1, duration, time_between, monday, tuesday, wednesday, thursday, friday, saturday , sunday, date_start, date_end,   center_id,  status , deleted_professional, color ,date ,price , active ) 
+		VALUES ( v_profid,  '13:00:00-4' , '20:00:00-4', '100' , '45' , '15' ,  'true' ,  'true'  ,  'true' ,  'true'  ,  'true'  , 'false'  ,  'false'  ,   '2023-08-23T04:00:00.000Z'  ,  '2023-10-22T02:59:59.997Z', v_centerid2 , '1' , false , '#f6a700' ,  NOW() , 777 , true ) ;
 
 	    -- INSERT INTO professional_calendar (professional_id , start_time,  end_time, specialty1, duration, time_between, monday, tuesday, wednesday, thursday, friday, saturday , sunday, date_start, date_end,   center_id,  status , deleted_professional, color ,date ,price , active ) VALUES ( '1',  '02:00:00-4' , '23:00:00-4', '100' , '50' , '10' ,  'true' ,  'true'  ,  'true' ,  'true'  ,  'true'  , 'false'  ,  'false'  ,   '2023-08-23T04:00:00.000Z'  ,  '2023-10-22T02:59:59.997Z'  ,   251 , '1' , false , '#FF4244' ,  '2023-08-23T21:51:21.307Z' ,  '666' , true ) ;
 
