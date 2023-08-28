@@ -322,9 +322,6 @@ console.log('public_send_comments SQL :'+sql ) ;
 
 })
 
-
-
-
 //******  PUBLIC CANCEL APP 
 // sanitized  28-03-2023 
 // validated   24-01-2023  
@@ -399,8 +396,6 @@ const resultado = client.query(query_confirm, (err, result) => {
 })
 
 })
-
-
 
 //*****  RECOVER APPOINTMENTS  ******************** */
 // sanitized 27-03-2023
@@ -609,8 +604,10 @@ app.route('/patient_get_appointments_generic')
     req.body=sntz_json(req.body,"INPUT /patient_get_appointments_generic")
     //res.status(200).send(JSON.stringify( get_appointments_available(req.body)));
     let resp_app_available = get_public_appointments_available(req.body);
-    resp_app_available.then( v => {  console.log("patient_get_appointments_generic  RESPONSE: "+JSON.stringify(v)) ; return (res.status(200).send(JSON.stringify(v))) } )
-})
+//    resp_app_available.then( v => {  console.log("patient_get_appointments_generic  RESPONSE: "+JSON.stringify(v)) ; return (res.status(200).send(JSON.stringify(v))) } )
+    resp_app_available.then( v => {   return (res.status(200).send(JSON.stringify(v))) } )
+
+  })
 
 //***************************************************** */
 // validated 29-03-2023
@@ -664,7 +661,7 @@ let appointments_counter = 0 ;
 
         json_response.appointments_list.push(aux_app_day)    
       
-     //TO LIMIT RESPONSE. TO AVOID CHECK NEXT DAY IN CASE WE ALREADY OBTAIN MORE THAN 100 DAYS. 
+     //TO LIMIT RESPONSE. TO AVOID CHECK NEXT DAY IN CASE WE ALREADY OBTAIN MORE THAN 100 . 
         if  (appointments_counter > 100 )
         { 
           return (json_response)
@@ -705,6 +702,7 @@ async function get_public_appointments_available_of_a_day(specialty, date_to_get
      {
        return []
      }
+
      //extract Calendard Ids
      calendars_ids = calendars.map(val => val.id)
      console.log("calendars_ids: "+calendars_ids);
@@ -757,14 +755,14 @@ async function get_public_appointments_available_of_a_day(specialty, date_to_get
           (location == obj.comuna || location == obj.home_comuna1 || location == obj.home_comuna2 || location == obj.home_comuna3 || location == obj.home_comuna4 || location == obj.home_comuna5 || location == obj.home_comuna6  )  );
       //regenerate center ids list
       centers_ids = centers.map(val => val.id)
-      console.log("Centers IDS Filtered by LOCATION : "+JSON.stringify(centers_ids))  
+      //console.log("Centers IDS Filtered by LOCATION : "+JSON.stringify(centers_ids))  
       calendars = calendars.filter( calendar  =>  centers_ids.includes(calendar.center_id) )
-      console.log("calendars Filtered by LOCATION: "+JSON.stringify(calendars));
+      //console.log("calendars Filtered by LOCATION: "+JSON.stringify(calendars));
       calendars_ids = calendars.map(val => val.id)
-      console.log("calendars_ids Filtered by LOCATION: "+calendars_ids);
+      //console.log("calendars_ids Filtered by LOCATION: "+calendars_ids);
       professional_ids = calendars.map(val => val.professional_id)
     }
-    console.log("calendars Filtered by LOCATION LATER: "+JSON.stringify(calendars));
+    //console.log("calendars Filtered by LOCATION LATER: "+JSON.stringify(calendars));
     //*************************************** */
   
     // *********************************************************************
@@ -780,6 +778,23 @@ async function get_public_appointments_available_of_a_day(specialty, date_to_get
     console.log("Calendars MATCH Search parameters : "+calendars_ids);
     console.log("Professional IDS in Calendars: "+professional_ids);
     
+
+     // *********************************************************************
+    // 5.1 - FILTER CALENDARS to send CUTTER because over 50 calendars impact heavility the performance.  
+    // should only display calendars with high califications profesionals
+    //**********************************************************************
+    // 24-08-2023 FIX to limit CALENDAR of a DAY. 
+     // because with more than 100 calendars available same day,publick search performance peroform is low 
+     // so i decided limit it to 10 calendars per day. 
+     /*
+     if (calendars.length > 50)
+     { //LIMITED TO 50 CALENDARS
+      calendars.length = 50
+     }
+     */
+
+     //END FIX
+
     // *********************************************************************
     // 6.- CYCLE CUTTING CALENDARS FOUND   
     //**********************************************************************
@@ -787,12 +802,17 @@ async function get_public_appointments_available_of_a_day(specialty, date_to_get
     //  let lockDates = [] 
    
     let app_calendar_filtered = []
-  
+
+    //cycle trough all callendars in CALENDARS and get 
+    //ADDING A COUNTER TO BREACK THE CICLE IN CASE appointments are more than expected to request user to filter more specifically
+    let app_counter = 0 
     for (let i = 0; i < calendars.length; i++) {
       // *********************************************************************
       // 6 - 1  GET PROFESSIONAL LOCK DAYS    
       //**********************************************************************
-        let lockDates_aux = await is_professional_lock_day(calendars[i].professional_id , date.toISOString()  );
+        //let lockDates_aux = await is_professional_lock_day(calendars[i].professional_id , date.toISOString()  );
+        let lockDates_aux = null ;
+        
         if (lockDates_aux  != null && lockDates_aux.length >= 1 )
         {
           console.log("IS A DAY BLOCK !!! Calendar:"+calendars[i].id+" Skip Calendar");
@@ -800,6 +820,8 @@ async function get_public_appointments_available_of_a_day(specialty, date_to_get
         }
       
       let app_calendars = calendar_cutter_day(calendars[i] ,date )
+
+      
            
       //get appointments already reserved by professional id belong this calendar.
 
@@ -807,16 +829,29 @@ async function get_public_appointments_available_of_a_day(specialty, date_to_get
         // 6 - 4  FILTER APPS AVAILABLE FROM APP TAKEN     
         //**********************************************************************
         //first set day end
+
+//PRUEBA PARA RECORTAR TIEMPO RESPUESTA SE QUITA LA CONSULTA POR CITAS RESERVADAS PARA ESTE PROFESIONALID
+/*
         let aux_date_start = new Date(date)
         aux_date_start.setHours(0,0,0,0)
         let aux_date_end = new Date( aux_date_start.getTime()  + (1000*60*60*24) )
+
         let appointments_reserved = await get_professional_appointments_by_date( calendars[i].professional_id , aux_date_start , aux_date_end )
-      
         let apps_removed_reserved = filter_app_from_appTaken(app_calendars ,appointments_reserved, false )
+*/
         //******************************************************************** */
       
         //finally concat the result
-        app_calendar_filtered = app_calendar_filtered.concat(apps_removed_reserved)
+//      app_calendar_filtered = app_calendar_filtered.concat(apps_removed_reserved)
+        app_calendar_filtered = app_calendar_filtered.concat(app_calendars)
+
+
+        //counter to check if breack the cycle
+        app_counter = app_counter + app_calendars.length
+        if (app_counter > 100)
+        {
+        break;
+        }
       }
       //END 6 CYCLE
      
@@ -827,7 +862,11 @@ async function get_public_appointments_available_of_a_day(specialty, date_to_get
       //console.log("PUBLIC SEARCH Response DATE:"+date+"  APPOINTMENTS:"+JSON.stringify(app_calendar_filtered));
       
       //json_response.date = date
-      json_response.appointments = app_calendar_filtered
+     json_response.appointments = app_calendar_filtered
+     // json_response.appointments = app_calendar_filtered.slice(0,10)
+
+    
+
       json_response.centers = centers
       json_response.calendars = calendars
       //json_response.specialties = 
@@ -858,6 +897,7 @@ async function get_calendars_available_by_date_specialty(date,specialty)
 // 2.- PROFESSIONAL GET APPOINTMENT DAY
 // Return appointments taken in DATE belong to a PROFESSIONAL ID
 // TO DELETE 29-03-2023 
+/*
 async function get_professional_appointment_day(ids,dates)
 {
   const { Client } = require('pg')
@@ -883,6 +923,8 @@ async function get_professional_appointment_day(ids,dates)
   return res.rows;
 
 }
+*/
+
 
 // GET CENTERS DATA
 // validated 29-03-2023
@@ -3067,8 +3109,6 @@ const resultado = client.query(sql, (err, result) => {
   
     res.status(200).json(json_response)
   
-  
-  
   client.end()
 })
 
@@ -3280,8 +3320,6 @@ console.log('get_appointments  SQL:'+sql ) ;
 	})
 
 })
- 
-
 
 //********************************************* 
 //********************************************* 
@@ -3894,7 +3932,7 @@ function calendar_cutter(calendar, fromDate ,endDate ,lockDates, remove_lock_day
 // filter app from app taken
 function filter_app_from_appTaken(apps , appsTaken, includeAppTaken)
 {
-  console.log("FILTER FUNCTION APPS: IncludeAppTaken:"+includeAppTaken);
+ // console.log("FILTER FUNCTION APPS: IncludeAppTaken:"+includeAppTaken);
   //console.log("FILTER FUNCTION APPS TAKEN:"+JSON.stringify(appsTaken));
  
   let apps_taken_array = [] ;  
@@ -3949,7 +3987,7 @@ function filter_app_from_appTaken(apps , appsTaken, includeAppTaken)
 
   let apps_taken_plus_available = apps.concat(apps_taken_array);
 
-  console.log("FILTER FUNCTION APPS RETURN : "+JSON.stringify(apps_taken_plus_available));
+  //console.log("FILTER FUNCTION APPS RETURN : "+JSON.stringify(apps_taken_plus_available));
   return (apps_taken_plus_available)
 
 }
@@ -3980,7 +4018,7 @@ function filter_app_from_appTaken(apps , appsTaken, includeAppTaken)
         {
           console.log ("SECURITY WARNING: INPUT includes special characters:"+JSON.stringify(inputdata) )    
         }
-        console.log("sanitizing:"+inputdata)
+        //console.log("sanitizing:"+inputdata)
         //here show error in devel AWS
         return inputdata.replace( regular_exp, "" );
     }  
@@ -4014,7 +4052,7 @@ function sntz_json(json_input,service_name)
   
   }
 
-  console.log(" "+service_name+" INPUT SANITIZED :"+JSON.stringify(json_input) );
+ // console.log(" "+service_name+" INPUT SANITIZED :"+JSON.stringify(json_input) );
   return json_input
 
 }
@@ -4060,7 +4098,7 @@ client.connect()
 // ****** Run query to bring appointment
 //const sql = "INSERT INTO session (name, user_id,last_login , last_activity_time , user_type) RETURNING * SELECT   name, user_id , now() as last_login ,now() as last_activity_time, 1 as user_type  FROM (SELECT * FROM (SELECT * FROM professional WHERE email ='"+req.body.form_email+"' )P LEFT JOIN account ON P.id = account.user_id) J WHERE j.pass = '"+req.body.form_pass+"' RETURNING id" ;
 const sql = "SELECT * FROM session WHERE id = '"+req.body.token+"' ";
-console.log('get_session  SQL:'+sql ) ;
+//console.log('get_session  SQL:'+sql ) ;
 const resultado = client.query(sql, (err, result) => {
 
   if (err) {
