@@ -43,6 +43,12 @@ const conn_data = {
   port: 5432,
 }
 
+const MAX_APPOINTMENTS_RESPONSE = 999999
+const MAX_CALENDARS_SEARCH  = 999999
+const MAX_DAYS_SEARCH  = 2
+
+
+
 // *********************************************************************************************************
 // *********************************************************************************************************
 // *********                                  **************************************************************
@@ -573,7 +579,7 @@ const resultado = client.query(sql, (err, result) => {
 
   if (result !=null)
   {
-  console.log('GET common_get_centers '+JSON.stringify(result.rows) ) ;
+  //console.log('GET common_get_centers '+JSON.stringify(result.rows) ) ;
   res.status(200).send(JSON.stringify(result.rows) );
   }
   else
@@ -627,7 +633,7 @@ async function get_public_appointments_available(json)
   //days_list.push(date)
     
   // HOW MANY DAYS  40 ???
-   for (let i = 1; i < 40 ; i++) {
+   for (let i = 1; i < MAX_DAYS_SEARCH  ; i++) {
     days_list.push(new Date(date.getTime()+( (1000*60*60*24)*i ) ) )
   }
 
@@ -779,21 +785,36 @@ async function get_public_appointments_available_of_a_day(specialty, date_to_get
     console.log("Professional IDS in Calendars: "+professional_ids);
     
 
-     // *********************************************************************
+    // *********************************************************************
     // 5.1 - FILTER CALENDARS to send CUTTER because over 50 calendars impact heavility the performance.  
     // should only display calendars with high califications profesionals
     //**********************************************************************
     // 24-08-2023 FIX to limit CALENDAR of a DAY. 
      // because with more than 100 calendars available same day,publick search performance peroform is low 
      // so i decided limit it to 10 calendars per day. 
-     /*
-     if (calendars.length > 50)
+     
+     if (calendars.length > MAX_CALENDARS_SEARCH)
      { //LIMITED TO 50 CALENDARS
-      calendars.length = 50
+      calendars.length = MAX_CALENDARS_SEARCH
      }
-     */
+     
+     
+    // *********************************************************************
+    // 5.2 - GET PROFESSIONAL LOCK DAYS
+    // should only display calendars with high califications profesionals
+    //**********************************************************************  
+    let locks_days_prof = await get_professionals_lock_days( professional_ids , date.toISOString()  ) 
+    let locks_days_prof_ids = locks_days_prof.map(val => val.professional_id)
 
-     //END FIX
+    // *********************************************************************
+    // 5.3 - GET PROFESSIONAL APPOINTMENTS TAKEN FOR THIS DAY.  
+    // should only display calendars with high califications profesionals
+    //**********************************************************************  
+    let aux_date_start = new Date(date)
+    aux_date_start.setHours(0,0,0,0)
+    let aux_date_end = new Date( aux_date_start.getTime()  + (1000*60*60*24) )
+    let appointments_reserved_profesionals = await get_professional_appointments_by_date( professional_ids , aux_date_start , aux_date_end )
+    
 
     // *********************************************************************
     // 6.- CYCLE CUTTING CALENDARS FOUND   
@@ -806,23 +827,29 @@ async function get_public_appointments_available_of_a_day(specialty, date_to_get
     //cycle trough all callendars in CALENDARS and get 
     //ADDING A COUNTER TO BREACK THE CICLE IN CASE appointments are more than expected to request user to filter more specifically
     let app_counter = 0 
+    
+    // CYCLE trough calendar
     for (let i = 0; i < calendars.length; i++) {
       // *********************************************************************
       // 6 - 1  GET PROFESSIONAL LOCK DAYS    
       //**********************************************************************
         //let lockDates_aux = await is_professional_lock_day(calendars[i].professional_id , date.toISOString()  );
-        let lockDates_aux = null ;
-        
+        //let lockDates_aux = null ;
+      /*  
         if (lockDates_aux  != null && lockDates_aux.length >= 1 )
         {
           console.log("IS A DAY BLOCK !!! Calendar:"+calendars[i].id+" Skip Calendar");
           continue;
         }
+      */  
+        if (locks_days_prof_ids  != null && locks_days_prof_ids.length >0  && locks_days_prof_ids.includes(calendars[i].professional_id) )
+        {
+          console.log("IS A DAY BLOCK !!!  professionalID "+calendars[i].professional_id+"  Calendar:"+calendars[i].id+" Skip Calendar");
+          continue;
+        }
       
       let app_calendars = calendar_cutter_day(calendars[i] ,date )
-
-      
-           
+     
       //get appointments already reserved by professional id belong this calendar.
 
         // *********************************************************************
@@ -835,20 +862,32 @@ async function get_public_appointments_available_of_a_day(specialty, date_to_get
         let aux_date_start = new Date(date)
         aux_date_start.setHours(0,0,0,0)
         let aux_date_end = new Date( aux_date_start.getTime()  + (1000*60*60*24) )
-
-        let appointments_reserved = await get_professional_appointments_by_date( calendars[i].professional_id , aux_date_start , aux_date_end )
-        let apps_removed_reserved = filter_app_from_appTaken(app_calendars ,appointments_reserved, false )
 */
+//      let appointments_reserved = await get_professional_appointments_by_date( calendars[i].professional_id , aux_date_start , aux_date_end )
+        
+        //get appointments belong to this profesinal id
+        //Filter the appointments for this profisional id
+        //  calendars = calendars.filter( calendar  =>  centers_ids.includes(calendar.center_id) )
+
+        console.log("Going to filter by profid:"+calendars[i].professional_id )
+//FILTER IS NOT WORKING
+        let app_reserved = appointments_reserved_profesionals.filter( (app) =>  app.professional_id === calendars[i].professional_id ) 
+
+        console.log("appointment reserved: "+ JSON.stringify(appointments_reserved_profesionals))
+        console.log("appointment reserved filter: "+ JSON.stringify(app_reserved))
+
+        let apps_removed_reserved = filter_app_from_appTaken(app_calendars ,app_reserved , false )
+
         //******************************************************************** */
       
         //finally concat the result
-//      app_calendar_filtered = app_calendar_filtered.concat(apps_removed_reserved)
-        app_calendar_filtered = app_calendar_filtered.concat(app_calendars)
+      app_calendar_filtered = app_calendar_filtered.concat(apps_removed_reserved)
+//        app_calendar_filtered = app_calendar_filtered.concat(app_calendars)
 
 
         //counter to check if breack the cycle
         app_counter = app_counter + app_calendars.length
-        if (app_counter > 2000)
+        if (app_counter > MAX_APPOINTMENTS_RESPONSE)
         {
         break;
         }
@@ -939,8 +978,8 @@ async function get_public_centers(center_ids)
   
   // ****** Run query to bring appointment
   const sql  = "SELECT * FROM center WHERE id IN ("+center_ids+" ) and center_deleted != true" ;
-  console.log('SQL get_public_centers  : '+sql ) ;
-  console.log("SQL QUERY: "+sql)
+  //console.log('SQL get_public_centers  : '+sql ) ;
+  //console.log("SQL QUERY: "+sql)
   const res = await client.query(sql)
   client.end() 
   return res.rows;
@@ -3642,6 +3681,7 @@ async function get_calendar_available_by_id(cal_id)
 }
 
 //GET all professional appointments taken between two dates.   INCLUDE HOURS BLOCKED
+//UPDATED 29-08-2023 TO REVEICE A LIST of IDS  IN (122,333,444,5555,66666,888)
 async function get_professional_appointments_by_date(prof_id ,date_start ,date_end)
 {
   const { Client } = require('pg')
@@ -3654,7 +3694,10 @@ async function get_professional_appointments_by_date(prof_id ,date_start ,date_e
   //const sql_calendars  = "SELECT * FROM appointment WHERE professional_id = "+prof_id+"  AND date >='"+date_start+"'  AND date <='"+date_end+"' AND  app_available = false " ; 
   let aux_date_start = new Date(date_start).toISOString()
   let aux_date_end = new Date(date_end).toISOString()
-  const sql_calendars  = "SELECT * FROM appointment WHERE professional_id = "+prof_id+"  AND date >='"+aux_date_start+"' AND date <='"+aux_date_end+"' AND  app_available = false " ; 
+  //const sql_calendars  = "SELECT * FROM appointment WHERE professional_id = "+prof_id+"  AND date >='"+aux_date_start+"' AND date <='"+aux_date_end+"' AND  app_available = false " ; 
+  const sql_calendars  = "SELECT * FROM appointment WHERE professional_id IN ("+prof_id+")  AND date >='"+aux_date_start+"' AND date <='"+aux_date_end+"' AND  app_available = false " ; 
+  
+  
   //console.log("get_professional_appointments_by_date  SQL:"+sql_calendars) 
   
   const res = await client.query(sql_calendars) 
@@ -3682,6 +3725,7 @@ async function get_professional_lock_days(prof_id)
 }
 
 // IS PROFESSIONAL LOCK DAYS
+// validated on 29-08-2023
 async function is_professional_lock_day(prof_id,date)
 {
   const { Client } = require('pg')
@@ -3695,6 +3739,24 @@ async function is_professional_lock_day(prof_id,date)
   const res = await client.query(sql_calendars) 
   client.end() 
   //console.log ("LOCK DAYS: PID:"+prof_id+" DLOCK:"+JSON.stringify(res.rows));
+  return res.rows ;
+}
+
+// GET LOCK DAYS OF PROFESSIONAL LIST
+// validated on 29-08-2023
+async function get_professionals_lock_days(prof_ids_list,date)
+{
+  const { Client } = require('pg')
+  const client = new Client(conn_data)
+  await client.connect()  
+  //END IF LOCATION
+  //const sql_calendars SELECT * FROM professional_day_locked WHERE professional_id = 1 ;  = "SELECT * FROM professional_calendar WHERE id = 139 AND date_start <='2022-06-02' AND date_end >= '2022-06-01' AND  active = true AND deleted_professional = false AND status = 1  " ;  
+
+  const sql_calendars  = "SELECT * FROM professional_day_locked WHERE professional_id IN ("+prof_ids_list+") AND date ='"+date+"'" ; 
+  //console.log("************* get_professional_lock_days SQL:"+sql_calendars) 
+  const res = await client.query(sql_calendars) 
+  client.end() 
+ // console.log ("LOCK DAYS: PID:"+prof_id+" DLOCK:"+JSON.stringify(res.rows));
   return res.rows ;
 }
 
@@ -3932,9 +3994,11 @@ function calendar_cutter(calendar, fromDate ,endDate ,lockDates, remove_lock_day
 // filter app from app taken
 function filter_app_from_appTaken(apps , appsTaken, includeAppTaken)
 {
- // console.log("FILTER FUNCTION APPS: IncludeAppTaken:"+includeAppTaken);
-  //console.log("FILTER FUNCTION APPS TAKEN:"+JSON.stringify(appsTaken));
+  console.log("FILTER FUNCTION APPS from TAKEN: include APP TAKEN : "+includeAppTaken);
+  console.log("FILTER FUNCTION APPS from TAKEN: APPS  : "+JSON.stringify(appsTaken));
+  console.log("FILTER FUNCTION APPS from TAKEN: APPS_TAKEN : "+JSON.stringify(appsTaken));
  
+
   let apps_taken_array = [] ;  
   if (appsTaken != null)
   {
