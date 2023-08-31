@@ -43,9 +43,10 @@ const conn_data = {
   port: 5432,
 }
 
-const MAX_APPOINTMENTS_RESPONSE = 999999
+const MAX_APPOINTMENTS_RESPONSE = 999
+const MAX_APPOINTMENTS_RESPONSE_XDAY = 999
 const MAX_CALENDARS_SEARCH  = 999999
-const MAX_DAYS_SEARCH  = 2
+const MAX_DAYS_SEARCH  = 60
 
 
 
@@ -592,12 +593,12 @@ const resultado = client.query(sql, (err, result) => {
 
 })
 
-//******************************************************** */
-//**********                                      ******** */
-//**********      PUBLIC SEARCH Main Page Public  ******** */
-//**********          PUBLIC APPOINTMENTS         ******** */
-//**********                21/12/2022            ******** */
-//******************************************************** */
+//**************************************************************************************************************** */
+//**********                                      **************************************************************** */
+//**********      PUBLIC SEARCH Main Page Public  **************************************************************** */
+//**********          PUBLIC APPOINTMENTS         **************************************************************** */
+//**********                21/12/2022            **************************************************************** */
+//**************************************************************************************************************** */
 
 //***************************************************** */
 // PATIENT GET APPOINTMETS GENERIC                      */
@@ -637,43 +638,52 @@ async function get_public_appointments_available(json)
     days_list.push(new Date(date.getTime()+( (1000*60*60*24)*i ) ) )
   }
 
-  // console.log("-----------Days to search:"+days_list)
-
-//******************************************************************/
-//TODO ADD A BREACK IN CASE APPOINTMENTS are more tan 200.
-
 let appointments_counter = 0 ; 
-
 
    for (let i = 0; i < days_list.length; i++) {
     // console.log("-----------Day to get:"+days_list[i])
      let aux_appointments = await get_public_appointments_available_of_a_day(json.specialty , days_list[i], json.location, json.type_center, json.type_home, json.type_remote ) //type_center,type_home,type_remote
-     //console.log("-----------Appointments:"+JSON.stringify(aux_appointments))
-          let aux_app_day = {
-              date : days_list[i] ,
-              appointments : aux_appointments.appointments ,
-              centers: aux_appointments.centers  ,
-              calendars : aux_appointments.calendars  ,
-            } 
-    
+        //console.log("-----------Appointments:"+JSON.stringify(aux_appointments))
+              /*
+              let aux_app_day = {
+                  date : days_list[i] ,
+                  appointments : aux_appointments.appointments ,
+                  centers: aux_appointments.centers  ,
+                  calendars : aux_appointments.calendars  ,
+                  appointments_counter : aux_appointments.appointments_counter
+                } 
+              */
+    // + date  JSON RESPONSE
+        aux_appointments.date = days_list[i] 
+    // + appointments_counter JSON RESPONSE
         if (aux_appointments!=null && aux_appointments.appointments!=null  )
-          {
+          { 
           appointments_counter = appointments_counter +  aux_appointments.appointments.length
+    // + day_truncated
+    // + day_truncated_number
+              if  (appointments_counter > MAX_APPOINTMENTS_RESPONSE_XDAY )
+              {
+                aux_appointments.day_truncated = true 
+                aux_appointments.day_truncated_number = MAX_APPOINTMENTS_RESPONSE_XDAY 
+              }
           }
-        
-        //set response
-        json_response.days_counter = i+1
-        json_response.appointments_result_counter = appointments_counter
 
-        json_response.appointments_list.push(aux_app_day)    
+        json_response.appointments_result_counter = appointments_counter
+    // + day_counter JSON RESPONSE
+        json_response.days_counter = i+1
+    // + appointments_list JSON RESPONSE 
+       // json_response.appointments_list.push(aux_app_day)    
+        json_response.appointments_list.push(aux_appointments)    
       
-     //TO LIMIT RESPONSE. TO AVOID CHECK NEXT DAY IN CASE WE ALREADY OBTAIN MORE THAN 100 . 
-        if  (appointments_counter > 100 )
-        { 
+     //TO LIMIT RESPONSE. 
+     //TO AVOID CHECK NEXT DAY IN CASE WE ALREADY OBTAIN MORE THAN 100 . 
+        if  (appointments_counter > MAX_APPOINTMENTS_RESPONSE_XDAY )
+        {
+          //URGENT BRACK AND RETURN
           return (json_response)
         }
 
-    }
+    }//END DAYS Cycle
 
    //console.log("-----------GET PUBLIC APPOINTMENTS AVAILABLE JSON Response :"+JSON.stringify(json_response))
    return (json_response)
@@ -747,6 +757,11 @@ async function get_public_appointments_available_of_a_day(specialty, date_to_get
     //**********************************************************************
     //filter CALENDARS have only active centers.
     calendars =  calendars.filter(cal =>  centers_ids_filtered.includes(cal.center_id) ) 
+
+    if (calendars.length > MAX_CALENDARS_SEARCH)
+     { //LIMITED TO 50 CALENDARS
+      calendars.length = MAX_CALENDARS_SEARCH
+     }
     //**********************************************************************
     
     // *********************************************************************
@@ -793,10 +808,7 @@ async function get_public_appointments_available_of_a_day(specialty, date_to_get
      // because with more than 100 calendars available same day,publick search performance peroform is low 
      // so i decided limit it to 10 calendars per day. 
      
-     if (calendars.length > MAX_CALENDARS_SEARCH)
-     { //LIMITED TO 50 CALENDARS
-      calendars.length = MAX_CALENDARS_SEARCH
-     }
+     
      
      
     // *********************************************************************
@@ -864,15 +876,12 @@ async function get_public_appointments_available_of_a_day(specialty, date_to_get
         let aux_date_end = new Date( aux_date_start.getTime()  + (1000*60*60*24) )
 */
 //      let appointments_reserved = await get_professional_appointments_by_date( calendars[i].professional_id , aux_date_start , aux_date_end )
-        
         //get appointments belong to this profesinal id
         //Filter the appointments for this profisional id
         //  calendars = calendars.filter( calendar  =>  centers_ids.includes(calendar.center_id) )
 
         console.log("Going to filter by profid:"+calendars[i].professional_id )
-//FILTER IS NOT WORKING
-        let app_reserved = appointments_reserved_profesionals.filter( (app) =>  app.professional_id === calendars[i].professional_id ) 
-
+        let app_reserved = appointments_reserved_profesionals.filter( (app) =>  { return app.professional_id ===  parseInt(calendars[i].professional_id) } ) 
         console.log("appointment reserved: "+ JSON.stringify(appointments_reserved_profesionals))
         console.log("appointment reserved filter: "+ JSON.stringify(app_reserved))
 
@@ -886,8 +895,8 @@ async function get_public_appointments_available_of_a_day(specialty, date_to_get
 
 
         //counter to check if breack the cycle
-        app_counter = app_counter + app_calendars.length
-        if (app_counter > MAX_APPOINTMENTS_RESPONSE)
+      app_counter = app_counter + app_calendars.length
+        if (app_counter > MAX_APPOINTMENTS_RESPONSE_XDAY)
         {
         break;
         }
@@ -903,11 +912,10 @@ async function get_public_appointments_available_of_a_day(specialty, date_to_get
       //json_response.date = date
      json_response.appointments = app_calendar_filtered
      // json_response.appointments = app_calendar_filtered.slice(0,10)
-
     
-
       json_response.centers = centers
       json_response.calendars = calendars
+      json_response.appointments_counter = app_counter
       //json_response.specialties = 
        
       //return  app_calendar_filtered ;
