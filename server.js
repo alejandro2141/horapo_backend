@@ -43,10 +43,10 @@ const conn_data = {
   port: 5432,
 }
 
-const MAX_APPOINTMENTS_RESPONSE = 999
-const MAX_APPOINTMENTS_RESPONSE_XDAY = 999
+//const MAX_APPOINTMENTS_RESPONSE = 999
+const MAX_APPOINTMENTS_RESPONSE_XDAY = 12
 const MAX_CALENDARS_SEARCH  = 999999
-const MAX_DAYS_SEARCH  = 60
+const MAX_DAYS_SEARCH  = 75
 
 
 
@@ -626,6 +626,7 @@ async function get_public_appointments_available(json)
    //*********** response message *********/
    let json_response = {
     appointments_list: [] , //here we put the appointments object
+    response_truncated : false 
     }
   //*********************************** */   
 
@@ -661,27 +662,40 @@ let appointments_counter = 0 ;
           appointments_counter = appointments_counter +  aux_appointments.appointments.length
     // + day_truncated
     // + day_truncated_number
+              /*          
               if  (appointments_counter > MAX_APPOINTMENTS_RESPONSE_XDAY )
               {
-                aux_appointments.day_truncated = true 
-                aux_appointments.day_truncated_number = MAX_APPOINTMENTS_RESPONSE_XDAY 
+                json_response.response_truncated = true 
+                json_response.response_truncated_set = MAX_APPOINTMENTS_RESPONSE_XDAY 
+                json_response.response_truncated_at = appointments_counter
               }
+              */
           }
-
-        json_response.appointments_result_counter = appointments_counter
+          json_response.appointments_result_counter = appointments_counter
     // + day_counter JSON RESPONSE
-        json_response.days_counter = i+1
-    // + appointments_list JSON RESPONSE 
-       // json_response.appointments_list.push(aux_app_day)    
-        json_response.appointments_list.push(aux_appointments)    
+          json_response.days_counter = i+1
       
-     //TO LIMIT RESPONSE. 
-     //TO AVOID CHECK NEXT DAY IN CASE WE ALREADY OBTAIN MORE THAN 100 . 
-        if  (appointments_counter > MAX_APPOINTMENTS_RESPONSE_XDAY )
+  //TO LIMIT RESPONSE. 
+  //TRUNCATED RESPONSE
+        if  (appointments_counter >= MAX_APPOINTMENTS_RESPONSE_XDAY )
         {
           //URGENT BRACK AND RETURN
-          return (json_response)
+          json_response.response_truncated = true 
+          json_response.response_truncated_set = MAX_APPOINTMENTS_RESPONSE_XDAY 
+          json_response.response_truncated_at = appointments_counter
+          json_response.response_truncated_date = days_list[i]
+          
+          json_response.appointments_list.push(aux_appointments)   
+          break; 
+          //return (json_response)
         }
+
+       // + appointments_list JSON RESPONSE 
+       // json_response.appointments_list.push(aux_app_day)    
+       json_response.appointments_list.push(aux_appointments)    
+    
+
+
 
     }//END DAYS Cycle
 
