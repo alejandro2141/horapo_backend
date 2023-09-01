@@ -17,16 +17,28 @@ INSERT INTO professional_calendar (professional_id , start_time,  end_time, spec
 
 DO $$
 
-DECLARE v_profname text;
-DECLARE v_profid bigint;
-DECLARE v_centerid1 bigint;
-DECLARE v_centerid2 bigint;
-DECLARE v_calendarid1 bigint;
-DECLARE v_calendarid2 bigint;
+DECLARE 
 
+v_profname text;
+v_profid bigint;
+v_centerid1 bigint;
+v_centerid2 bigint;
+v_calendarid1 bigint;
+v_calendarid2 bigint;
+
+v_calendarDateStart1 text;
+v_calendarDateEnd1 text;
+v_calendarTimeStart1 text;
+v_calendarTimeEnd1 text;
 
 
 BEGIN 
+
+v_calendarDateStart1 	= '2023-08-23T04:00:00.000Z' ;
+v_calendarDateEnd1 		= '2023-09-23T04:00:00.000Z'  ;
+v_calendarTimeStart1 	= '09:00:00-4' ;
+v_calendarTimeEnd1 		= '10:00:00-4' ;
+
 
 TRUNCATE TABLE professional_calendar;
 TRUNCATE TABLE center;
@@ -35,8 +47,10 @@ TRUNCATE TABLE professional_specialty ;
 TRUNCATE TABLE professional CASCADE;
 TRUNCATE TABLE appointment  CASCADE;
 
+
+
 -- CREATE PROFESSIONALS BASED IN COUNTER
-	for cnt in 1..10 loop
+	for cnt in 1..2 loop 
 
 		v_profname := CONCAT('prof',cnt);
 		-- INSERT PROFESSIONAL DATA
@@ -62,13 +76,15 @@ TRUNCATE TABLE appointment  CASCADE;
 		-- INSERT CALENDARs
 		--calendarColorArray : ["#FF4244","#4ebeef","#AF8536", "#f6a700", "#32b780", "#dd6da4"],
 		INSERT INTO professional_calendar (professional_id , start_time,  end_time, specialty1, duration, time_between, monday, tuesday, wednesday, thursday, friday, saturday , sunday, date_start, date_end,   center_id,  status , deleted_professional, color ,date ,price , active ) 
-		VALUES ( v_profid,  '09:00:00-4' , '13:00:00-4', '100' , '50' , '10' ,  'true' ,  'true'  ,  'true' ,  'true'  ,  'true'  , 'true'  ,  'false'  ,   '2023-08-23T04:00:00.000Z'  ,  '2023-10-02T02:59:59.997Z', v_centerid1 , '1' , false , '#FF4244' ,  NOW() , 666 , true ) 
+		VALUES ( v_profid,  '13:00:00-4' , '14:00:00-4' , '100' , '50' , '10' ,  'true' ,  'true'  ,  'true' ,  'true'  ,  'true'  , 'true'  ,  'false'  , '2023-08-23T04:00:00.000Z',  '2023-09-05T04:00:00.000Z', v_centerid1 , '1' , false , '#FF4244' ,  NOW() , 666 , true ) 
 		RETURNING id INTO v_calendarid1 ; 
 		
 		INSERT INTO professional_calendar (professional_id , start_time,  end_time, specialty1, duration, time_between, monday, tuesday, wednesday, thursday, friday, saturday , sunday, date_start, date_end,   center_id,  status , deleted_professional, color ,date ,price , active ) 
-		VALUES ( v_profid,  '15:00:00-4' , '19:00:00-4', '100' , '45' , '15' ,  'true' ,  'true'  ,  'true' ,  'true'  ,  'true'  , 'false'  ,  'false'  ,   '2023-08-23T04:00:00.000Z'  ,  '2023-10-02T02:59:59.997Z', v_centerid2 , '1' , false , '#f6a700' ,  NOW() , 777 , true ) 
+		VALUES ( v_profid,  '08:00:00-4' , '11:00:00-4' , '100' , '45' , '15' ,  'true' ,  'true'  ,  'true' ,  'true'  ,  'true'  , 'false'  ,  'false'  , '2023-08-23T04:00:00.000Z' ,  '2023-09-05T04:00:00.000Z' , v_centerid2 , '1' , false , '#f6a700' ,  NOW() , 777 , true ) 
 		RETURNING id INTO v_calendarid2 ; 
 	    -- INSERT INTO professional_calendar (professional_id , start_time,  end_time, specialty1, duration, time_between, monday, tuesday, wednesday, thursday, friday, saturday , sunday, date_start, date_end,   center_id,  status , deleted_professional, color ,date ,price , active ) VALUES ( '1',  '02:00:00-4' , '23:00:00-4', '100' , '50' , '10' ,  'true' ,  'true'  ,  'true' ,  'true'  ,  'true'  , 'false'  ,  'false'  ,   '2023-08-23T04:00:00.000Z'  ,  '2023-10-22T02:59:59.997Z'  ,   251 , '1' , false , '#FF4244' ,  '2023-08-23T21:51:21.307Z' ,  '666' , true ) ;
+		
+		
 		
 		-- INSERT APPOINTMENTS
 		INSERT INTO appointment (  date , start_time,  duration,  center_id, confirmation_status, professional_id, patient_doc_id, patient_name,    patient_email, patient_phone1,  patient_age,  app_available, app_status, app_blocked, app_public,  location1, location2, location3, location4, location5, location6,   app_type_home, app_type_center,  app_type_remote, patient_notification_email_reserved , specialty_reserved , patient_address , calendar_id , app_price)   
