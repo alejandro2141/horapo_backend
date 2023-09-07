@@ -51,22 +51,20 @@ cnt_specialty bigint;
 
 BEGIN 
 
-v_calendarDateStart1 	= '2023-08-23T04:00:00.000Z' ;
-v_calendarDateEnd1 		= '2023-09-23T04:00:00.000Z'  ;
+v_calendarDateStart1 	= '2023-09-01T04:00:00.000Z' ;
+v_calendarDateEnd1 		= '2023-09-15T04:00:00.000Z'  ;
 v_calendarTimeStart1 	= '09:00:00-4' ;
-v_calendarTimeEnd1 		= '14:00:00-4' ;
+v_calendarTimeEnd1 		= '11:00:00-4' ;
 
-v_calendarDateStart2 	= '2023-08-23T04:00:00.000Z' ;
+v_calendarDateStart2 	= '2023-09-01T04:00:00.000Z' ;
 v_calendarDateEnd2 		= '2023-09-23T04:00:00.000Z'  ;
-v_calendarTimeStart2 	= '16:00:00-4' ;
-v_calendarTimeEnd2 		= '19:00:00-4' ;
+v_calendarTimeStart2 	= '09:00:00-4' ;
+v_calendarTimeEnd2 		= '18:00:00-4' ;
 
-v_calendarDateStart3 	= '2023-09-15T04:00:00.000Z' ;
-v_calendarDateEnd3 		= '2023-10-23T04:00:00.000Z'  ;
+v_calendarDateStart3 	= '2023-09-01T04:00:00.000Z' ;
+v_calendarDateEnd3 		= '2023-10-15T04:00:00.000Z'  ;
 v_calendarTimeStart3 	= '20:00:00-4' ;
 v_calendarTimeEnd3 		= '23:00:00-4' ;
-
-
 
 
 TRUNCATE TABLE professional_calendar;
@@ -76,21 +74,18 @@ TRUNCATE TABLE professional_specialty ;
 TRUNCATE TABLE professional CASCADE;
 TRUNCATE TABLE appointment  CASCADE;
 
-
-
-
 -----------------------
 --   CREATE KINE ------
------------------------
-
-
+-------------------------
+-- Cycle to create FIXED 8 SPECIALTIES --
+-------------------------
 for cnt_specialty in 1..8 loop 
-
 v_specialty = 100 * cnt_specialty;
 
-	for cnt in 1..8 loop 
+-- Cycle How many professional per specialty
+	for cnt in 1..2 loop 
 
-		v_profname := CONCAT('profKine',cnt);
+		v_profname := CONCAT('prof',v_specialty,'-',cnt);
 		-- INSERT PROFESSIONAL DATA
 		INSERT INTO professional (name, document_number, license_number,  email, address, phone , active) VALUES (v_profname, CONCAT(CONCAT( CONCAT(CONCAT(cnt,cnt)),'-'), cnt )  ,'123', CONCAT(v_profname,'@nada.com'), 'avsiempreviva', '77777', true   ) 
 		RETURNING id INTO v_profid;
@@ -102,34 +97,33 @@ v_specialty = 100 * cnt_specialty;
 		
 		-- INSERT CENTERs
 		INSERT INTO center ( name , address , phone1,phone2, active, country, comuna, center_deleted, center_color, home_comuna1, home_comuna2 , home_visit,center_visit, remote_care, professional_id , date  ) 
-	                values ( CONCAT('consulta1',v_profname) , CONCAT('Avenida consulta1 ', v_profname) ,  '7454333' , '56975397201', 1 , 1 , 1511 , false , '#FFE6EE' , null , null ,  false  , true , false ,  v_profid ,  NOW() )  
+	                values ( CONCAT('consulta1Center',v_profname) , CONCAT('Avenida consulta1 ', v_profname) ,  '7454333' , '56975397201', 1 , 1 , 1511 , false , '#FFE6EE' , null , null ,  false  , true , false ,  v_profid ,  NOW() )  
 					RETURNING id INTO v_centerid1;
 					
 		INSERT INTO center ( name , address , phone1,phone2, active, country, comuna, center_deleted, center_color, home_comuna1, home_comuna2 , home_visit,center_visit, remote_care, professional_id , date  ) 
-	                values ( CONCAT('consulta2',v_profname) , null ,  '7454333' , '56975397201', 1 , 1 , null , false , '#FF4244' , 1511, 1509,  true  , false , false ,  v_profid ,  NOW() )  
+	                values ( CONCAT('consulta2Remote',v_profname) , null ,  '7454333' , '56975397201', 1 , 1 , null , false , '#FF4244' , 1511, 1509,  true  , false , false ,  v_profid ,  NOW() )  
 					RETURNING id INTO v_centerid2; 
 	
 		INSERT INTO center ( name , address , phone1,phone2, active, country, comuna, center_deleted, center_color, home_comuna1, home_comuna2 , home_visit,center_visit, remote_care, professional_id , date  ) 
-	                values ( CONCAT('consulta2',v_profname) , null  ,  '7454333' , '56975397201', 1 , 1 , null , false , '#FF4244' , null , null ,  false  , false , true ,  v_profid ,  NOW() )  
+	                values ( CONCAT('consulta2HomeVisit',v_profname) , null  ,  '7454333' , '56975397201', 1 , 1 , null , false , '#FF4244' , null , null ,  false  , false , true ,  v_profid ,  NOW() )  
 					RETURNING id INTO v_centerid3; 
 					
 						
 		-- INSERT CALENDARs
 		--calendarColorArray : ["#FF4244","#4ebeef","#AF8536", "#f6a700", "#32b780", "#dd6da4"],
 		INSERT INTO professional_calendar (professional_id , start_time,  end_time, specialty1, duration, time_between, monday, tuesday, wednesday, thursday, friday, saturday , sunday, date_start, date_end,   center_id,  status , deleted_professional, color ,date ,price , active ) 
-		VALUES ( v_profid,  v_calendarTimeStart1 , v_calendarTimeEnd1  , v_specialty , '50' , '10' ,  'true' ,  'true'  ,  'true' ,  'true'  ,  'true'  , 'true'  ,  'false'  , v_calendarDateStart1 ,  v_calendarDateEnd2 , v_centerid1 , '1' , false , '#FF4244' ,  NOW() , 66666 , true ) 
+		VALUES ( v_profid,  v_calendarTimeStart1 , v_calendarTimeEnd1  , v_specialty , '50' , '10' ,  'true' ,  'true'  ,  'true' ,  'true'  ,  'true'  , 'true'  ,  'false'  , v_calendarDateStart1 ,  v_calendarDateEnd1 , v_centerid1 , '1' , false , '#FF4244' ,  NOW() , 11111, true ) 
 		RETURNING id INTO v_calendarid1 ; 
 		
 		INSERT INTO professional_calendar (professional_id , start_time,  end_time, specialty1, duration, time_between, monday, tuesday, wednesday, thursday, friday, saturday , sunday, date_start, date_end,   center_id,  status , deleted_professional, color ,date ,price , active ) 
-		VALUES ( v_profid, v_calendarTimeStart2  , v_calendarTimeStart2 , v_specialty , '45' , '15' ,  'true' ,  'true'  ,  'true' ,  'true'  ,  'true'  , 'false'  ,  'false'  , v_calendarDateStart1 ,  v_calendarDateEnd2 , v_centerid2 , '1' , false , '#f6a700' ,  NOW() , 77777 , true ) 
+		VALUES ( v_profid, v_calendarTimeStart2  , v_calendarTimeEnd2 , v_specialty , '45' , '15' ,  'true' ,  'true'  ,  'true' ,  'true'  ,  'true'  , 'false'  ,  'false'  , v_calendarDateStart2 ,  v_calendarDateEnd2 , v_centerid2 , '1' , false , '#f6a700' ,  NOW() , 22222 , true ) 
 		RETURNING id INTO v_calendarid2 ; 
 	    -- INSERT INTO professional_calendar (professional_id , start_time,  end_time, specialty1, duration, time_between, monday, tuesday, wednesday, thursday, friday, saturday , sunday, date_start, date_end,   center_id,  status , deleted_professional, color ,date ,price , active ) VALUES ( '1',  '02:00:00-4' , '23:00:00-4', '100' , '50' , '10' ,  'true' ,  'true'  ,  'true' ,  'true'  ,  'true'  , 'false'  ,  'false'  ,   '2023-08-23T04:00:00.000Z'  ,  '2023-10-22T02:59:59.997Z'  ,   251 , '1' , false , '#FF4244' ,  '2023-08-23T21:51:21.307Z' ,  '666' , true ) ;
 		INSERT INTO professional_calendar (professional_id , start_time,  end_time, specialty1, duration, time_between, monday, tuesday, wednesday, thursday, friday, saturday , sunday, date_start, date_end,   center_id,  status , deleted_professional, color ,date ,price , active ) 
-		VALUES ( v_profid,  v_calendarTimeStart3 ,  v_calendarTimeStart3 , v_specialty , '45' , '15' ,  'true' ,  'true'  ,  'true' ,  'true'  ,  'true'  , 'false'  ,  'false'  , v_calendarDateStart1 ,  v_calendarDateEnd2 , v_centerid3 , '1' , false , '#f6a700' ,  NOW() , 88888 , true ) 
+		VALUES ( v_profid,  v_calendarTimeStart3 ,  v_calendarTimeEnd3 , v_specialty , '45' , '15' ,  'true' ,  'true'  ,  'true' ,  'true'  ,  'true'  , 'false'  ,  'false'  , v_calendarDateStart3 ,  v_calendarDateEnd3 , v_centerid3 , '1' , false , '#f6a700' ,  NOW() , 33333 , true ) 
 		RETURNING id INTO v_calendarid3 ; 
 	    -- INSERT INTO professional_calendar (professional_id , start_time,  end_time, specialty1, duration, time_between, monday, tuesday, wednesday, thursday, friday, saturday , sunday, date_start, date_end,   center_id,  status , deleted_professional, color ,date ,price , active ) VALUES ( '1',  '02:00:00-4' , '23:00:00-4', '100' , '50' , '10' ,  'true' ,  'true'  ,  'true' ,  'true'  ,  'true'  , 'false'  ,  'false'  ,   '2023-08-23T04:00:00.000Z'  ,  '2023-10-22T02:59:59.997Z'  ,   251 , '1' , false , '#FF4244' ,  '2023-08-23T21:51:21.307Z' ,  '666' , true ) ;
-		
-		
+				
 		
 		-- INSERT APPOINTMENTS
 		INSERT INTO appointment (  date , start_time,  duration,  center_id, confirmation_status, professional_id, patient_doc_id, patient_name,    patient_email, patient_phone1,  patient_age,  app_available, app_status, app_blocked, app_public,  location1, location2, location3, location4, location5, location6,   app_type_home, app_type_center,  app_type_remote, patient_notification_email_reserved , specialty_reserved , patient_address , calendar_id , app_price)   
