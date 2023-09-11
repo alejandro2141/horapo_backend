@@ -1,19 +1,4 @@
---INSERT INTO professional_calendar (professional_id , start_time,  end_time, specialty1, duration, time_between, monday, tuesday, wednesday, thursday, friday, saturday , sunday, date_start, date_end,   center_id,  status , deleted_professional, color ,date ,price ) VALUES ( '1',  '02:00:00-4' , '23:00:00-4', '100' , '50' , '10' ,  'true' ,  'true'  ,  'true' ,  'true'  ,  'true'  , 'false'  ,  'false'  ,   '2023-08-23T04:00:00.000Z'  ,  '2023-10-22T02:59:59.997Z'  ,   252 , '1' , false , '#FF4244' ,  '2023-08-23T21:51:21.307Z' ,  '70000'  )
 
-/*
-INSERT INTO professional_calendar (professional_id , start_time,  end_time, specialty1, duration, time_between, monday, tuesday, wednesday, thursday, friday, saturday , sunday, date_start, date_end,   center_id,  status , deleted_professional, color ,date ,price , active ) VALUES ( '1',  '02:00:00-4' , '23:00:00-4', '100' , '50' , '10' ,  'true' ,  'true'  ,  'true' ,  'true'  ,  'true'  , 'false'  ,  'false'  ,   '2023-08-23T04:00:00.000Z'  ,  '2023-10-22T02:59:59.997Z'  ,   251 , '1' , false , '#FF4244' ,  '2023-08-23T21:51:21.307Z' ,  '666' , true ) ;
-INSERT INTO professional_calendar (professional_id , start_time,  end_time, specialty1, duration, time_between, monday, tuesday, wednesday, thursday, friday, saturday , sunday, date_start, date_end,   center_id,  status , deleted_professional, color ,date ,price , active ) VALUES ( '1',  '02:00:00-4' , '23:00:00-4', '100' , '50' , '10' ,  'true' ,  'true'  ,  'true' ,  'true'  ,  'true'  , 'false'  ,  'false'  ,   '2023-08-23T04:00:00.000Z'  ,  '2023-10-22T02:59:59.997Z'  ,   252 , '1' , false , '#FF4244' ,  '2023-08-23T21:51:21.307Z' ,  '667' , true ) ;
-INSERT INTO professional_calendar (professional_id , start_time,  end_time, specialty1, duration, time_between, monday, tuesday, wednesday, thursday, friday, saturday , sunday, date_start, date_end,   center_id,  status , deleted_professional, color ,date ,price , active ) VALUES ( '1',  '02:00:00-4' , '23:00:00-4', '100' , '50' , '10' ,  'true' ,  'true'  ,  'true' ,  'true'  ,  'true'  , 'false'  ,  'false'  ,   '2023-08-23T04:00:00.000Z'  ,  '2023-10-22T02:59:59.997Z'  ,   253 , '1' , false , '#FF4244' ,  '2023-08-23T21:51:21.307Z' ,  '668' , true ) ;
-INSERT INTO professional_calendar (professional_id , start_time,  end_time, specialty1, duration, time_between, monday, tuesday, wednesday, thursday, friday, saturday , sunday, date_start, date_end,   center_id,  status , deleted_professional, color ,date ,price , active ) VALUES ( '1',  '02:00:00-4' , '23:00:00-4', '100' , '50' , '10' ,  'true' ,  'true'  ,  'true' ,  'true'  ,  'true'  , 'false'  ,  'false'  ,   '2023-08-23T04:00:00.000Z'  ,  '2023-10-22T02:59:59.997Z'  ,   251 , '1' , false , '#FF4244' ,  '2023-08-23T21:51:21.307Z' ,  '669' , true ) ;
-INSERT INTO professional_calendar (professional_id , start_time,  end_time, specialty1, duration, time_between, monday, tuesday, wednesday, thursday, friday, saturday , sunday, date_start, date_end,   center_id,  status , deleted_professional, color ,date ,price , active ) VALUES ( '1',  '02:00:00-4' , '23:00:00-4', '100' , '50' , '10' ,  'true' ,  'true'  ,  'true' ,  'true'  ,  'true'  , 'false'  ,  'false'  ,   '2023-08-23T04:00:00.000Z'  ,  '2023-10-22T02:59:59.997Z'  ,   252 , '1' , false , '#FF4244' ,  '2023-08-23T21:51:21.307Z' ,  '777' , true ) ;
-INSERT INTO professional_calendar (professional_id , start_time,  end_time, specialty1, duration, time_between, monday, tuesday, wednesday, thursday, friday, saturday , sunday, date_start, date_end,   center_id,  status , deleted_professional, color ,date ,price , active ) VALUES ( '1',  '02:00:00-4' , '23:00:00-4', '100' , '50' , '10' ,  'true' ,  'true'  ,  'true' ,  'true'  ,  'true'  , 'false'  ,  'false'  ,   '2023-08-23T04:00:00.000Z'  ,  '2023-10-22T02:59:59.997Z'  ,   253 , '1' , false , '#FF4244' ,  '2023-08-23T21:51:21.307Z' ,  '888' , true ) ;
-INSERT INTO professional_calendar (professional_id , start_time,  end_time, specialty1, duration, time_between, monday, tuesday, wednesday, thursday, friday, saturday , sunday, date_start, date_end,   center_id,  status , deleted_professional, color ,date ,price , active ) VALUES ( '1',  '02:00:00-4' , '23:00:00-4', '100' , '50' , '10' ,  'true' ,  'true'  ,  'true' ,  'true'  ,  'true'  , 'false'  ,  'false'  ,   '2023-08-23T04:00:00.000Z'  ,  '2023-10-22T02:59:59.997Z'  ,   251 , '1' , false , '#FF4244' ,  '2023-08-23T21:51:21.307Z' ,  '999' , true ) ;
-INSERT INTO professional_calendar (professional_id , start_time,  end_time, specialty1, duration, time_between, monday, tuesday, wednesday, thursday, friday, saturday , sunday, date_start, date_end,   center_id,  status , deleted_professional, color ,date ,price , active ) VALUES ( '1',  '02:00:00-4' , '23:00:00-4', '100' , '50' , '10' ,  'true' ,  'true'  ,  'true' ,  'true'  ,  'true'  , 'false'  ,  'false'  ,   '2023-08-23T04:00:00.000Z'  ,  '2023-10-22T02:59:59.997Z'  ,   252 , '1' , false , '#FF4244' ,  '2023-08-23T21:51:21.307Z' ,  '111' , true ) ;
-INSERT INTO professional_calendar (professional_id , start_time,  end_time, specialty1, duration, time_between, monday, tuesday, wednesday, thursday, friday, saturday , sunday, date_start, date_end,   center_id,  status , deleted_professional, color ,date ,price , active ) VALUES ( '1',  '02:00:00-4' , '23:00:00-4', '100' , '50' , '10' ,  'true' ,  'true'  ,  'true' ,  'true'  ,  'true'  , 'false'  ,  'false'  ,   '2023-08-23T04:00:00.000Z'  ,  '2023-10-22T02:59:59.997Z'  ,   253 , '1' , false , '#FF4244' ,  '2023-08-23T21:51:21.307Z' ,  '222' , true ) ;
-INSERT INTO professional_calendar (professional_id , start_time,  end_time, specialty1, duration, time_between, monday, tuesday, wednesday, thursday, friday, saturday , sunday, date_start, date_end,   center_id,  status , deleted_professional, color ,date ,price , active ) VALUES ( '1',  '02:00:00-4' , '23:00:00-4', '100' , '50' , '10' ,  'true' ,  'true'  ,  'true' ,  'true'  ,  'true'  , 'false'  ,  'false'  ,   '2023-08-23T04:00:00.000Z'  ,  '2023-10-22T02:59:59.997Z'  ,   251 , '1' , false , '#FF4244' ,  '2023-08-23T21:51:21.307Z' ,  '333' , true ) ;
-INSERT INTO professional_calendar (professional_id , start_time,  end_time, specialty1, duration, time_between, monday, tuesday, wednesday, thursday, friday, saturday , sunday, date_start, date_end,   center_id,  status , deleted_professional, color ,date ,price , active ) VALUES ( '1',  '02:00:00-4' , '23:00:00-4', '100' , '50' , '10' ,  'true' ,  'true'  ,  'true' ,  'true'  ,  'true'  , 'false'  ,  'false'  ,   '2023-08-23T04:00:00.000Z'  ,  '2023-10-22T02:59:59.997Z'  ,   252 , '1' , false , '#FF4244' ,  '2023-08-23T21:51:21.307Z' ,  '444' , true ) ;
-INSERT INTO professional_calendar (professional_id , start_time,  end_time, specialty1, duration, time_between, monday, tuesday, wednesday, thursday, friday, saturday , sunday, date_start, date_end,   center_id,  status , deleted_professional, color ,date ,price , active ) VALUES ( '1',  '02:00:00-4' , '23:00:00-4', '100' , '50' , '10' ,  'true' ,  'true'  ,  'true' ,  'true'  ,  'true'  , 'false'  ,  'false'  ,   '2023-08-23T04:00:00.000Z'  ,  '2023-10-22T02:59:59.997Z'  ,   253 , '1' , false , '#FF4244' ,  '2023-08-23T21:51:21.307Z' ,  '555' , true ) ;
-*/
 
 DO $$
 
@@ -52,7 +37,7 @@ cnt_specialty bigint;
 BEGIN 
 
 v_calendarDateStart1 	= '2023-09-01T04:00:00.000Z' ;
-v_calendarDateEnd1 		= '2023-09-15T04:00:00.000Z'  ;
+v_calendarDateEnd1 		= '2023-09-25T04:00:00.000Z'  ;
 v_calendarTimeStart1 	= '09:00:00-4' ;
 v_calendarTimeEnd1 		= '11:00:00-4' ;
 
@@ -62,17 +47,30 @@ v_calendarTimeStart2 	= '09:00:00-4' ;
 v_calendarTimeEnd2 		= '18:00:00-4' ;
 
 v_calendarDateStart3 	= '2023-09-01T04:00:00.000Z' ;
-v_calendarDateEnd3 		= '2023-10-15T04:00:00.000Z'  ;
-v_calendarTimeStart3 	= '20:00:00-4' ;
-v_calendarTimeEnd3 		= '23:00:00-4' ;
+v_calendarDateEnd3 		= '2023-10-29T04:00:00.000Z'  ;
+v_calendarTimeStart3 	= '09:00:00-4' ;
+v_calendarTimeEnd3 		= '12:00:00-4' ;
 
 
-TRUNCATE TABLE professional_calendar;
-TRUNCATE TABLE center;
-TRUNCATE TABLE account;
-TRUNCATE TABLE professional_specialty ;
-TRUNCATE TABLE professional CASCADE;
-TRUNCATE TABLE appointment  CASCADE;
+TRUNCATE TABLE professional_calendar RESTART IDENTITY CASCADE;
+TRUNCATE TABLE center RESTART IDENTITY CASCADE;
+TRUNCATE TABLE account RESTART IDENTITY CASCADE;
+TRUNCATE TABLE professional_specialty  RESTART IDENTITY CASCADE;
+TRUNCATE TABLE professional RESTART IDENTITY CASCADE ;
+TRUNCATE TABLE appointment  RESTART IDENTITY CASCADE ;
+
+TRUNCATE TABLE send_calendar_patient RESTART IDENTITY CASCADE ;
+TRUNCATE TABLE send_email_patient_cancel_appointment RESTART IDENTITY CASCADE;
+TRUNCATE TABLE request_app_confirm RESTART IDENTITY CASCADE;
+TRUNCATE TABLE professional_register RESTART IDENTITY CASCADE;
+
+
+TRUNCATE TABLE session RESTART IDENTITY CASCADE;
+
+
+ALTER SEQUENCE  account_id_seq RESTART ;
+ALTER SEQUENCE  appointment_cancelled_id_seq RESTART ;
+
 
 -----------------------
 --   CREATE KINE ------
@@ -83,7 +81,7 @@ for cnt_specialty in 1..8 loop
 v_specialty = 100 * cnt_specialty;
 
 -- Cycle How many professional per specialty
-	for cnt in 1..2 loop 
+	for cnt in 1..11 loop 
 
 		v_profname := CONCAT('prof',v_specialty,'-',cnt);
 		-- INSERT PROFESSIONAL DATA
