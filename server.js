@@ -1905,7 +1905,11 @@ client.connect()
 /* const query_update = "DELETE  FROM appointment WHERE id = '"+req.body.appointment_id+"' RETURNING * " ;
 */
 
-const query_update = "WITH app AS (DELETE FROM appointment  WHERE id = "+req.body.appointment_id+" RETURNING *) INSERT INTO appointment_cancelled  SELECT *, true as cancelled_professional , false as cancelled_patient,   CURRENT_TIMESTAMP as cancelled_date   FROM app  ";
+//const query_update = "WITH app AS (DELETE FROM appointment  WHERE id = "+req.body.appointment_id+" RETURNING *) INSERT INTO appointment_cancelled  SELECT *, 1 as cancelled_professional , 0 as cancelled_patient,   CURRENT_TIMESTAMP as cancelled_date   FROM app  ";
+
+const query_update = " WITH app AS (DELETE FROM appointment  WHERE id = "+req.body.appointment_id+" RETURNING *) INSERT INTO appointment_cancelled ( 	date, end_time, duration, specialty, center_id, confirmation_status, professional_id, patient_doc_id, patient_name ,patient_email, patient_phone1, 	app_available, app_status, app_blocked, app_public, app_type_home, 	app_type_center, app_type_remote, patient_notification_email_reserved, specialty_reserved, patient_address, patient_age, calendar_id, start_time,  patient_confirmation, cancelled_professional, cancelled_patient, cancelled_date,  cancelled_notif_sento_patient	) (SELECT date, end_time, duration, specialty, center_id, confirmation_status, 	professional_id, patient_doc_id, patient_name ,patient_email, patient_phone1, 	app_available, app_status, app_blocked, app_public, app_type_home, 	app_type_center, app_type_remote, patient_notification_email_reserved,  	specialty_reserved, patient_address, patient_age, calendar_id, start_time, patient_confirmation, true , false , CURRENT_TIMESTAMP ,   false  FROM app)  "
+
+
 console.log("SQL professional_cancel_appointment :"+query_update)
 
 console.log(query_update);
