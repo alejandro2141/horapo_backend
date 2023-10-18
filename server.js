@@ -136,7 +136,8 @@ const client = new Client(conn_data)
 client.connect()
 
 //let query_reserve =   "INSERT INTO appointment (  date , start_time,  duration,  center_id, confirmation_status, professional_id, patient_doc_id, patient_name,    patient_email, patient_phone1,  patient_age,  app_available, app_status, app_blocked, app_public,  location1, location2, location3, location4, location5, location6,   app_type_home, app_type_center,  app_type_remote, patient_notification_email_reserved , specialty_reserved , patient_address , calendar_id )"   
-let query_reserve = "SELECT * FROM professional_register  ORDER BY date DESC"
+let query_reserve = `SELECT * FROM professional_register  ORDER BY 
+date DESC `   
 
 //query_reserve  += " VALUES ( '"+req.body.appointment_date+"' , '"+req.body.appointment_start_time+"' , '"+req.body.appointment_duration+"' ,  "+req.body.appointment_center_id+" , '0' , '"+req.body.appointment_professional_id+"' , '"+req.body.patient_doc_id.toUpperCase() +"' , '"+req.body.patient_name.toUpperCase()+"' , '"+req.body.patient_email.toUpperCase()+"' , '"+req.body.patient_phone+"' ,  '"+req.body.patient_age+"' ,'false' , '1' , '0' , '1', "+req.body.appointment_location1+" , "+req.body.appointment_location2+" ,"+req.body.appointment_location3+" ,"+req.body.appointment_location4+" ,"+req.body.appointment_location5+" ,"+req.body.appointment_location6+" , '"+req.body.appointment_type_home+"' , '"+req.body.appointment_type_center+"' , '"+req.body.appointment_type_remote+"' , '1' , '"+req.body.appointment_specialty+"' , '"+req.body.patient_address+"'  , '"+req.body.appointment_calendar_id+"' 	) RETURNING * " ; 
 
@@ -716,6 +717,7 @@ async function get_public_appointments_available_of_a_day(specialty, date_to_get
 
     let centers_ids = [] ;
     let centers = [] ;
+    let professionals = [] ; 
     //*********** response message *********/
       let json_response = {
             appointments :  [] ,
@@ -746,6 +748,7 @@ async function get_public_appointments_available_of_a_day(specialty, date_to_get
     // 2.-  GET CENTERS belong to professional IDs obtained from calendars  
     // *********************************************************************
     centers = await get_public_centers(centers_ids)
+    professionals = await get_public_professionals(professional_ids)
 
     // *********************************************************************
     // 2.1 - FILTER CENTERS only MATCH WITH type_center,type_home,type_remote  
@@ -929,6 +932,7 @@ async function get_public_appointments_available_of_a_day(specialty, date_to_get
     
       json_response.centers = centers
       json_response.calendars = calendars
+      json_response.professionals = professionals
       json_response.appointments_counter = app_counter
       //json_response.specialties = 
        
@@ -1007,6 +1011,25 @@ async function get_public_centers(center_ids)
   return res.rows;
 }
 
+// GET PUBLIC PROFESSIONAL DATA 
+// validated 18-10-2023
+async function get_public_professionals(professional_ids)
+{
+  console.log('get_public_professionals  REQUEST : ', professional_ids );
+ 
+  // ****** Connect to postgre
+  const { Client } = require('pg')
+  const client = new Client(conn_data)
+  client.connect()
+  
+  // ****** Run query to bring appointment
+  const sql  = "SELECT id, name  FROM professional WHERE id IN ("+professional_ids+" )"  ;
+  //console.log('SQL get_public_centers  : '+sql ) ;
+  //console.log("SQL QUERY: "+sql)
+  const res = await client.query(sql)
+  client.end() 
+  return res.rows;
+}
 
 //***************************************************** */
 // PATIENT GET APPOINTMENTS  SEARCH BY CALENDAR
