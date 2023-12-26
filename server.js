@@ -1513,7 +1513,7 @@ app.route('/professional_login')
   if (req.body["form_email"]  && req.body["form_pass"] )
   {
     let json_response = access_login(req)
-    json_response.then( v => {  console.log("professional_login RESPONSE: "+JSON.stringify(v)) ; return (res.status(200).send(JSON.stringify(v))) } )
+    json_response.then( v => {console.log("professional_login RESPONSE: "+JSON.stringify(v)) ; return (res.status(200).send(JSON.stringify(v))) } )
     //res.status(200).send(JSON.stringify(json_response));
     //console.log('professional_login RESPONSE  :'+JSON.stringify(json_response) ) ;
   }
